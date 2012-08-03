@@ -1,0 +1,27 @@
+#!/bin/bash
+# setup-grenade hostname
+
+GRENADE_REPO=git@github.com:dtroyer/grenade.git
+
+HOST=$1
+
+if [[ -z "$HOST" ]]; then
+    echo "Must supply hostname"
+    exit 1
+fi
+
+ssh $HOST " \
+    rm -rf devstack; \
+    git clone $DEVSTACK_REPO; \
+    cp -p devstack/samples/local.sh devstack; \
+"
+
+# Extract IP address
+HOST_IP=$(ssh $HOST " \
+    ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"\/\"); print a[1] }'
+")
+
+sed "/^HOST_IP=/s/^HOST_IP=.*$/HOST_IP=$HOST_IP/" $HOST.localrc |
+  ssh $HOST "cat >devstack/localrc"
+#scp -p $HOST.localrc $HOST:devstack/localrc
+scp -p redt $HOST:devstack

@@ -1,0 +1,582 @@
+# -*- mode: Shell-script -*-
+# functions - Common functions used by DevStack components
+#
+# ENABLED_SERVICES is used by is_service_enabled()
+
+
+# Save trace setting
+XTRACE=$(set +o | grep xtrace)
+set +o xtrace
+
+
+# apt-get wrapper to set arguments correctly
+# apt_get operation package [package ...]
+function apt_get() {
+    [[ "$OFFLINE" = "True" || -z "$@" ]] && return
+    local sudo="sudo"
+    [[ "$(id -u)" = "0" ]] && sudo="env"
+    $sudo DEBIAN_FRONTEND=noninteractive \
+        http_proxy=$http_proxy https_proxy=$https_proxy \
+        apt-get --option "Dpkg::Options::=--force-confold" --assume-yes "$@"
+}
+
+
+# Gracefully cp only if source file/dir exists
+# cp_it source destination
+function cp_it {
+    if [ -e $1 ] || [ -d $1 ]; then
+        cp -pRL $1 $2
+    fi
+}
+
+
+# Prints "message" and exits
+# die "message"
+function die() {
+    local exitcode=$?
+    set +o xtrace
+    echo $@
+    exit $exitcode
+}
+
+
+# Checks an environment variable is not set or has length 0 OR if the
+# exit code is non-zero and prints "message" and exits
+# NOTE: env-var is the variable name without a '$'
+# die_if_not_set env-var "message"
+function die_if_not_set() {
+    (
+        local exitcode=$?
+        set +o xtrace
+        local evar=$1; shift
+        if ! is_set $evar || [ $exitcode != 0 ]; then
+            set +o xtrace
+            echo $@
+            exit -1
+        fi
+    )
+}
+
+
+# Grab a numbered field from python prettytable output
+# Fields are numbered starting with 1
+# Reverse syntax is supported: -1 is the last field, -2 is second to last, etc.
+# get_field field-number
+function get_field() {
+    while read data; do
+        if [ "$1" -lt 0 ]; then
+            field="(\$(NF$1))"
+        else
+            field="\$$(($1 + 1))"
+        fi
+        echo "$data" | awk -F'[ \t]*\\|[ \t]*' "{print $field}"
+    done
+}
+
+
+# get_packages() collects a list of package names of any type from the
+# prerequisite files in ``files/{apts|pips}``.  The list is intended
+# to be passed to a package installer such as apt or pip.
+#
+# Only packages required for the services in ENABLED_SERVICES will be
+# included.  Two bits of metadata are recognized in the prerequisite files:
+# - ``# NOPRIME`` defers installation to be performed later in stack.sh
+# - ``# dist:DISTRO`` or ``dist:DISTRO1,DISTRO2`` limits the selection
+#   of the package to the distros listed.  The distro names are case insensitive.
+#
+# get_packages dir
+function get_packages() {
+    local package_dir=$1
+    local file_to_parse
+    local service
+
+    if [[ -z "$package_dir" ]]; then
+        echo "No package directory supplied"
+        return 1
+    fi
+    if [[ -z "$DISTRO" ]]; then
+        echo "No distro set in DISTRO"
+        return 1
+    fi
+    for service in general ${ENABLED_SERVICES//,/ }; do
+        # Allow individual services to specify dependencies
+        if [[ -e ${package_dir}/${service} ]]; then
+            file_to_parse="${file_to_parse} $service"
+        fi
+        # NOTE(sdague) n-api needs glance for now because that's where
+        # glance client is
+        if [[ $service == n-api ]]; then
+            if [[ ! $file_to_parse =~ nova ]]; then
+                file_to_parse="${file_to_parse} nova"
+            fi
+            if [[ ! $file_to_parse =~ glance ]]; then
+                file_to_parse="${file_to_parse} glance"
+            fi
+        elif [[ $service == c-* ]]; then
+            if [[ ! $file_to_parse =~ cinder ]]; then
+                file_to_parse="${file_to_parse} cinder"
+            fi
+        elif [[ $service == n-* ]]; then
+            if [[ ! $file_to_parse =~ nova ]]; then
+                file_to_parse="${file_to_parse} nova"
+            fi
+        elif [[ $service == g-* ]]; then
+            if [[ ! $file_to_parse =~ glance ]]; then
+                file_to_parse="${file_to_parse} glance"
+            fi
+        elif [[ $service == key* ]]; then
+            if [[ ! $file_to_parse =~ keystone ]]; then
+                file_to_parse="${file_to_parse} keystone"
+            fi
+        fi
+    done
+
+    for file in ${file_to_parse}; do
+        local fname=${package_dir}/${file}
+        local OIFS line package distros distro
+        [[ -e $fname ]] || continue
+
+        OIFS=$IFS
+        IFS=$'\n'
+        for line in $(<${fname}); do
+            if [[ $line =~ "NOPRIME" ]]; then
+                continue
+            fi
+
+            if [[ $line =~ (.*)#.*dist:([^ ]*) ]]; then
+                # We are using BASH regexp matching feature.
+                package=${BASH_REMATCH[1]}
+                distros=${BASH_REMATCH[2]}
+                # In bash ${VAR,,} will lowecase VAR
+                [[ ${distros,,} =~ ${DISTRO,,} ]] && echo $package
+                continue
+            fi
+
+            echo ${line%#*}
+        done
+        IFS=$OIFS
+    done
+}
+
+
+# Determine OS Vendor, Release and Update
+# Tested with OS/X, Ubuntu, RedHat, CentOS, Fedora
+# Returns results in global variables:
+# os_VENDOR - vendor name
+# os_RELEASE - release
+# os_UPDATE - update
+# os_PACKAGE - package type
+# os_CODENAME - vendor's codename for release
+# GetOSVersion
+GetOSVersion() {
+    # Figure out which vendor we are
+    if [[ -n "`which sw_vers 2>/dev/null`" ]]; then
+        # OS/X
+        os_VENDOR=`sw_vers -productName`
+        os_RELEASE=`sw_vers -productVersion`
+        os_UPDATE=${os_RELEASE##*.}
+        os_RELEASE=${os_RELEASE%.*}
+        os_PACKAGE=""
+        if [[ "$os_RELEASE" =~ "10.7" ]]; then
+            os_CODENAME="lion"
+        elif [[ "$os_RELEASE" =~ "10.6" ]]; then
+            os_CODENAME="snow leopard"
+        elif [[ "$os_RELEASE" =~ "10.5" ]]; then
+            os_CODENAME="leopard"
+        elif [[ "$os_RELEASE" =~ "10.4" ]]; then
+            os_CODENAME="tiger"
+        elif [[ "$os_RELEASE" =~ "10.3" ]]; then
+            os_CODENAME="panther"
+        else
+            os_CODENAME=""
+        fi
+    elif [[ -x $(which lsb_release 2>/dev/null) ]]; then
+        os_VENDOR=$(lsb_release -i -s)
+        os_RELEASE=$(lsb_release -r -s)
+        os_UPDATE=""
+        if [[ "Debian,Ubuntu" =~ $os_VENDOR ]]; then
+            os_PACKAGE="deb"
+        else
+            os_PACKAGE="rpm"
+        fi
+        os_CODENAME=$(lsb_release -c -s)
+    elif [[ -r /etc/redhat-release ]]; then
+        # Red Hat Enterprise Linux Server release 5.5 (Tikanga)
+        # CentOS release 5.5 (Final)
+        # CentOS Linux release 6.0 (Final)
+        # Fedora release 16 (Verne)
+        os_CODENAME=""
+        for r in "Red Hat" CentOS Fedora; do
+            os_VENDOR=$r
+            if [[ -n "`grep \"$r\" /etc/redhat-release`" ]]; then
+                ver=`sed -e 's/^.* \(.*\) (\(.*\)).*$/\1\|\2/' /etc/redhat-release`
+                os_CODENAME=${ver#*|}
+                os_RELEASE=${ver%|*}
+                os_UPDATE=${os_RELEASE##*.}
+                os_RELEASE=${os_RELEASE%.*}
+                break
+            fi
+            os_VENDOR=""
+        done
+        os_PACKAGE="rpm"
+    fi
+    export os_VENDOR os_RELEASE os_UPDATE os_PACKAGE os_CODENAME
+}
+
+
+# Translate the OS version values into common nomenclature
+# Sets ``DISTRO`` from the ``os_*`` values
+function GetDistro() {
+    GetOSVersion
+    if [[ "$os_VENDOR" =~ (Ubuntu) ]]; then
+        # 'Everyone' refers to Ubuntu releases by the code name adjective
+        DISTRO=$os_CODENAME
+    elif [[ "$os_VENDOR" =~ (Fedora) ]]; then
+        # For Fedora, just use 'f' and the release
+        DISTRO="f$os_RELEASE"
+    else
+        # Catch-all for now is Vendor + Release + Update
+        DISTRO="$os_VENDOR-$os_RELEASE.$os_UPDATE"
+    fi
+    export DISTRO
+}
+
+
+# git clone only if directory doesn't exist already.  Since ``DEST`` might not
+# be owned by the installation user, we create the directory and change the
+# ownership to the proper user.
+# Set global RECLONE=yes to simulate a clone when dest-dir exists
+# Set global ERROR_ON_CLONE=True to abort execution with an error if the git repo
+# does not exist (default is False, meaning the repo will be cloned).
+# git_clone remote dest-dir branch
+function git_clone {
+    [[ "$OFFLINE" = "True" ]] && return
+
+    GIT_REMOTE=$1
+    GIT_DEST=$2
+    GIT_BRANCH=$3
+
+    if echo $GIT_BRANCH | egrep -q "^refs"; then
+        # If our branch name is a gerrit style refs/changes/...
+        if [[ ! -d $GIT_DEST ]]; then
+            [[ "$ERROR_ON_CLONE" = "True" ]] && exit 1
+            git clone $GIT_REMOTE $GIT_DEST
+        fi
+        cd $GIT_DEST
+        git fetch $GIT_REMOTE $GIT_BRANCH && git checkout FETCH_HEAD
+    else
+        # do a full clone only if the directory doesn't exist
+        if [[ ! -d $GIT_DEST ]]; then
+            [[ "$ERROR_ON_CLONE" = "True" ]] && exit 1
+            git clone $GIT_REMOTE $GIT_DEST
+            cd $GIT_DEST
+            # This checkout syntax works for both branches and tags
+            git checkout $GIT_BRANCH
+        elif [[ "$RECLONE" == "yes" ]]; then
+            # if it does exist then simulate what clone does if asked to RECLONE
+            cd $GIT_DEST
+            # set the url to pull from and fetch
+            git remote set-url origin $GIT_REMOTE
+            git fetch origin
+            # remove the existing ignored files (like pyc) as they cause breakage
+            # (due to the py files having older timestamps than our pyc, so python
+            # thinks the pyc files are correct using them)
+            find $GIT_DEST -name '*.pyc' -delete
+            git checkout -f origin/$GIT_BRANCH
+            # a local branch might not exist
+            git branch -D $GIT_BRANCH || true
+            git checkout -b $GIT_BRANCH
+        fi
+    fi
+}
+
+
+# Comment an option in an INI file
+# inicomment config-file section option
+function inicomment() {
+    local file=$1
+    local section=$2
+    local option=$3
+    sed -i -e "/^\[$section\]/,/^\[.*\]/ s|^\($option[ \t]*=.*$\)|#\1|" $file
+}
+
+# Uncomment an option in an INI file
+# iniuncomment config-file section option
+function iniuncomment() {
+    local file=$1
+    local section=$2
+    local option=$3
+    sed -i -e "/^\[$section\]/,/^\[.*\]/ s|[^ \t]*#[ \t]*\($option[ \t]*=.*$\)|\1|" $file
+}
+
+
+# Get an option from an INI file
+# iniget config-file section option
+function iniget() {
+    local file=$1
+    local section=$2
+    local option=$3
+    local line
+    line=$(sed -ne "/^\[$section\]/,/^\[.*\]/ { /^$option[ \t]*=/ p; }" $file)
+    echo ${line#*=}
+}
+
+
+# Set an option in an INI file
+# iniset config-file section option value
+function iniset() {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+    if ! grep -q "^\[$section\]" $file; then
+        # Add section at the end
+        echo -e "\n[$section]" >>$file
+    fi
+    if [[ -z "$(iniget $file $section $option)" ]]; then
+        # Add it
+        sed -i -e "/^\[$section\]/ a\\
+$option = $value
+" $file
+    else
+        # Replace it
+        sed -i -e "/^\[$section\]/,/^\[.*\]/ s|^\($option[ \t]*=[ \t]*\).*$|\1$value|" $file
+    fi
+}
+
+
+# is_service_enabled() checks if the service(s) specified as arguments are
+# enabled by the user in **ENABLED_SERVICES**.
+#
+# If there are multiple services specified as arguments the test performs a
+# boolean OR or if any of the services specified on the command line
+# return true.
+#
+# There is a special cases for some 'catch-all' services::
+#   **nova** returns true if any service enabled start with **n-**
+#   **glance** returns true if any service enabled start with **g-**
+#   **quantum** returns true if any service enabled start with **q-**
+function is_service_enabled() {
+    services=$@
+    for service in ${services}; do
+        [[ ,${ENABLED_SERVICES}, =~ ,${service}, ]] && return 0
+        [[ ${service} == "nova" && ${ENABLED_SERVICES} =~ "n-" ]] && return 0
+        [[ ${service} == "cinder" && ${ENABLED_SERVICES} =~ "c-" ]] && return 0
+        [[ ${service} == "glance" && ${ENABLED_SERVICES} =~ "g-" ]] && return 0
+        [[ ${service} == "quantum" && ${ENABLED_SERVICES} =~ "q-" ]] && return 0
+    done
+    return 1
+}
+
+# remove extra commas from the input string (ENABLED_SERVICES)
+function _cleanup_service_list () {
+	echo "$1" | sed -e '
+        s/,,/,/g;
+        s/^,//;
+        s/,$//
+    '
+}
+
+# enable_service() adds the services passed as argument to the
+# **ENABLED_SERVICES** list, if they are not already present.
+#
+# For example:
+#
+#   enable_service n-vol
+#
+# This function does not know about the special cases
+# for nova, glance, and quantum built into is_service_enabled().
+function enable_service() {
+    local tmpsvcs="${ENABLED_SERVICES}"
+    for service in $@; do
+        if ! is_service_enabled $service; then
+            tmpsvcs+=",$service"
+        fi
+    done
+    ENABLED_SERVICES=$(_cleanup_service_list "$tmpsvcs")
+    disable_negated_services
+}
+
+# disable_service() removes the services passed as argument to the
+# **ENABLED_SERVICES** list, if they are present.
+#
+# For example:
+#
+#   disable_service n-vol
+#
+# This function does not know about the special cases
+# for nova, glance, and quantum built into is_service_enabled().
+function disable_service() {
+    local tmpsvcs=",${ENABLED_SERVICES},"
+    local service
+    for service in $@; do
+        if is_service_enabled $service; then
+            tmpsvcs=${tmpsvcs//,$service,/,}
+        fi
+    done
+    ENABLED_SERVICES=$(_cleanup_service_list "$tmpsvcs")
+}
+
+# disable_all_services() removes all current services
+# from **ENABLED_SERVICES** to reset the configuration
+# before a minimal installation
+function disable_all_services() {
+    ENABLED_SERVICES=""
+}
+
+# We are looking for services with a - at the beginning to force
+# excluding those services. For example if you want to install all the default
+# services but not nova-volume (n-vol) you can have this set in your localrc :
+# ENABLED_SERVICES+=",-n-vol"
+function disable_negated_services() {
+    local tmpsvcs="${ENABLED_SERVICES}"
+    local service
+    for service in ${tmpsvcs//,/ }; do
+        if [[ ${service} == -* ]]; then
+            tmpsvcs=$(echo ${tmpsvcs}|sed -r "s/(,)?(-)?${service#-}(,)?/,/g")
+        fi
+    done
+    ENABLED_SERVICES=$(_cleanup_service_list "$tmpsvcs")
+}
+
+# Distro-agnostic package installer
+# install_package package [package ...]
+function install_package() {
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    if [[ "$os_PACKAGE" = "deb" ]]; then
+        apt_get install "$@"
+    else
+        yum_install "$@"
+    fi
+}
+
+
+# Test if the named environment variable is set and not zero length
+# is_set env-var
+function is_set() {
+    local var=\$"$1"
+    if eval "[ -z $var ]"; then
+        return 1
+    fi
+    return 0
+}
+
+
+# pip install wrapper to set cache and proxy environment variables
+# pip_install package [package ...]
+function pip_install {
+    [[ "$OFFLINE" = "True" || -z "$@" ]] && return
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    if [[ $TRACK_DEPENDS = True ]] ; then
+        source $DEST/.venv/bin/activate
+        CMD_PIP=$DEST/.venv/bin/pip
+        SUDO_PIP="env"
+    else
+        SUDO_PIP="sudo"
+        if [[ "$os_PACKAGE" = "deb" ]]; then
+            CMD_PIP=/usr/bin/pip
+        else
+            CMD_PIP=/usr/bin/pip-python
+        fi
+    fi
+    $SUDO_PIP PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE:-/var/cache/pip} \
+        HTTP_PROXY=$http_proxy \
+        HTTPS_PROXY=$https_proxy \
+        $CMD_PIP install --use-mirrors $@
+}
+
+
+# Service wrapper to restart services
+# restart_service service-name
+function restart_service() {
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    if [[ "$os_PACKAGE" = "deb" ]]; then
+        sudo /usr/sbin/service $1 restart
+    else
+        sudo /sbin/service $1 restart
+    fi
+}
+
+
+# pip install the dependencies of the package before we do the setup.py
+# develop, so that pip and not distutils process the dependency chain
+# setup_develop directory
+function setup_develop() {
+    if [[ $TRACK_DEPENDS = True ]] ; then
+        SUDO_CMD="env"
+    else
+        SUDO_CMD="sudo"
+    fi
+    (cd $1; \
+        python setup.py egg_info; \
+        raw_links=$(awk '/^.+/ {print "-f " $1}' *.egg-info/dependency_links.txt); \
+        depend_links=$(echo $raw_links | xargs); \
+        pip_install -r *-info/requires.txt $depend_links; \
+        $SUDO_CMD \
+            HTTP_PROXY=$http_proxy \
+            HTTPS_PROXY=$https_proxy \
+            python setup.py develop \
+    )
+}
+
+
+# Service wrapper to start services
+# start_service service-name
+function start_service() {
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    if [[ "$os_PACKAGE" = "deb" ]]; then
+        sudo /usr/sbin/service $1 start
+    else
+        sudo /sbin/service $1 start
+    fi
+}
+
+
+# Service wrapper to stop services
+# stop_service service-name
+function stop_service() {
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    if [[ "$os_PACKAGE" = "deb" ]]; then
+        sudo /usr/sbin/service $1 stop
+    else
+        sudo /sbin/service $1 stop
+    fi
+}
+
+
+# Normalize config values to True or False
+# VAR=`trueorfalse default-value test-value`
+function trueorfalse() {
+    local default=$1
+    local testval=$2
+
+    [[ -z "$testval" ]] && { echo "$default"; return; }
+    [[ "0 no false False FALSE" =~ "$testval" ]] && { echo "False"; return; }
+    [[ "1 yes true True TRUE" =~ "$testval" ]] && { echo "True"; return; }
+    echo "$default"
+}
+
+
+# yum wrapper to set arguments correctly
+# yum_install package [package ...]
+function yum_install() {
+    [[ "$OFFLINE" = "True" ]] && return
+    local sudo="sudo"
+    [[ "$(id -u)" = "0" ]] && sudo="env"
+    $sudo http_proxy=$http_proxy https_proxy=$https_proxy \
+        yum install -y "$@"
+}
+
+
+# Restore xtrace
+$XTRACE
