@@ -18,24 +18,8 @@ source $TOP_DIR/functions
 # and ``DISTRO``
 GetDistro
 
-#source $TOP_DIR/grenaderc
-
-# Possible grenaderc values
-
-# Destination path for installation ``DEST``
-DEST=${DEST:-/opt/stack}
-
-# Release info
-START_RELEASE=essex
-END_RELEASE=folsom
-
-DEVSTACK_BEFORE_REPO=https://github.com/openstack-dev/devstack.git
-DEVSTACK_BEFORE_BRANCH=stable/$START_RELEASE
-DEVSTACK_BEFORE_DIR=$DEST/devstack
-
-DEVSTACK_AFTER_REPO=$DEVSTACK_BEFORE_REPO
-DEVSTACK_AFTER_BRANCH=master
-DEVSTACK_AFTER_DIR=devstack-master
+# Source params
+source $TOP_DIR/grenaderc
 
 
 # System Preparation

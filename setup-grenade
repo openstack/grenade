@@ -1,27 +1,27 @@
 #!/bin/bash
 # setup-grenade hostname
+#
+# Assumes ssh keys set up to an account with root privs
+
+
+# Keep track of the devstack directory
+TOP_DIR=$(cd $(dirname "$0") && pwd)
+
+# Source params
+source $TOP_DIR/grenaderc
 
 GRENADE_REPO=git@github.com:dtroyer/grenade.git
+GRENADE_DIR=$DEST/grenade
 
-HOST=$1
+HOST=${1:-localhost}
 
-if [[ -z "$HOST" ]]; then
-    echo "Must supply hostname"
-    exit 1
-fi
+set -o xtrace
 
 ssh $HOST " \
-    rm -rf devstack; \
-    git clone $DEVSTACK_REPO; \
-    cp -p devstack/samples/local.sh devstack; \
+    sudo mkdir -p $DEST; \
+    [[ -w $DEST ]] || sudo chown `whoami` $DEST; \
+    [[ -d $GRENADE_DIR ]] && rm -rf $GRENADE_DIR; \
+    git clone $GRENADE_REPO $GRENADE_DIR; \
+    [[ -w $GRENADE_DIR/localrc ]] || \
+        ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }' >$GRENADE_DIR/localrc
 "
-
-# Extract IP address
-HOST_IP=$(ssh $HOST " \
-    ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"\/\"); print a[1] }'
-")
-
-sed "/^HOST_IP=/s/^HOST_IP=.*$/HOST_IP=$HOST_IP/" $HOST.localrc |
-  ssh $HOST "cat >devstack/localrc"
-#scp -p $HOST.localrc $HOST:devstack/localrc
-scp -p redt $HOST:devstack
