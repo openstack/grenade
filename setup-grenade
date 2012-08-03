@@ -15,8 +15,6 @@ GRENADE_DIR=$DEST/grenade
 
 HOST=${1:-localhost}
 
-set -o xtrace
-
 ssh $HOST " \
     sudo mkdir -p $DEST; \
     [[ -w $DEST ]] || sudo chown `whoami` $DEST; \

@@ -1,0 +1,33 @@
+# grenaderc - Configuration
+
+# Find the other rc files
+RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
+
+# Base GIT Repo URL
+# Another option is http://review.openstack.org/p
+GIT_BASE=https://github.com
+
+# Destination path for installation ``DEST``
+DEST=/opt/grenade
+
+# Release info
+START_RELEASE=essex
+END_RELEASE=folsom
+
+# DevStack sources
+DEVSTACK_BEFORE_REPO=$GIT_BASE/openstack-dev/devstack.git
+DEVSTACK_BEFORE_BRANCH=stable/$START_RELEASE
+DEVSTACK_BEFORE_DIR=$DEST/devstack
+
+DEVSTACK_AFTER_REPO=$DEVSTACK_BEFORE_REPO
+DEVSTACK_AFTER_BRANCH=master
+DEVSTACK_AFTER_DIR=devstack-master
+
+
+# Allow local overrides of env variables
+if [ -f $RC_DIR/localrc ]; then
+    source $RC_DIR/localrc
+fi
+
+
+# Defaults that use values from localrc go here

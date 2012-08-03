@@ -21,6 +21,9 @@ GetDistro
 # Source params
 source $TOP_DIR/grenaderc
 
+# For debugging
+set -o xtrace
+
 
 # System Preparation
 # ==================
@@ -29,6 +32,9 @@ source $TOP_DIR/grenaderc
 
 # check out devstack
 git_clone $DEVSTACK_BEFORE_REPO $DEVSTACK_BEFORE_DIR $DEVSTACK_BEFORE_BRANCH
+
+# Set up localrc
+echo "HOST_IP=$HOST_IP" >>$DEVSTACK_BEFORE_DIR/localrc
 
 
 # Essex Install
