@@ -34,11 +34,15 @@ set -o xtrace
 git_clone $DEVSTACK_BEFORE_REPO $DEVSTACK_BEFORE_DIR $DEVSTACK_BEFORE_BRANCH
 
 # Set up localrc
-echo "HOST_IP=$HOST_IP" >>$DEVSTACK_BEFORE_DIR/localrc
+cp -p devstack.localrc $DEVSTACK_BEFORE_DIR/localrc
 
 
 # Essex Install
 # =============
+
+cd $DEVSTACK_BEFORE_DIR
+./stack.sh
+
 
 # Exercises
 # =========

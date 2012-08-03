@@ -24,5 +24,8 @@ ssh $HOST " \
     git clone $GRENADE_REPO $GRENADE_DIR; \
     IP=\$(ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }'); \
     echo "IP: \$IP"; \
-    sed -i "/^HOST_IP=/s/^HOST_IP=.*$/HOST_IP=\$IP/" $GRENADE_DIR/devstack.localrc; \
+    sed -i \"
+        /^DEST=/s/^DEST=.*$/DEST=$DEST/;
+        /^HOST_IP=/s/^HOST_IP=.*$/HOST_IP=\$IP/;
+    \" $GRENADE_DIR/devstack.localrc; \
 "

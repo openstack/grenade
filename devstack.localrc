@@ -1,6 +1,7 @@
 # localrc for devstack
 
 HOST_IP=
+DEST=
 
 # Timeouts
 ACTIVE_TIMEOUT=120
