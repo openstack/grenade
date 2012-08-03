@@ -31,17 +31,17 @@ set -o xtrace
 # perform cleanup to ensure a clean starting environment
 
 # check out devstack
-git_clone $DEVSTACK_BEFORE_REPO $DEVSTACK_BEFORE_DIR $DEVSTACK_BEFORE_BRANCH
+git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
 
 # Set up localrc
-cp -p devstack.localrc $DEVSTACK_BEFORE_DIR/localrc
+cp -p devstack.start.localrc $DEVSTACK_START_DIR/localrc
 
 
 # Essex Install
 # =============
 
-cd $DEVSTACK_BEFORE_DIR
-./stack.sh
+cd $DEVSTACK_START_DIR
+#./stack.sh
 
 
 # Exercises

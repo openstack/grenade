@@ -27,5 +27,5 @@ ssh $HOST " \
     sed -i \"
         /^DEST=/s|^DEST=.*$|DEST=$DEST|;
         /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
-    \" $GRENADE_DIR/devstack.localrc; \
+    \" $GRENADE_DIR/devstack.start.localrc; \
 "
