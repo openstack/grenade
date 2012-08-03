@@ -22,6 +22,6 @@ ssh $HOST " \
     [[ -w $DEST ]] || sudo chown `whoami` $DEST; \
     [[ -d $GRENADE_DIR ]] && rm -rf $GRENADE_DIR; \
     git clone $GRENADE_REPO $GRENADE_DIR; \
-    [[ -w $GRENADE_DIR/localrc ]] || \
-        ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }' >$GRENADE_DIR/localrc
+    IP=\$(ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }'); \
+    echo "HOST_IP=\$IP" >$GRENADE_DIR/localrc
 "
