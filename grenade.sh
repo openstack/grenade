@@ -34,7 +34,15 @@ set -o xtrace
 git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
 
 # Set up localrc
-cp -p devstack.start.localrc $DEVSTACK_START_DIR/localrc
+cp -p  $TOP_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
+
+# clean up apache config
+# essex devstack uses 000-default
+# folsom devstack uses horizon -> ../sites-available/horizon
+if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
+    # Clean up folsom-style
+    sudo "a2dissite horizon; service apache2 reload"
+fi
 
 
 # Essex Install
