@@ -44,14 +44,24 @@ if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
     sudo "a2dissite horizon; service apache2 reload"
 fi
 
+# TODO(dtroyer): Needs to get rid of modern glance command too
+#                all command-line libs?  how do we want to handle them?
+
 
 # Essex Install
 # =============
 
 cd $DEVSTACK_START_DIR
+
+# TODO(dtroyer): the django admin account bug seems to be present, work
+#                around it or fix it.  why haven't we heard from others
+#                about this in stable/essex?
+
 #./stack.sh
 
 
 # Exercises
 # =========
+
+#./exercise.sh
 

@@ -8,29 +8,28 @@ General
 Grenade is written in POSIX shell script. It is specifies BASH and is
 compatible with Bash 3.
 
-Grenade's official repository is located on GitHub at ??.
+Grenade's official repository is located on GitHub at
+https://github.com/dtroyer/grenade.git.
 
-
-*** old devstack template needs to be upgraded below ***
 
 
 Scripts
 -------
 
-DevStack scripts should generally begin by calling ``env(1)`` in the shebang line::
+Grenade scripts should generally begin by calling ``env(1)`` in the shebang line::
 
     #!/usr/bin/env bash
 
-Sometimes the script needs to know the location of the DevStack install directory.
+The script needs to know the location of the Grenade install directory.
 ``TOP_DIR`` should always point there, even if the script itself is located in
 a subdirectory::
 
     # Keep track of the current devstack directory.
     TOP_DIR=$(cd $(dirname "$0") && pwd)
 
-Many scripts will utilize shared functions from the ``functions`` file.  There are
-also rc files (``stackrc`` and ``openrc``) that are often included to set the primary
-configuration of the user environment::
+Many scripts will utilize shared functions from the ``functions`` file.  This
+file is copied directly from DevStack.  There is also an rc file (``grenaderc``)
+that is sourced to set the default configuration of the user environment::
 
     # Keep track of the current devstack directory.
     TOP_DIR=$(cd $(dirname "$0") && pwd)
@@ -39,30 +38,20 @@ configuration of the user environment::
     source $TOP_DIR/functions
 
     # Import configuration
-    source $TOP_DIR/openrc
-
-``stack.sh`` is a rather large monolithic script that flows through from beginning
-to end.  There is a proposal to segment it to put the OpenStack projects
-into their own sub-scripts to better document the projects as a unit rather than
-have it scattered throughout ``stack.sh``.  Someday.
+    source $TOP_DIR/grenaderc
 
 
 Documentation
 -------------
 
-The official DevStack repo on GitHub does not include a gh-pages branch that
-GitHub uses to create static web sites.  That branch is maintained in the
-`CloudBuilders DevStack repo`__ mirror that supports the
-http://devstack.org site.  This is the primary DevStack
-documentation along with the DevStack scripts themselves.
-
-__ repo_
-.. _repo: https://github.com/cloudbuilders/devstack
+The GitHub repo includes a gh-pages branch that contains the web documentation
+for Grenade. This is the primary Grenade documentation along with the
+Grenade scripts themselves.
 
 All of the scripts are processed with shocco_ to render them with the comments
 as text describing the script below.  For this reason we tend to be a little
 verbose in the comments _ABOVE_ the code they pertain to.  Shocco also supports
-Markdown formatting in the comments; use it sparingly.  Specifically, ``stack.sh``
+Markdown formatting in the comments; use it sparingly.  Specifically, ``grenade.sh``
 uses Markdown headers to divide the script into logical sections.
 
 .. _shocco: http://rtomayko.github.com/shocco/
@@ -71,13 +60,10 @@ uses Markdown headers to divide the script into logical sections.
 Exercises
 ---------
 
-The scripts in the exercises directory are meant to 1) perform basic operational
-checks on certain aspects of OpenStack; and b) document the use of the
-OpenStack command-line clients.
-
-In addition to the guidelines above, exercise scripts MUST follow the structure
-outlined here.  ``swift.sh`` is perhaps the clearest example of these guidelines.
-These scripts are executed serially by ``exercise.sh`` in testing situations.
+The scripts in the exercises directory are meant to 1) perform additional
+operational checks on certain aspects of OpenStack; and b) set up some instances
+and data that can be used to verify the upgrade process is non-destructive
+for the end-user.
 
 * Begin and end with a banner that stands out in a sea of script logs to aid
   in debugging failures, particularly in automated testing situations.  If the
@@ -87,12 +73,12 @@ These scripts are executed serially by ``exercise.sh`` in testing situations.
   ::
 
     echo "**************************************************"
-    echo "Begin DevStack Exercise: $0"
+    echo "Begin Grenade Exercise: $0"
     echo "**************************************************"
     ...
     set +o xtrace
     echo "**************************************************"
-    echo "End DevStack Exercise: $0"
+    echo "End Grenade Exercise: $0"
     echo "**************************************************"
 
 * The scripts will generally have the shell ``xtrace`` attribute set to display
@@ -108,7 +94,7 @@ These scripts are executed serially by ``exercise.sh`` in testing situations.
     set -o xtrace
 
 * Settings and configuration are stored in ``exerciserc``, which must be
-  sourced after ``openrc`` or ``stackrc``::
+  sourced after ``grenaderc``::
 
     # Import exercise configuration
     source $TOP_DIR/exerciserc
@@ -134,18 +120,7 @@ These scripts are executed serially by ``exercise.sh`` in testing situations.
   as those assume direct access to configuration and databases, as well as direct
   database access from the exercise itself.
 
-* If specific configuration needs to be present for the exercise to complete,
-  it should be staged in ``stack.sh``, or called from ``stack.sh`` (see
-  ``files/keystone_data.sh`` for an example of this).
-
-* The ``OS_*`` environment variables should be the only ones used for all
-  authentication to OpenStack clients as documented in the CLIAuth_ wiki page.
-
-.. _CLIAuth: http://wiki.openstack.org/CLIAuth
-
-* The exercise MUST clean up after itself if successful.  If it is not successful,
-  it is assumed that state will be left behind; this allows a chance for developers
-  to look around and attempt to debug the problem.  The exercise SHOULD clean up
+* The exercise MUST clean up after itself even if it is not successful.  This is
+  different from current DevStack practice.  The exercise SHOULD also clean up
   or graciously handle possible artifacts left over from previous runs if executed
-  again.  It is acceptable to require a reboot or even a re-install of DevStack
-  to restore a clean test environment.
+  again.

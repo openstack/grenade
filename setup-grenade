@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # setup-grenade hostname
 #
 # Assumes ssh keys set up to an account with root privs
