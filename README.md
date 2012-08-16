@@ -20,7 +20,7 @@ system that will run the upgrade testing.
 
 Grenade includes ``devstack.start.localrc`` for DevStack that is used to
 customize its behaviour for use with Grenade.  By default ``setup-grenade``
-will set HOST_IP and DEST when copying it ti the Grenade DevStack direcotry.
+will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
 
 # Start An Upgrade Test
