@@ -8,10 +8,10 @@
 
 
 # Keep track of the devstack directory
-TOP_DIR=$(cd $(dirname "$0") && pwd)
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
-source $TOP_DIR/functions
+source $GRENADE_DIR/functions
 
 # Determine what system we are running on.  This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
@@ -19,7 +19,7 @@ source $TOP_DIR/functions
 GetDistro
 
 # Source params
-source $TOP_DIR/grenaderc
+source $GRENADE_DIR/grenaderc
 
 # For debugging
 set -o xtrace
@@ -29,12 +29,13 @@ set -o xtrace
 # ==================
 
 # perform cleanup to ensure a clean starting environment
+mkdir -p $START_DIR
 
 # check out devstack
 git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
 
 # Set up localrc
-cp -p $TOP_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
+cp -p $GRENADE_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
 
 # clean up apache config
 # essex devstack uses 000-default

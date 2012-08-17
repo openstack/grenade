@@ -8,20 +8,23 @@ RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 GIT_BASE=https://github.com
 
 # Destination path for installation ``DEST``
-DEST=/opt/grenade
+DEST=/opt
 
 # Release info
 START_RELEASE=essex
+START_DIR=$DEST/stack.$START.RELEASE
+
 FINAL_RELEASE=folsom
+FINAL_DIR=$DEST/stack.$FINAL.RELEASE
 
 # DevStack sources
 DEVSTACK_START_REPO=$GIT_BASE/openstack-dev/devstack.git
 DEVSTACK_START_BRANCH=stable/$START_RELEASE
-DEVSTACK_START_DIR=$DEST/devstack.$START_RELEASE
+DEVSTACK_START_DIR=$START_DIR/devstack
 
 DEVSTACK_FINAL_REPO=$DEVSTACK_START_REPO
 DEVSTACK_FINAL_BRANCH=master
-DEVSTACK_FINAL_DIR=devstack-master
+DEVSTACK_FINAL_DIR=$FINAL_DIR/devstack
 
 
 # Allow local overrides of env variables
