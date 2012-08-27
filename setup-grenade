@@ -5,10 +5,10 @@
 
 
 # Keep track of the devstack directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+SRC_DIR=$(cd $(dirname "$0") && pwd)
 
 # Source params
-source $GRENADE_DIR/grenaderc
+source $SRC_DIR/grenaderc
 
 GRENADE_REPO=git@github.com:dtroyer/grenade.git
 GRENADE_DIR=$DEST/grenade
@@ -31,3 +31,8 @@ ssh -t $DEST_USER@$HOST " \
         /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
     \" $GRENADE_DIR/devstack.start.localrc; \
 "
+
+# Copy localrc if it exists
+if [[ -r $SRC_DIR/localrc ]]; then
+	scp -p $SRC_DIR/localrc $DEST_USER@$HOST:$GRENADE_DIR
+fi
