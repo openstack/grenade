@@ -1,5 +1,6 @@
-# localrc for devstack
+# localrc for devstack stable/essex
 
+# These are set by setup-grenade
 HOST_IP=
 DEST=
 

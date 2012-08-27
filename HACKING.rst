@@ -28,8 +28,9 @@ a subdirectory::
     GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 Many scripts will utilize shared functions from the ``functions`` file.  This
-file is copied directly from DevStack.  There is also an rc file (``grenaderc``)
-that is sourced to set the default configuration of the user environment::
+file is copied directly from DevStack (late folsom-vintage).  There is also an
+rc file (``grenaderc``) that is sourced to set the default configuration of
+the user environment::
 
     # Keep track of the current devstack directory.
     GRENADE_DIR=$(cd $(dirname "$0") && pwd)
