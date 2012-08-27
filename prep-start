@@ -39,8 +39,8 @@ cp -p $GRENADE_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
 # folsom devstack uses horizon -> ../sites-available/horizon
 if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
     # Clean up folsom-style
-    sudo "a2dissite horizon"
-    sudo "service apache2 reload"
+    sudo a2dissite horizon
+    sudo service apache2 reload
 fi
 
 # TODO(dtroyer): Needs to get rid of modern glance command too
