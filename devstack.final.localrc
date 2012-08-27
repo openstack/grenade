@@ -1,4 +1,4 @@
-# localrc for devstack stable/essex
+# localrc for devstack trunk
 
 # These are set by setup-grenade
 HOST_IP=

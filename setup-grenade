@@ -31,7 +31,7 @@ ssh -t $DEST_USER@$HOST " \
         /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
     \" $GRENADE_DIR/devstack.start.localrc; \
     sed -i \"
-        /^DEST=/s|^DEST=.*$|DEST=$START_DIR|;
+        /^DEST=/s|^DEST=.*$|DEST=$FINAL_DIR|;
         /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
     \" $GRENADE_DIR/devstack.final.localrc; \
 "
