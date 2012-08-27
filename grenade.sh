@@ -58,7 +58,7 @@ cd $DEVSTACK_START_DIR
 #                around it or fix it.  why haven't we heard from others
 #                about this in stable/essex?
 
-echo ./stack.sh
+./stack.sh
 
 
 # Exercises
