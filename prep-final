@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# ``prep-final`` handles the preparations for installing and configuring
+# the "final" configuration of DevStack.
+
+
+# Keep track of the devstack directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# System Preparation
+# ==================
+
+# perform cleanup to ensure a clean starting environment
+mkdir -p $FINAL_DIR
+
+# check out devstack
+git_clone $DEVSTACK_FINAL_REPO $DEVSTACK_FINAL_DIR $DEVSTACK_FINAL_BRANCH
+
+# Set up localrc
+cp -p $GRENADE_DIR/devstack.final.localrc $DEVSTACK_FINAL_DIR/localrc
+
+# clean up apache config
+# essex devstack uses 000-default
+# folsom devstack uses horizon -> ../sites-available/horizon
+if [[ -e /etc/apache2/sites-enabled/000-default ]]; then
+    # Clean up folsom-style
+    sudo "rm /etc/apache2/sites-enabled/000-default; service apache2 reload"
+fi
+
+# TODO(dtroyer): Needs to get rid of modern glance command too
+#                all command-line libs?  how do we want to handle them?
+

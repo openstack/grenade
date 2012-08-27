@@ -2,7 +2,7 @@
 
 # ``grenade.sh`` is an OpenStack upgrade test harness to exercise the
 # upgrade process from Essex to Folsom.  It uses DevStack to perform
-# the initial # Openstack install
+# the initial Openstack install
 
 # Grenade assumes it is running on the system that will be hosting the upgrade processes
 
@@ -25,44 +25,56 @@ source $GRENADE_DIR/grenaderc
 set -o xtrace
 
 
-# System Preparation
-# ==================
+# Start Configutation
+# ===================
 
-# perform cleanup to ensure a clean starting environment
-mkdir -p $START_DIR
+# Essex Preparation
+# -----------------
 
-# check out devstack
-git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
-
-# Set up localrc
-cp -p $GRENADE_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
-
-# clean up apache config
-# essex devstack uses 000-default
-# folsom devstack uses horizon -> ../sites-available/horizon
-if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
-    # Clean up folsom-style
-    sudo "a2dissite horizon; service apache2 reload"
-fi
-
-# TODO(dtroyer): Needs to get rid of modern glance command too
-#                all command-line libs?  how do we want to handle them?
-
+$GRENADE_DIR/prep-start
 
 # Essex Install
-# =============
-
-cd $DEVSTACK_START_DIR
+# -------------
 
 # TODO(dtroyer): the django admin account bug seems to be present, work
 #                around it or fix it.  why haven't we heard from others
 #                about this in stable/essex?
 
+cd $DEVSTACK_START_DIR
 ./stack.sh
 
-
 # Exercises
-# =========
+# ---------
 
 echo ./exercise.sh
 
+
+# Shut down running code
+./unstack.sh
+
+
+# Final Configuration
+# ===================
+
+# Folsom Preparation
+# ------------------
+
+$GRENADE_DIR/prep-start
+
+# Rename databases
+myauth="-uroot -p$MYSQL_PASSWORD"
+for db in glance keystone nova; do
+    new_db=${db}_essex
+    echo "Renaming $db to $new_db"
+    mysql $myauth -e "DROP DATABASE $new_db; CREATE DATABASE $new_db;"
+    for i in $(mysql -Ns $1 -e "SHOW TABLES" $db);do
+        mysql $myauth -e "RENAME TABLE $db.$i TO $new_db.$i"
+    done
+    mysql $myauth -e "DROP DATABASE $db"
+done
+
+# Folsom Install
+# --------------
+
+cd $DEVSTACK_FINAL_DIR
+./stack.sh
