@@ -20,6 +20,9 @@ source $GRENADE_DIR/grenaderc
 # For debugging
 set -o xtrace
 
+cd $DEVSTACK_START_DIR
+source ./stackrc
+
 
 # System Cleanup
 # ==============
@@ -29,7 +32,8 @@ myauth="-uroot -p$MYSQL_PASSWORD"
 for db in glance keystone nova; do
     new_db=${db}_${START_RELEASE}
     echo "Renaming $db to $new_db"
-    mysql $myauth -e "DROP DATABASE $new_db; CREATE DATABASE $new_db;"
+    mysql $myauth -e "DROP DATABASE $new_db"
+    mysql $myauth -e "CREATE DATABASE $new_db;"
     for i in $(mysql -Ns $1 -e "SHOW TABLES" $db);do
         mysql $myauth -e "RENAME TABLE $db.$i TO $new_db.$i"
     done
