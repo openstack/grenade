@@ -12,10 +12,10 @@ DEST=/opt
 
 # Release info
 START_RELEASE=essex
-START_DIR=$DEST/stack.$START.RELEASE
+START_DIR=$DEST/stack.$START_RELEASE
 
 FINAL_RELEASE=folsom
-FINAL_DIR=$DEST/stack.$FINAL.RELEASE
+FINAL_DIR=$DEST/stack.$FINAL_RELEASE
 
 # DevStack sources
 DEVSTACK_START_REPO=$GIT_BASE/openstack-dev/devstack.git
