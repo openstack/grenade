@@ -30,9 +30,20 @@ ssh -t $DEST_USER@$HOST " \
         /^DEST=/s|^DEST=.*$|DEST=$START_DIR|;
         /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
     \" $GRENADE_DIR/devstack.start.localrc; \
+    sed -i \"
+        /^DEST=/s|^DEST=.*$|DEST=$START_DIR|;
+        /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
+    \" $GRENADE_DIR/devstack.final.localrc; \
 "
 
-# Copy localrc if it exists
-if [[ -r $SRC_DIR/localrc ]]; then
-	scp -p $SRC_DIR/localrc $DEST_USER@$HOST:$GRENADE_DIR
+# Copy devstack.localrc if it exists
+if [[ -r $SRC_DIR/devstack.localrc ]]; then
+	scp -p $SRC_DIR/devstack.localrc $DEST_USER@$HOST:$GRENADE_DIR
 fi
+
+ssh -t $DEST_USER@$HOST " \
+    [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
+        >>$GRENADE_DIR/devstack.start.localrc \
+    [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
+        >>$GRENADE_DIR/devstack.final.localrc \
+"

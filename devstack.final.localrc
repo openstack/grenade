@@ -1,0 +1,23 @@
+# localrc for devstack stable/essex
+
+# These are set by setup-grenade
+HOST_IP=
+DEST=
+
+# Timeouts
+ACTIVE_TIMEOUT=120
+ASSOCIATE_TIMEOUT=60
+BOOT_TIMEOUT=120
+SERVICE_TIMEOUT=120
+
+ADMIN_PASSWORD=0penstack
+#KEYSTONE_CATALOG_BACKEND=sql
+LOGDAYS=1
+LOGFILE=$DEST/logs/stack.sh.log
+MYSQL_PASSWORD=superstack
+RABBIT_PASSWORD=superstack
+SCREEN_LOGDIR=$DEST/logs/screen
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+SERVICE_TOKEN=cd0d1a03-b701-4fcb-801a-8b4d0bc3d06e
+SKIP_EXERCISES=boot_from_volume
+STACK_LOG=stack.sh.log
