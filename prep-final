@@ -39,7 +39,8 @@ cp -p $GRENADE_DIR/devstack.final.localrc $DEVSTACK_FINAL_DIR/localrc
 # folsom devstack uses horizon -> ../sites-available/horizon
 if [[ -e /etc/apache2/sites-enabled/000-default ]]; then
     # Clean up folsom-style
-    sudo "rm /etc/apache2/sites-enabled/000-default; service apache2 reload"
+    sudo "rm /etc/apache2/sites-enabled/000-default"
+    sudo "service apache2 reload"
 fi
 
 # TODO(dtroyer): Needs to get rid of modern glance command too
