@@ -48,9 +48,13 @@ cd $DEVSTACK_START_DIR
 
 echo ./exercise.sh
 
+# Cleanup
+# -------
 
 # Shut down running code
 ./unstack.sh
+
+$GRENADE_DIR/wrap-start
 
 
 # Final Configuration
@@ -59,22 +63,23 @@ echo ./exercise.sh
 # Folsom Preparation
 # ------------------
 
-$GRENADE_DIR/prep-start
-
-# Rename databases
-myauth="-uroot -p$MYSQL_PASSWORD"
-for db in glance keystone nova; do
-    new_db=${db}_essex
-    echo "Renaming $db to $new_db"
-    mysql $myauth -e "DROP DATABASE $new_db; CREATE DATABASE $new_db;"
-    for i in $(mysql -Ns $1 -e "SHOW TABLES" $db);do
-        mysql $myauth -e "RENAME TABLE $db.$i TO $new_db.$i"
-    done
-    mysql $myauth -e "DROP DATABASE $db"
-done
+$GRENADE_DIR/prep-final
 
 # Folsom Install
 # --------------
 
 cd $DEVSTACK_FINAL_DIR
 ./stack.sh
+
+# Exercises
+# ---------
+
+echo ./exercise.sh
+
+# Cleanup
+# -------
+
+# Shut down running code
+./unstack.sh
+
+$GRENADE_DIR/wrap-final

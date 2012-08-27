@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# ``wrap-final`` handles the cleanup of the "final" configuration of DevStack.
+
+
+# Keep track of the devstack directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# System Cleanup
+# ==============
+
+# Rename databases
+myauth="-uroot -p$MYSQL_PASSWORD"
+for db in glance keystone nova; do
+    new_db=${db}_${FINAL_RELEASE}
+    echo "Renaming $db to $new_db"
+    mysql $myauth -e "DROP DATABASE $new_db; CREATE DATABASE $new_db;"
+    for i in $(mysql -Ns $1 -e "SHOW TABLES" $db);do
+        mysql $myauth -e "RENAME TABLE $db.$i TO $new_db.$i"
+    done
+    mysql $myauth -e "DROP DATABASE $db"
+done
