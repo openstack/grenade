@@ -43,7 +43,7 @@ fi
 
 ssh -t $DEST_USER@$HOST " \
     [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
-        >>$GRENADE_DIR/devstack.start.localrc \
+        >>$GRENADE_DIR/devstack.start.localrc; \
     [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
-        >>$GRENADE_DIR/devstack.final.localrc \
+        >>$GRENADE_DIR/devstack.final.localrc; \
 "
