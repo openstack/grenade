@@ -36,7 +36,7 @@ cp -p $GRENADE_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
 
 # Set up a symlink to the 'start' devstack installation
 rm -f $GRENADE_DIR/devstack
-ln -s $DEVSTACK_START_REPO $GRENADE_DIR/devstack
+ln -s $DEVSTACK_START_DIR $GRENADE_DIR/devstack
 
 # clean up apache config
 # essex devstack uses 000-default
