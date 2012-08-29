@@ -34,6 +34,10 @@ git_clone $DEVSTACK_FINAL_REPO $DEVSTACK_FINAL_DIR $DEVSTACK_FINAL_BRANCH
 # Set up localrc
 cp -p $GRENADE_DIR/devstack.final.localrc $DEVSTACK_FINAL_DIR/localrc
 
+# Set up a symlink to the 'final' devstack installation
+rm -f $GRENADE_DIR/devstack
+ln -s $DEVSTACK_FINAL_REPO $GRENADE_DIR/devstack
+
 # clean up apache config
 # essex devstack uses 000-default
 # folsom devstack uses horizon -> ../sites-available/horizon
