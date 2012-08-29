@@ -23,10 +23,29 @@ set -o xtrace
 # Upgrade Dependencies
 # ====================
 
-PIPS="boto==2.1.1 cliff==1.1.2 cmd2==0.6.4 \
-Django==1.4.1 django-appconf==0.5 django-compressor==1.2 django-openstack-auth==1.0.2 \
-jsonschema==0.2 keyring==0.9.2 Landscape-Client==12.05 pyparsing==1.5.6 \
-pytz==2012d SQLAlchemy==0.7.8 warlock==0.4.0"
+# Glance
+# Glance client wants warlock < 2
+GLANCE_PIPS="jsonschema warlock<2"
+
+# Glance and Nova pin boto to 2.1.1
+# oneiric has 2.0.0 and precise has 2.2.2
+NOVA_PIPS="boto==2.1.1"
+
+# Horizon requires Django >= 1.4
+HORIZON_PIPS=" \
+    Django>=1.4 \
+    django-appconf \
+    django-compressor \
+    django-openstack-auth \
+    pytz \
+"
+
+# Quantum client requirements
+QUANTUM_PIPS="pyparsing cliff>=1.1.2 cmd2"
+
+# SQLAlchemy LCD is 0.7.3 ((cinder, nova)
+PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS \
+   SQLAlchemy>=0.7.3"
 
 pip_install $PIPS
 
