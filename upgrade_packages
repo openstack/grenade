@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# ``upgrade_packages``
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# Upgrade Dependencies
+# ====================
+
+PIPS="boto==2.1.1 cliff==1.1.2 cmd2==0.6.4 \
+Django==1.4.1 django-appconf==0.5 django-compressor==1.2 django-openstack-auth==1.0.2 \
+jsonschema==0.2 keyring==0.9.2 Landscape-Client==12.05 pyparsing==1.5.6 \
+pytz==2012d SQLAlchemy==0.7.8 warlock==0.4.0"
+
+pip_install $PIPS
+
+# APTS="python-beautifulsoup python-wsgi-intercept"
+# BeautifulSoup==3.2.0
+# wsgi-intercept==0.4
+
+# Install package requirements
+if [[ "$os_PACKAGE" = "deb" ]]; then
+    apt_get update
+    install_package $(get_packages $DEVSTACK_FINAL_DIR/files/apts)
+else
+    install_package $(get_packages $DEVSTACK_FINAL_DIR/files/rpms)
+fi
