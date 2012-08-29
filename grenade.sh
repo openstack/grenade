@@ -43,10 +43,14 @@ $GRENADE_DIR/prep-start
 cd $DEVSTACK_START_DIR
 ./stack.sh
 
-# Exercises
+# Operation
 # ---------
 
+# Validate the install
 echo ./exercise.sh
+
+# Create a project, users and instances
+echo $GRENADE_DIR/setup-javelin
 
 # Cleanup
 # -------

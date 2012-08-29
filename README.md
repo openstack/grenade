@@ -23,6 +23,33 @@ customize its behaviour for use with Grenade.  By default ``setup-grenade``
 will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
 
-# Start An Upgrade Test
+# Prepare For An Upgrade
 
     ./grenade.sh
+
+At the moment, grenade.sh runs through a stack/unstack cycle for both
+Essex and Folsom releases in separate directories.  The databases are
+renamed with the release name as a suffix.
+
+A slightly more useful sequence at the moment would be to skip grenade.sh
+and run the bits that it calls by hand:
+
+    ./prep-start
+    cd /opt/stack.essex/devstack
+    ./stack.sh
+
+At this point you have a running Essex deployment.  Configure the
+imaginary **Javelin** tenant to populate the databases with some
+non-default content::
+
+    ./setup-javelin
+
+This should leave an instance named ``peltast`` running.
+
+Now, running ``unstack.sh`` would shut down OpenStack and the upgrades
+may begin.
+
+# Testing Upgrades
+
+The ``upgrade-*`` scripts are the individual components of the
+DevStack/Grenade upgrade process.
