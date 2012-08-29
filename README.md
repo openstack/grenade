@@ -27,11 +27,11 @@ will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
     ./grenade.sh
 
-At the moment, grenade.sh runs through a stack/unstack cycle for both
+At the moment, ``grenade.sh`` runs through a stack/unstack cycle for both
 Essex and Folsom releases in separate directories.  The databases are
 renamed with the release name as a suffix.
 
-A slightly more useful sequence at the moment would be to skip grenade.sh
+A slightly more useful sequence at the moment would be to skip ``grenade.sh``
 and run the bits that it calls by hand:
 
     ./prep-start
@@ -45,6 +45,8 @@ non-default content::
     ./setup-javelin
 
 This should leave an instance named ``peltast`` running.
+
+Set up the **javelin** credentials with ``javelinrc``.
 
 Now, running ``unstack.sh`` would shut down OpenStack and the upgrades
 may begin.

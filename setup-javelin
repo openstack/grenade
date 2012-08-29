@@ -27,12 +27,8 @@ set -o xtrace
 source $DEVSTACK_START_DIR/openrc admin admin
 
 # Our configuration
-JPROJECT=javelin
-JUSER=javelin
-JPASSWORD=gungnir
-JROLE=pizzabon
-JAVELIN_SECGROUP=zulu
-JSERVER=peltast
+source $GRENADE_DIR/javelin.conf
+
 DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
 
 
@@ -53,6 +49,11 @@ JAVELIN_USER=$(keystone user-list | awk "/ $JUSER / { print \$2 }")
     JAVELIN_USER=$(get_id keystone user-create --name=$JUSER \
                                                --pass="$JPASSWORD" \
                                                --email=bob@javelin.org)
+
+MEMBER_ROLE=$(keystone role-list | awk "/ Member / { print \$2 }")
+keystone user-role-add --tenant_id $JAVELIN_TENANT \
+                       --user_id $JAVELIN_USER \
+                       --role_id $MEMBER_ROLE
 
 
 # Switch Identities
