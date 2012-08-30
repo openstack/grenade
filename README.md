@@ -27,18 +27,16 @@ will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
     ./grenade.sh
 
-At the moment, ``grenade.sh`` runs through a stack/unstack cycle for both
-Essex and Folsom releases in separate directories.  The databases are
-renamed with the release name as a suffix.
+``grenade.sh`` installs DevStack for both the **Start** release (Essex) and
+the **Final** release (Folsom) in separate directories.  It then runs the
+**Start** release ``stack.sh``.  This si roughly the equivalent to:
 
-A slightly more useful sequence at the moment would be to skip ``grenade.sh``
-and run the bits that it calls by hand:
-
+    ./prep-final
     ./prep-start
     cd /opt/stack.essex/devstack
     ./stack.sh
 
-At this point you have a running Essex deployment.  Configure the
+At this point the **Start** release is running.  Configure an
 imaginary **Javelin** tenant to populate the databases with some
 non-default content::
 
@@ -46,10 +44,11 @@ non-default content::
 
 This should leave an instance named ``peltast`` running.
 
+Now run ``unstack.sh`` to shut down the **Start** OpenStack and begin the
+upgrade testing.
+
 Set up the **javelin** credentials with ``javelinrc``.
 
-Now, running ``unstack.sh`` would shut down OpenStack and the upgrades
-may begin.
 
 # Testing Upgrades
 

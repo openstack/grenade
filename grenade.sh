@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 # ``grenade.sh`` is an OpenStack upgrade test harness to exercise the
-# upgrade process from Essex to Folsom.  It uses DevStack to perform
-# the initial Openstack install
+# OpenStack upgrade process.  It uses DevStack to perform the initial
+# OpenStack install.
 
-# Grenade assumes it is running on the system that will be hosting the upgrade processes
+# Grenade assumes it is running on the system that will be hosting the
+# upgrade processes
 
 
 # Keep track of the devstack directory
@@ -25,65 +26,45 @@ source $GRENADE_DIR/grenaderc
 set -o xtrace
 
 
-# Start Configutation
-# ===================
+# Prep DevStack
+# =============
 
-# Essex Preparation
-# -----------------
+# We'll need both releases of DevStack eventually so grab them both now.
+# Do final first so the 'current' state is pointing to the starting release.
 
+$GRENADE_DIR/prep-final
 $GRENADE_DIR/prep-start
 
-# Essex Install
-# -------------
 
-# TODO(dtroyer): the django admin account bug seems to be present, work
-#                around it or fix it.  why haven't we heard from others
-#                about this in stable/essex?
+# Install 'Start' Build of OpenStack
+# ==================================
 
 cd $DEVSTACK_START_DIR
 ./stack.sh
+
 
 # Operation
 # ---------
 
 # Validate the install
-echo ./exercise.sh
+echo $DEVSTACK_START_DIR/exercise.sh
 
 # Create a project, users and instances
-echo $GRENADE_DIR/setup-javelin
+$GRENADE_DIR/setup-javelin
 
 # Cleanup
 # -------
 
 # Shut down running code
-./unstack.sh
+echo $DEVSTACK_START_DIR/unstack.sh
 
-$GRENADE_DIR/wrap-start
+# Don't do this for now
+#$GRENADE_DIR/wrap-start
 
 
-# Final Configuration
-# ===================
+# Fin
+# ===
 
-# Folsom Preparation
-# ------------------
-
-$GRENADE_DIR/prep-final
-
-# Folsom Install
-# --------------
-
-cd $DEVSTACK_FINAL_DIR
-./stack.sh
-
-# Exercises
-# ---------
-
-echo ./exercise.sh
-
-# Cleanup
-# -------
-
-# Shut down running code
-./unstack.sh
-
-$GRENADE_DIR/wrap-final
+echo "Grenade has completed the initial setup of the upgrade test."
+echo "The following upgrade scripts are available:"
+ls $GRENADE_DIR/upgrade-*
