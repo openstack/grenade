@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# ``upgrade-devstack``
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# Upgrade DevStack
+# ================
+
+# Reconfigure DevStack for Folsom.  Changes include new handling
+# for ``ENABLED_SERVICES``
+
+# Translate Services
+# ------------------
+
+START_ENABLED_SERVICES=$(source $DEVSTACK_START_DIR/stackrc; echo $ENABLED_SERVICES)
+ENABLED_SERVICES=""
+
+for service in ${START_ENABLED_SERVICES//,/ }; do
+    if [[ $service == n-vol ]]; then
+        # Migrate from nova volumes to cinder
+        enable_service c-api c-sch c-vol
+    elif [[ $service == key ]]; then
+        # placeholder for now
+        enable_service key
+    else
+        # Passthrough
+        enable_service $service
+    fi
+done
+
+echo $START_ENABLED_SERVICES
+echo $ENABLED_SERVICES
