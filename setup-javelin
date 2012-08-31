@@ -118,6 +118,17 @@ if [[ -z "$FLAVOR" ]]; then
 fi
 
 
+# Create a Volume
+# ---------------
+
+if ! nova volume-list | grep -q $JAVELIN_VOLUME; then
+    nova volume-create --display_name=$JAVELIN_VOLUME 1
+    if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova volume-list | grep $JAVELIN_VOLUME | grep -q available; do sleep 1; done"; then
+        echo "$JAVELIN_VOLUME volume not created"
+        exit 1
+    fi
+fi
+
 # Create An Instance
 # ------------------
 
