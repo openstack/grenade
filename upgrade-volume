@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+# ``upgrade-volume``
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# Upgrade Volumes
+# ===============
+
+# As cinder is new, an upgrade for  nova-volume to nova-volume is performed
+# first, then the migration to cinder is performed.
+
+
+# DevStack-specific
+# -----------------
+
+# DevStack changed the default storage for volumes between Essex and Folsom
+# * move /opt/stack/nova-volumes-backing-file to 
+#   /opt/stack/data/stack-volumes-backing-file
+# * volume group name changed from nova-volumes to stack-volumes
+# * default size is now 5GB, we don't change that here
+
+# Put this here since Folsom DevStack defaults it in stack.sh
+DATA_DIR=${DATA_DIR:-${START_DIR}/data}
+START_VOLUME_BACKING_FILE=${START_VOLUME_BACKING_FILE:-$START_DIR/nova-volumes-backing-file}
+START_VOLUME_GROUP=${START_VOLUME_GROUP:-nova-volumes}
+FINAL_VOLUME_BACKING_FILE=${FINAL_VOLUME_BACKING_FILE:-$DATA_DIR/stack-volumes-backing-file}
+FINAL_VOLUME_GROUP=${FINAL_VOLUME_GROUP:-stack-volumes}
+
+if [[ -r $START_VOLUME_BACKING_FILE ]]; then
+    echo "Start file exists, save it"
+    # Release it from LVM
+    sudo vgchange -an $START_VOLUME_GROUP
+    LOOP_DEV=$(sudo pvs -o pv_name,vg_name | awk "/$START_VOLUME_GROUP/ { print \$1 }")
+    sudo losetup -d $LOOP_DEV || true
+    mkdir -p $DATA_DIR
+    mv $START_VOLUME_BACKING_FILE $FINAL_VOLUME_BACKING_FILE
+    # Let DevStack startup handle it from here?
+fi
+
+
+# Migrate to Cinder
+# -----------------
+
+# install cinder code from ~final/devstack/lib/cinder:install_cinder()
+
+MYSQL_HOST=${MYSQL_HOST:-localhost}
+MYSQL_USER=${MYSQL_USER:-root}
+BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+
+(cd $DEVSTACK_FINAL_DIR; \
+ DEST=$START_DIR; \
+ source ./stackrc; \
+ DEST=$START_DIR; \
+ source lib/cinder; \
+ DEST=$START_DIR; \
+ install_cinder
+ #configure_cinder; \
+)
+
+# There's a patch applied to cinder-manage without the supporting bits
+# in cinder yet (https://review.openstack.org/#/c/11510/)
+# This undoes that
+git revert -n ca25ea47782be90f65e9e5311de295499de19f2b
+
+# Migrate the volume tables from nova to cinder
+# still broken atm...
+echo cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN
+
+# Revert the revert
+git reset --hard
