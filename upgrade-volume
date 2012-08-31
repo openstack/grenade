@@ -2,6 +2,8 @@
 
 # ``upgrade-volume``
 
+# ``upgrade-nova`` must be complete for this to work!!!
+
 # Keep track of the grenade directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
@@ -71,17 +73,17 @@ BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:
  source lib/cinder; \
  DEST=$START_DIR; \
  install_cinder
- #configure_cinder; \
-)
+ configure_cinder; \
 
 # There's a patch applied to cinder-manage without the supporting bits
 # in cinder yet (https://review.openstack.org/#/c/11510/)
 # This undoes that
-git revert -n ca25ea47782be90f65e9e5311de295499de19f2b
+echo git revert -n ca25ea47782be90f65e9e5311de295499de19f2b; \
+)
 
 # Migrate the volume tables from nova to cinder
 # still broken atm...
 echo cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN
 
 # Revert the revert
-git reset --hard
+#git reset --hard
