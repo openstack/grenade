@@ -39,6 +39,3 @@ for db in glance keystone nova; do
     done
     mysql $myauth -e "DROP DATABASE $db"
 done
-
-# Remove devstack dir symlink
-rm -f $GRENADE_DIR/devstack

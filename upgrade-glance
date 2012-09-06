@@ -25,6 +25,10 @@ set -o xtrace
 
 # Based on http://bcwaldon.cc/2012/09/05/glance-essex-to-folsom-upgrade.html
 
+# Kill a running Keystone
+screen -S stack -p g-api -X kill
+screen -S stack -p g-reg -X kill
+
 GLANCECLIENT_DIR=$DEST/python-glanceclient
 GLANCE_DIR=$DEST/glance
 
@@ -35,18 +39,18 @@ GLANCE_REGISTRY_PASTE_INI=${GLANCE_REGISTRY_PASTE_INI:-$GLANCE_CONF_DIR/glance-r
 GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.ini}
 
 # Duplicate some setup bits from trunk DevStack
-(cd $TRUNK_DEVSTACK_DIR; \
-  source ./stackrc; \
+cd $TRUNK_DEVSTACK_DIR
+source $TRUNK_DEVSTACK_DIR/stackrc
 
-  # install_glance()
-  RECLONE=yes; \
-  git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH; \
-  git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH; \
+# install_glance()
+RECLONE=yes
+git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH
+git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH
 
-  # configure_glance()
-  setup_develop $GLANCECLIENT_DIR; \
-  setup_develop $GLANCE_DIR; \
-)
+# configure_glance()
+setup_develop $GLANCE_DIR
+# _Must_ do client after service due to cli binary conflicts
+setup_develop $GLANCECLIENT_DIR
 
 # Save original files and prepare to upgrade conf files
 [[ -r $GLANCE_REGISTRY_CONF.$START_RELEASE ]] || \
@@ -81,5 +85,6 @@ done
 # Migrate the database
 glance-manage db_sync
 
-echo "glance-registry --config-file=$GLANCE_REGISTRY_CONF"
-echo "glance-api --config-file=$GLANCE_API_CONF"
+# Start Glance
+screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=$GLANCE_CONF_DIR/glance-registry.conf"
+screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=$GLANCE_CONF_DIR/glance-api.conf"

@@ -2,7 +2,8 @@
 
 RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 
+source $RC_DIR/grenaderc
 source $RC_DIR/javelin.conf
-source $RC_DIR/devstack/openrc $JUSER $JPROJECT
+source $WORK_DEVSTACK_DIR/openrc $JUSER $JPROJECT
 export OS_PASSWORD=$JPASSWORD
 

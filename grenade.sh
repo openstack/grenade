@@ -26,22 +26,13 @@ source $GRENADE_DIR/grenaderc
 set -o xtrace
 
 
-# Prep DevStack
-# =============
+# Install 'Work' Build of OpenStack
+# =================================
 
-# We'll need both releases of DevStack eventually so grab them both now.
-# Do the trunk release first so the end state is points to the work release.
-
-$GRENADE_DIR/prep-trunk
 $GRENADE_DIR/prep-work
-
-
-# Install 'Start' Build of OpenStack
-# ==================================
 
 cd $WORK_DEVSTACK_DIR
 ./stack.sh
-
 
 # Operation
 # ---------
@@ -52,14 +43,37 @@ echo $WORK_DEVSTACK_DIR/exercise.sh
 # Create a project, users and instances
 $GRENADE_DIR/setup-javelin
 
-# Cleanup
-# -------
-
 # Shut down running code
-echo $WORK_DEVSTACK_DIR/unstack.sh
+$WORK_DEVSTACK_DIR/unstack.sh
 
-# Don't do this for now
-#$GRENADE_DIR/wrap-work
+
+# Upgrades
+# ========
+
+source $TRUNK_DEVSTACK_DIR/stackrc
+
+# Create a new named screen to run processes in
+screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
+sleep 1
+# Set a reasonable statusbar
+SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
+screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
+
+# Upgrade OS packages and known Python updates
+$GRENADE_DIR/upgrade-packages
+
+# Upgrade DevStack
+#$GRENADE_DIR/upgrade-devstack
+$GRENADE_DIR/prep-trunk
+
+# Upgrade Keystone
+$GRENADE_DIR/upgrade-keystone
+
+# Upgrade Glance
+$GRENADE_DIR/upgrade-glance
+
+# Upgrade Volumes to Cinder
+#$GRENADE_DIR/upgrade-volume
 
 
 # Fin

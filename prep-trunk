@@ -34,10 +34,6 @@ git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
 # Set up localrc
 cp -p $GRENADE_DIR/devstack.localrc.trunk $TRUNK_DEVSTACK_DIR/localrc
 
-# Set up a symlink to the 'trunk' DevStack installation
-rm -f $GRENADE_DIR/devstack
-ln -s $TRUNK_DEVSTACK_DIR $GRENADE_DIR/devstack
-
 # clean up apache config
 # essex devstack uses 000-default
 # folsom devstack uses horizon -> ../sites-available/horizon

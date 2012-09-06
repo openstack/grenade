@@ -23,6 +23,9 @@ set -o xtrace
 # Upgrade Keystone
 # ================
 
+# Kill a running Keystone
+screen -S stack -p key -X kill
+
 # DevStack defaults to the template backend, we're not going to change that here.
 # Yet.
 
@@ -40,62 +43,61 @@ MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 # Duplicate some setup bits from trunk DevStack
-(cd $TRUNK_DEVSTACK_DIR; \
- source ./stackrc; \
- SERVICE_HOST=${SERVICE_HOST:-localhost}
- S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+cd $TRUNK_DEVSTACK_DIR
+source $TRUNK_DEVSTACK_DIR/stackrc
+SERVICE_HOST=${SERVICE_HOST:-localhost}
+S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
- # install_keystone()
- RECLONE=yes
- git_clone $KEYSTONECLIENT_REPO $KEYSTONECLIENT_DIR $KEYSTONECLIENT_BRANCH; \
- git_clone $KEYSTONE_REPO $KEYSTONE_DIR $KEYSTONE_BRANCH; \
+# install_keystone()
+RECLONE=yes
+git_clone $KEYSTONECLIENT_REPO $KEYSTONECLIENT_DIR $KEYSTONECLIENT_BRANCH
+git_clone $KEYSTONE_REPO $KEYSTONE_DIR $KEYSTONE_BRANCH
 
- # configure_keystone()
- setup_develop $KEYSTONECLIENT_DIR; \
- setup_develop $KEYSTONE_DIR; \
+# configure_keystone()
+setup_develop $KEYSTONECLIENT_DIR
+setup_develop $KEYSTONE_DIR
 
- # Clean up left-overs
- rm -f $KEYSTONE_DIR/etc/keystone.conf
+# Clean up left-overs
+rm -f $KEYSTONE_DIR/etc/keystone.conf
 
- # Save current conf file for some reason...
- [[ -r $KEYSTONE_CONF.$START_RELEASE ]] || mv $KEYSTONE_CONF $KEYSTONE_CONF.$START_RELEASE
- cp -p $KEYSTONE_DIR/etc/keystone.conf.sample $KEYSTONE_CONF
- [[ -r $KEYSTONE_CATALOG.$START_RELEASE ]] || mv $KEYSTONE_CATALOG $KEYSTONE_CATALOG.$START_RELEASE
- cp -p $TRUNK_DEVSTACK_DIR/files/default_catalog.templates $KEYSTONE_CATALOG
+# Save current conf file for some reason...
+[[ -r $KEYSTONE_CONF.$START_RELEASE ]] || mv $KEYSTONE_CONF $KEYSTONE_CONF.$START_RELEASE
+cp -p $KEYSTONE_DIR/etc/keystone.conf.sample $KEYSTONE_CONF
+[[ -r $KEYSTONE_CATALOG.$START_RELEASE ]] || mv $KEYSTONE_CATALOG $KEYSTONE_CATALOG.$START_RELEASE
+cp -p $TRUNK_DEVSTACK_DIR/files/default_catalog.templates $KEYSTONE_CATALOG
 
- sudo sed -e "
-     s,%SERVICE_HOST%,$SERVICE_HOST,g;
-     s,%S3_SERVICE_PORT%,$S3_SERVICE_PORT,g;
- " -i $KEYSTONE_CATALOG
+sudo sed -e "
+    s,%SERVICE_HOST%,$SERVICE_HOST,g;
+    s,%S3_SERVICE_PORT%,$S3_SERVICE_PORT,g;
+" -i $KEYSTONE_CATALOG
 
- # Rewrite stock ``keystone.conf``
- iniuncomment $KEYSTONE_CONF DEFAULT admin_token
- iniset $KEYSTONE_CONF DEFAULT admin_token "$SERVICE_TOKEN"
- iniset $KEYSTONE_CONF sql connection "$BASE_SQL_CONN/keystone?charset=utf8"
- #iniset $KEYSTONE_CONF ec2 driver "keystone.contrib.ec2.backends.sql.Ec2"
+# Rewrite stock ``keystone.conf``
+iniuncomment $KEYSTONE_CONF DEFAULT admin_token
+iniset $KEYSTONE_CONF DEFAULT admin_token "$SERVICE_TOKEN"
+iniset $KEYSTONE_CONF sql connection "$BASE_SQL_CONN/keystone?charset=utf8"
+#iniset $KEYSTONE_CONF ec2 driver "keystone.contrib.ec2.backends.sql.Ec2"
 
- # Migrate settings from old file
- iniuncomment $KEYSTONE_CONF DEFAULT use_syslog
- iniset $KEYSTONE_CONF DEFAULT use_syslog $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT use_syslog)
- iniuncomment $KEYSTONE_CONF DEFAULT verbose
- iniset $KEYSTONE_CONF DEFAULT verbose $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT verbose)
- iniuncomment $KEYSTONE_CONF DEFAULT debug
- iniset $KEYSTONE_CONF DEFAULT debug $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT debug)
- iniset $KEYSTONE_CONF catalog driver $(iniget $KEYSTONE_CONF.$START_RELEASE catalog driver)
- iniset $KEYSTONE_CONF catalog template_file $(iniget $KEYSTONE_CONF.$START_RELEASE catalog template_file)
- iniuncomment $KEYSTONE_CONF token driver
- iniset $KEYSTONE_CONF token driver $(iniget $KEYSTONE_CONF.$START_RELEASE token driver)
- iniset $KEYSTONE_CONF ec2 driver $(iniget $KEYSTONE_CONF.$START_RELEASE ec2 driver)
+# Migrate settings from old file
+iniuncomment $KEYSTONE_CONF DEFAULT use_syslog
+iniset $KEYSTONE_CONF DEFAULT use_syslog $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT use_syslog)
+iniuncomment $KEYSTONE_CONF DEFAULT verbose
+iniset $KEYSTONE_CONF DEFAULT verbose $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT verbose)
+iniuncomment $KEYSTONE_CONF DEFAULT debug
+iniset $KEYSTONE_CONF DEFAULT debug $(iniget $KEYSTONE_CONF.$START_RELEASE DEFAULT debug)
+iniset $KEYSTONE_CONF catalog driver $(iniget $KEYSTONE_CONF.$START_RELEASE catalog driver)
+iniset $KEYSTONE_CONF catalog template_file $(iniget $KEYSTONE_CONF.$START_RELEASE catalog template_file)
+iniuncomment $KEYSTONE_CONF token driver
+iniset $KEYSTONE_CONF token driver $(iniget $KEYSTONE_CONF.$START_RELEASE token driver)
+iniset $KEYSTONE_CONF ec2 driver $(iniget $KEYSTONE_CONF.$START_RELEASE ec2 driver)
 
- # Set up logging
- LOGGING_ROOT="devel"
- if [ "$SYSLOG" != "False" ]; then
-     LOGGING_ROOT="$LOGGING_ROOT,production"
- fi
- cp $KEYSTONE_DIR/etc/logging.conf.sample $KEYSTONE_CONF_DIR/logging.conf
- iniset $KEYSTONE_CONF_DIR/logging.conf logger_root level "DEBUG"
- iniset $KEYSTONE_CONF_DIR/logging.conf logger_root handlers "devel,production"
-)
+# Set up logging
+LOGGING_ROOT="devel"
+if [ "$SYSLOG" != "False" ]; then
+    LOGGING_ROOT="$LOGGING_ROOT,production"
+fi
+cp $KEYSTONE_DIR/etc/logging.conf.sample $KEYSTONE_CONF_DIR/logging.conf
+iniset $KEYSTONE_CONF_DIR/logging.conf logger_root level "DEBUG"
+iniset $KEYSTONE_CONF_DIR/logging.conf logger_root handlers "devel,production"
 
 # Migrate the database
 keystone-manage db_sync
@@ -103,5 +105,5 @@ keystone-manage db_sync
 # Set up certificates
 keystone-manage pki_setup
 
-# Start keystone
-echo keystone-all --config-file $KEYSTONE_CONF $KEYSTONE_LOG_CONFIG -d --debug
+# Start Keystone
+screen_it key "cd $KEYSTONE_DIR && $KEYSTONE_DIR/bin/keystone-all --config-file $KEYSTONE_CONF $KEYSTONE_LOG_CONFIG -d --debug"
