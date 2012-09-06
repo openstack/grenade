@@ -39,20 +39,20 @@ set -o xtrace
 # * default size is now 5GB, we don't change that here
 
 # Put this here since Folsom DevStack defaults it in stack.sh
-DATA_DIR=${DATA_DIR:-${START_DIR}/data}
-START_VOLUME_BACKING_FILE=${START_VOLUME_BACKING_FILE:-$START_DIR/nova-volumes-backing-file}
-START_VOLUME_GROUP=${START_VOLUME_GROUP:-nova-volumes}
-FINAL_VOLUME_BACKING_FILE=${FINAL_VOLUME_BACKING_FILE:-$DATA_DIR/stack-volumes-backing-file}
-FINAL_VOLUME_GROUP=${FINAL_VOLUME_GROUP:-stack-volumes}
+DATA_DIR=${DATA_DIR:-${DEST}/data}
+ESSEX_VOLUME_BACKING_FILE=${ESSEX_VOLUME_BACKING_FILE:-$DEST/nova-volumes-backing-file}
+ESSEX_VOLUME_GROUP=${ESSEX_VOLUME_GROUP:-nova-volumes}
+FOLSOM_VOLUME_BACKING_FILE=${FOLSOM_VOLUME_BACKING_FILE:-$DATA_DIR/stack-volumes-backing-file}
+FOLSOM_VOLUME_GROUP=${FOLSOM_VOLUME_GROUP:-stack-volumes}
 
-if [[ -r $START_VOLUME_BACKING_FILE ]]; then
-    echo "Start file exists, save it"
+if [[ -r $ESSEX_VOLUME_BACKING_FILE ]]; then
+    echo "Essex file exists, save it"
     # Release it from LVM
-    sudo vgchange -an $START_VOLUME_GROUP
-    LOOP_DEV=$(sudo pvs -o pv_name,vg_name | awk "/$START_VOLUME_GROUP/ { print \$1 }")
+    sudo vgchange -an $ESSEX_VOLUME_GROUP
+    LOOP_DEV=$(sudo pvs -o pv_name,vg_name | awk "/$ESSEX_VOLUME_GROUP/ { print \$1 }")
     sudo losetup -d $LOOP_DEV || true
     mkdir -p $DATA_DIR
-    mv $START_VOLUME_BACKING_FILE $FINAL_VOLUME_BACKING_FILE
+    mv $ESSEX_VOLUME_BACKING_FILE $FOLSOM_VOLUME_BACKING_FILE
     # Let DevStack startup handle it from here?
 fi
 
@@ -64,14 +64,11 @@ fi
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
-(cd $DEVSTACK_FINAL_DIR; \
- DEST=$START_DIR; \
+(cd $TRUNK_DEVSTACK_DIR; \
  source ./stackrc; \
- DEST=$START_DIR; \
  source lib/cinder; \
- DEST=$START_DIR; \
  install_cinder
  configure_cinder; \
 

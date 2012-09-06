@@ -20,7 +20,7 @@ source $GRENADE_DIR/grenaderc
 # For debugging
 set -o xtrace
 
-cd $DEVSTACK_FINAL_DIR
+cd $TRUNK_DEVSTACK_DIR
 source ./stackrc
 
 

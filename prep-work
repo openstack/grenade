@@ -26,17 +26,17 @@ set -o xtrace
 # ==================
 
 # perform cleanup to ensure a clean starting environment
-mkdir -p $START_DIR
+rm -rf $WORK_DEVSTACK_DIR
 
 # check out devstack
-git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
+git_clone $WORK_DEVSTACK_REPO $WORK_DEVSTACK_DIR $WORK_DEVSTACK_BRANCH
 
 # Set up localrc
-cp -p $GRENADE_DIR/devstack.localrc.work $DEVSTACK_START_DIR/localrc
+cp -p $GRENADE_DIR/devstack.localrc.work $WORK_DEVSTACK_DIR/localrc
 
 # Set up a symlink to the 'work' DevStack installation
 rm -f $GRENADE_DIR/devstack
-ln -s $DEVSTACK_START_DIR $GRENADE_DIR/devstack
+ln -s $WORK_DEVSTACK_DIR $GRENADE_DIR/devstack
 
 # clean up apache config
 # essex devstack uses 000-default

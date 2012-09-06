@@ -25,8 +25,8 @@ set -o xtrace
 
 # Based on http://bcwaldon.cc/2012/09/05/glance-essex-to-folsom-upgrade.html
 
-WORK_GLANCECLIENT_DIR=$START_DIR/python-glanceclient
-WORK_GLANCE_DIR=$START_DIR/glance
+GLANCECLIENT_DIR=$DEST/python-glanceclient
+GLANCE_DIR=$DEST/glance
 
 GLANCE_CONF_DIR=${GLANCE_CONF_DIR:-/etc/glance}
 GLANCE_REGISTRY_CONF=${GLANCE_REGISTRY_CONF:-$GLANCE_CONF_DIR/glance-registry.conf}
@@ -35,18 +35,17 @@ GLANCE_REGISTRY_PASTE_INI=${GLANCE_REGISTRY_PASTE_INI:-$GLANCE_CONF_DIR/glance-r
 GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.ini}
 
 # Duplicate some setup bits from trunk DevStack
-(cd $DEVSTACK_FINAL_DIR; \
-  DEST=$START_DIR; \
+(cd $TRUNK_DEVSTACK_DIR; \
   source ./stackrc; \
 
   # install_glance()
   RECLONE=yes; \
-  git_clone $GLANCECLIENT_REPO $WORK_GLANCECLIENT_DIR $GLANCECLIENT_BRANCH; \
-  git_clone $GLANCE_REPO $WORK_GLANCE_DIR $GLANCE_BRANCH; \
+  git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH; \
+  git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH; \
 
   # configure_glance()
-  setup_develop $WORK_GLANCECLIENT_DIR; \
-  setup_develop $WORK_GLANCE_DIR; \
+  setup_develop $GLANCECLIENT_DIR; \
+  setup_develop $GLANCE_DIR; \
 )
 
 # Save original files and prepare to upgrade conf files
@@ -58,11 +57,11 @@ GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.i
 
 [[ -r $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE ]] || \
     cp -p $GLANCE_REGISTRY_PASTE_INI $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE
-cp $WORK_GLANCE_DIR/etc/glance-registry-paste.ini $GLANCE_REGISTRY_PASTE_INI
+cp $GLANCE_DIR/etc/glance-registry-paste.ini $GLANCE_REGISTRY_PASTE_INI
 
 [[ -r $GLANCE_API_PASTE_INI.$START_RELEASE ]] || \
     cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$START_RELEASE
-cp $WORK_GLANCE_DIR/etc/glance-api-paste.ini $GLANCE_API_PASTE_INI
+cp $GLANCE_DIR/etc/glance-api-paste.ini $GLANCE_API_PASTE_INI
 
 # Migrate the auth info from paste to config
 echo -e "\n[keystone_authtoken]" >>$GLANCE_REGISTRY_CONF

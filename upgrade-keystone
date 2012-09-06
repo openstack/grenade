@@ -26,8 +26,8 @@ set -o xtrace
 # DevStack defaults to the template backend, we're not going to change that here.
 # Yet.
 
-START_KEYSTONE_DIR=$START_DIR/keystone
-START_KEYSTONECLIENT_DIR=$START_DIR/python-keystoneclient
+KEYSTONECLIENT_DIR=$DEST/python-keystoneclient
+KEYSTONE_DIR=$DEST/keystone
 
 KEYSTONE_CONF_DIR=${KEYSTONE_CONF_DIR:-/etc/keystone}
 KEYSTONE_CONF=$KEYSTONE_CONF_DIR/keystone.conf
@@ -37,14 +37,11 @@ KEYSTONE_LOG_CONFIG="--log-config $KEYSTONE_CONF_DIR/logging.conf"
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 # Duplicate some setup bits from trunk DevStack
-(cd $DEVSTACK_FINAL_DIR; \
- DEST=$START_DIR; \
+(cd $TRUNK_DEVSTACK_DIR; \
  source ./stackrc; \
- KEYSTONECLIENT_DIR=$START_KEYSTONECLIENT_DIR
- KEYSTONE_DIR=$START_KEYSTONE_DIR
  SERVICE_HOST=${SERVICE_HOST:-localhost}
  S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
@@ -64,7 +61,7 @@ BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:
  [[ -r $KEYSTONE_CONF.$START_RELEASE ]] || mv $KEYSTONE_CONF $KEYSTONE_CONF.$START_RELEASE
  cp -p $KEYSTONE_DIR/etc/keystone.conf.sample $KEYSTONE_CONF
  [[ -r $KEYSTONE_CATALOG.$START_RELEASE ]] || mv $KEYSTONE_CATALOG $KEYSTONE_CATALOG.$START_RELEASE
- cp -p $DEVSTACK_FINAL_DIR/files/default_catalog.templates $KEYSTONE_CATALOG
+ cp -p $TRUNK_DEVSTACK_DIR/files/default_catalog.templates $KEYSTONE_CATALOG
 
  sudo sed -e "
      s,%SERVICE_HOST%,$SERVICE_HOST,g;

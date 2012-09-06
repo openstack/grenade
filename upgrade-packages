@@ -56,7 +56,7 @@ pip_install $PIPS
 # Install package requirements
 if [[ "$os_PACKAGE" = "deb" ]]; then
     apt_get update
-    install_package $(get_packages $DEVSTACK_FINAL_DIR/files/apts)
+    install_package $(get_packages $TRUNK_DEVSTACK_DIR/files/apts)
 else
-    install_package $(get_packages $DEVSTACK_FINAL_DIR/files/rpms)
+    install_package $(get_packages $TRUNK_DEVSTACK_DIR/files/rpms)
 fi

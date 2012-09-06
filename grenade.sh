@@ -39,7 +39,7 @@ $GRENADE_DIR/prep-work
 # Install 'Start' Build of OpenStack
 # ==================================
 
-cd $DEVSTACK_START_DIR
+cd $WORK_DEVSTACK_DIR
 ./stack.sh
 
 
@@ -47,7 +47,7 @@ cd $DEVSTACK_START_DIR
 # ---------
 
 # Validate the install
-echo $DEVSTACK_START_DIR/exercise.sh
+echo $WORK_DEVSTACK_DIR/exercise.sh
 
 # Create a project, users and instances
 $GRENADE_DIR/setup-javelin
@@ -56,7 +56,7 @@ $GRENADE_DIR/setup-javelin
 # -------
 
 # Shut down running code
-echo $DEVSTACK_START_DIR/unstack.sh
+echo $WORK_DEVSTACK_DIR/unstack.sh
 
 # Don't do this for now
 #$GRENADE_DIR/wrap-work

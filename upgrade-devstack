@@ -29,10 +29,10 @@ set -o xtrace
 # Translate Services
 # ------------------
 
-START_ENABLED_SERVICES=$(source $DEVSTACK_START_DIR/stackrc; echo $ENABLED_SERVICES)
+WORK_ENABLED_SERVICES=$(source $WORK_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
 ENABLED_SERVICES=""
 
-for service in ${START_ENABLED_SERVICES//,/ }; do
+for service in ${WORK_ENABLED_SERVICES//,/ }; do
     if [[ $service == n-vol ]]; then
         # Migrate from nova volumes to cinder
         enable_service c-api c-sch c-vol
@@ -45,5 +45,5 @@ for service in ${START_ENABLED_SERVICES//,/ }; do
     fi
 done
 
-echo $START_ENABLED_SERVICES
+echo $WORK_ENABLED_SERVICES
 echo $ENABLED_SERVICES
