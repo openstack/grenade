@@ -8,11 +8,11 @@ from Essex to Folsom it needs to be generalized for future releases.
 
 # Goals
 
-* Install base Folsom (trunk) OpenStack for reference to upgrade
 * Install base Essex OpenStack using stable/essex DevStack
 * Perform basic testing (exercise.sh)
 * Create some non-default configuration to use as a conversion reference
-* Run upgrade script preserving (running?) instances and data
+* Install base Folsom (trunk) DevStack to support the upgrades
+* Run upgrade scripts preserving (running?) instances and data
 
 
 # Terminology
@@ -41,25 +41,23 @@ will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
     ./grenade.sh
 
-``grenade.sh`` installs DevStack for both the **Work** release (Essex) and
-the **Trunk** release (Folsom) in separate directories.  It then runs the
-**Work** release ``stack.sh``.  This is roughly the equivalent to:
+``grenade.sh`` installs DevStack for the **Work** release (Essex) and
+runs its ``stack.sh``.  This is roughly the equivalent to:
 
-    ./prep-trunk
-    ./prep-work
-    cd /opt/stack.essex/devstack
+    grenade/prep-work
+    cd /opt/stack/devstack.essex
     ./stack.sh
+    grenade/setup-javelin
+    ./unstack.sh
+    grenade/prep-trunk
 
-At this point the **Work** release is running.  Configure an
-imaginary **Javelin** tenant to populate the databases with some
-non-default content::
+The **Trunk** release (Folsom) of DevStack is installed in a different
+directory from the **Work** release.
 
-    ./setup-javelin
+While the **Work** release is running an imaginary **Javelin** tenant
+is configured to populate the databases with some non-default content::
 
-This should leave an instance named ``peltast`` running.
-
-Now run ``unstack.sh`` to shut down the **Work** OpenStack and begin the
-upgrade testing.
+    grenade/setup-javelin
 
 Set up the **javelin** credentials with ``javelinrc``.
 
@@ -67,4 +65,8 @@ Set up the **javelin** credentials with ``javelinrc``.
 # Testing Upgrades
 
 The ``upgrade-*`` scripts are the individual components of the
-DevStack/Grenade upgrade process.
+DevStack/Grenade upgrade process.  They typically stop any running
+processes, checkout updated sources, migrate the database, any other
+tasks that need to be done then start the processes in ``screen``.
+
+These scripts are written to be idmpotent.
