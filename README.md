@@ -1,13 +1,27 @@
 Grenade is an OpenStack upgrade test harness to exercise the
-upgrade process from Essex to Folsom.  It uses DevStack to perform
-the initial OpenStack install.
+upgrade process between releases.  It uses DevStack to perform
+the initial OpenStack install and as a reference for the final
+configuration.
+
+While the initial incarnation of Grenade is written to upgrade
+from Essex to Folsom it needs to be generalized for future releases.
 
 # Goals
 
-* Install base Essex OpenStack using stable/essex devstack
-* Perform basic testing (exercise.sh) and leave some instances running with data
-* Run upgrade script preserving running instances and data
-* Install base Folsom (trunk) OpenStack and compare to upgrade
+* Install base Folsom (trunk) OpenStack for reference to upgrade
+* Install base Essex OpenStack using stable/essex DevStack
+* Perform basic testing (exercise.sh)
+* Create some non-default configuration to use as a conversion reference
+* Run upgrade script preserving (running?) instances and data
+
+
+# Terminology
+
+Grenade has two DevStack installs present and distinguished between then
+as 'work' and 'trunk'.
+
+* **work**: The initial install that is will be upgraded.
+* **trunk**: The reference install of trunk OpenStack (maybe just DevStack)
 
 
 # Install Grenade
@@ -18,7 +32,7 @@ system that will run the upgrade testing.
 
     ./setup-grenade testbox
 
-Grenade includes ``devstack.start.localrc`` for DevStack that is used to
+Grenade includes ``devstack.localrc.work`` for DevStack that is used to
 customize its behaviour for use with Grenade.  By default ``setup-grenade``
 will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
@@ -27,16 +41,16 @@ will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
     ./grenade.sh
 
-``grenade.sh`` installs DevStack for both the **Start** release (Essex) and
-the **Final** release (Folsom) in separate directories.  It then runs the
-**Start** release ``stack.sh``.  This si roughly the equivalent to:
+``grenade.sh`` installs DevStack for both the **Work** release (Essex) and
+the **Trunk** release (Folsom) in separate directories.  It then runs the
+**Work** release ``stack.sh``.  This is roughly the equivalent to:
 
-    ./prep-final
-    ./prep-start
+    ./prep-trunk
+    ./prep-work
     cd /opt/stack.essex/devstack
     ./stack.sh
 
-At this point the **Start** release is running.  Configure an
+At this point the **Work** release is running.  Configure an
 imaginary **Javelin** tenant to populate the databases with some
 non-default content::
 
@@ -44,7 +58,7 @@ non-default content::
 
 This should leave an instance named ``peltast`` running.
 
-Now run ``unstack.sh`` to shut down the **Start** OpenStack and begin the
+Now run ``unstack.sh`` to shut down the **Work** OpenStack and begin the
 upgrade testing.
 
 Set up the **javelin** credentials with ``javelinrc``.

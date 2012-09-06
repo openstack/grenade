@@ -34,7 +34,7 @@ GLANCE_API_CONF=${GLANCE_API_CONF:-$GLANCE_CONF_DIR/glance-api.conf}
 GLANCE_REGISTRY_PASTE_INI=${GLANCE_REGISTRY_PASTE_INI:-$GLANCE_CONF_DIR/glance-registry-paste.ini}
 GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.ini}
 
-# Duplicate some setup bits from DevStack final
+# Duplicate some setup bits from trunk DevStack
 (cd $DEVSTACK_FINAL_DIR; \
   DEST=$START_DIR; \
   source ./stackrc; \

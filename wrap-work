@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``wrap-start`` handles the cleanup of the "start" configuration of DevStack.
+# ``wrap-work`` handles the cleanup of the "work" configuration of DevStack.
 
 
 # Keep track of the devstack directory

@@ -31,7 +31,7 @@ set -o xtrace
 # -----------------
 
 # DevStack changed the default storage for volumes between Essex and Folsom
-# * move /opt/stack/nova-volumes-backing-file to 
+# * move /opt/stack/nova-volumes-backing-file to
 #   /opt/stack/data/stack-volumes-backing-file
 # * volume group name changed from nova-volumes to stack-volumes
 # * default size is now 5GB, we don't change that here
@@ -58,7 +58,7 @@ fi
 # Migrate to Cinder
 # -----------------
 
-# install cinder code from ~final/devstack/lib/cinder:install_cinder()
+# install cinder code from ~trunk/devstack/lib/cinder:install_cinder()
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}

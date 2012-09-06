@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# ``prep-final`` handles the preparations for installing and configuring
-# the "final" configuration of DevStack.
+# ``prep-trunk`` handles the preparations for installing and configuring
+# the "trunk" configuration of DevStack.
 
 
 # Keep track of the devstack directory
@@ -32,9 +32,9 @@ mkdir -p $FINAL_DIR
 git_clone $DEVSTACK_FINAL_REPO $DEVSTACK_FINAL_DIR $DEVSTACK_FINAL_BRANCH
 
 # Set up localrc
-cp -p $GRENADE_DIR/devstack.final.localrc $DEVSTACK_FINAL_DIR/localrc
+cp -p $GRENADE_DIR/devstack.localrc.trunk $DEVSTACK_FINAL_DIR/localrc
 
-# Set up a symlink to the 'final' devstack installation
+# Set up a symlink to the 'trunk' DevStack installation
 rm -f $GRENADE_DIR/devstack
 ln -s $DEVSTACK_FINAL_DIR $GRENADE_DIR/devstack
 

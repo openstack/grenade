@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# ``prep-start`` handles the preparations for installing and configuring
-# the "start" configuration of DevStack.
+# ``prep-work`` handles the preparations for installing and configuring
+# the "work" configuration of DevStack.
 
 
 # Keep track of the devstack directory
@@ -32,9 +32,9 @@ mkdir -p $START_DIR
 git_clone $DEVSTACK_START_REPO $DEVSTACK_START_DIR $DEVSTACK_START_BRANCH
 
 # Set up localrc
-cp -p $GRENADE_DIR/devstack.start.localrc $DEVSTACK_START_DIR/localrc
+cp -p $GRENADE_DIR/devstack.localrc.work $DEVSTACK_START_DIR/localrc
 
-# Set up a symlink to the 'start' devstack installation
+# Set up a symlink to the 'work' DevStack installation
 rm -f $GRENADE_DIR/devstack
 ln -s $DEVSTACK_START_DIR $GRENADE_DIR/devstack
 
