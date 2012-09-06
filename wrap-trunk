@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``wrap-final`` handles the cleanup of the "final" configuration of DevStack.
+# ``wrap-trunk`` handles the cleanup of the "trunk" configuration of DevStack.
 
 
 # Keep track of the devstack directory

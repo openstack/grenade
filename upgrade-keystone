@@ -81,7 +81,7 @@ MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $DEVSTACK_START_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
-# Duplicate some setup bits from DevStack final
+# Duplicate some setup bits from trunk DevStack
 (cd $DEVSTACK_FINAL_DIR; \
  DEST=$START_DIR; \
  source ./stackrc; \

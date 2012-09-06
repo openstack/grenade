@@ -30,10 +30,10 @@ set -o xtrace
 # =============
 
 # We'll need both releases of DevStack eventually so grab them both now.
-# Do final first so the 'current' state is pointing to the starting release.
+# Do the trunk release first so the end state is points to the work release.
 
-$GRENADE_DIR/prep-final
-$GRENADE_DIR/prep-start
+$GRENADE_DIR/prep-trunk
+$GRENADE_DIR/prep-work
 
 
 # Install 'Start' Build of OpenStack
@@ -59,7 +59,7 @@ $GRENADE_DIR/setup-javelin
 echo $DEVSTACK_START_DIR/unstack.sh
 
 # Don't do this for now
-#$GRENADE_DIR/wrap-start
+#$GRENADE_DIR/wrap-work
 
 
 # Fin
