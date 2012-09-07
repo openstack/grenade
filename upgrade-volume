@@ -60,23 +60,26 @@ fi
 # Migrate to Cinder
 # -----------------
 
-# install cinder code from ~trunk/devstack/lib/cinder:install_cinder()
+# Kill running Nova Volume and Cinder processes
+for serv in c-sch c-api c-vol n-vol; do
+    screen -S stack -p $serv -X kill
+done
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
-(cd $TRUNK_DEVSTACK_DIR; \
- source ./stackrc; \
- source lib/cinder; \
- install_cinder
- configure_cinder; \
+cd $TRUNK_DEVSTACK_DIR
+source $TRUNK_DEVSTACK_DIR/stackrc
+
+source $TRUNK_DEVSTACK_DIRlib/cinder
+install_cinder
+configure_cinder
 
 # There's a patch applied to cinder-manage without the supporting bits
 # in cinder yet (https://review.openstack.org/#/c/11510/)
 # This undoes that
-echo git revert -n ca25ea47782be90f65e9e5311de295499de19f2b; \
-)
+#echo git revert -n ca25ea47782be90f65e9e5311de295499de19f2b; \
 
 # Migrate the volume tables from nova to cinder
 # still broken atm...
