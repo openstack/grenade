@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+
+# ``upgrade-nova``
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# Upgrade Nova
+# ============
+
+# Kill running Nova processes
+for serv in n-api n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
+    screen -S stack -p $serv -X kill
+done
+
+NOVACLIENT_DIR=$DEST/python-novaclient
+NOVA_DIR=$DEST/nova
+# Support entry points installation of console scripts
+if [ -d $NOVA_DIR/bin ] ; then
+    NOVA_BIN_DIR=$NOVA_DIR/bin
+else
+    NOVA_BIN_DIR=/usr/local/bin
+fi
+
+if [[ "$os_PACKAGE" = "deb" ]]; then
+    NOVA_ROOTWRAP=/usr/local/bin/nova-rootwrap
+else
+    NOVA_ROOTWRAP=/usr/bin/nova-rootwrap
+fi
+
+NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
+NOVA_CONF=${NOVA_CONF:-$NOVA_CONF_DIR/nova.conf}
+NOVA_API_PASTE_INI=${NOVA_API_PASTE_INI:-$NOVA_CONF_DIR/api-paste.ini}
+
+SYSLOG=`trueorfalse False $SYSLOG`
+
+# Duplicate some setup bits from trunk DevStack
+cd $TRUNK_DEVSTACK_DIR
+source $TRUNK_DEVSTACK_DIR/stackrc
+
+# install_nova()
+RECLONE=yes
+git_clone $NOVACLIENT_REPO $NOVACLIENT_DIR $NOVACLIENT_BRANCH
+git_clone $NOVA_REPO $NOVA_DIR $NOVA_BRANCH
+
+# configure_nova()
+setup_develop $NOVACLIENT_DIR
+setup_develop $NOVA_DIR
+
+# ``nova.conf``
+# Normally created from scratch on each run if ``stack.sh``
+# Until we can call that without duplicating the code just convert the old one
+
+[[ -r $NOVA_CONF.$START_RELEASE ]] || \
+    cp -p $NOVA_CONF $NOVA_CONF.$START_RELEASE
+cp -p $NOVA_CONF.$START_RELEASE $NOVA_CONF
+
+# Move to Cinder
+#+volume_api_class=nova.volume.cinder.API
+iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
+#-volume_group=nova-volumes
+inicomment $NOVA_CONF DEFAULT volume_group
+#-volume_name_template=volume-%08x
+inicomment $NOVA_CONF DEFAULT volume_name_template
+#-iscsi_helper=tgtadm
+inicomment $NOVA_CONF DEFAULT iscsi_helper
+
+#+compute_driver=libvirt.LibvirtDriver
+# if not Xen and not OpenVZ - unsupported at this time
+iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
+
+#+libvirt_cpu_mode=none
+iniset $NOVA_CONF DEFAULT libvirt_cpu_mode none
+
+#-connection_type=libvirt
+# if not OpenVZ - not supported...leave in even if it is the default
+#inicomment $NOVA_CONF DEFAULT connection_type
+
+if [ "$SYSLOG" != "False" ]; then
+    iniset $NOVA_CONF DEFAULT use_syslog True
+fi
+#+logging_context_format_string=%(asctime)s %(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s] %(instance)s%(message)s
+if [ "$LOG_COLOR" == "True" ] && [ "$SYSLOG" == "False" ]; then
+    # Add color to logging output
+    iniset $NOVA_CONF DEFAULT  logging_context_format_string "%(asctime)s %(color)s%(levelname)s %(name)s [[01;36m%(request_id)s [00;36m%(user_name)s %(project_name)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m"
+    iniset $NOVA_CONF DEFAULT  logging_default_format_string "%(asctime)s %(color)s%(levelname)s %(name)s [[00;36m-%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m"
+    iniset $NOVA_CONF DEFAULT  logging_debug_format_suffix "[00;33mfrom (pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d[00m"
+    iniset $NOVA_CONF DEFAULT  logging_exception_prefix "%(color)s%(asctime)s TRACE %(name)s [01;35m%(instance)s[00m"
+else
+    # Show user_name and project_name instead of user_id and project_id
+    iniset $NOVA_CONF DEFAULT  logging_context_format_string "%(asctime)s %(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s] %(instance)s%(message)s"
+fi
+
+#+enabled_apis=ec2,osapi_compute,metadata
+iniset $NOVA_CONF DEFAULT enabled_apis $NOVA_ENABLED_APIS
+
+# ``api-paste.ini``
+# Get template from source and migrate auth settings
+
+[[ -r $NOVA_API_PASTE_INI.$START_RELEASE ]] || \
+    cp -p $NOVA_API_PASTE_INI $NOVA_API_PASTE_INI.$START_RELEASE
+cp $NOVA_DIR/etc/nova/api-paste.ini $NOVA_API_PASTE_INI
+
+for key in auth_host auth_port auth_protocol admin_tenant_name admin_user admin_password; do
+    iniset $NOVA_API_PASTE_INI filter:authtoken $key $(iniget $NOVA_API_PASTE_INI.$START_RELEASE filter:authtoken $key)
+done
+
+# ``policy.json``
+# New file
+cp -p $NOVA_DIR/etc/nova/policy.json $NOVA_CONF_DIR
+
+# rootwrap
+
+# If Nova ships the new rootwrap filters files, deploy them
+# (owned by root) and add a parameter to ``$NOVA_ROOTWRAP``
+ROOTWRAP_SUDOER_CMD="$NOVA_ROOTWRAP"
+if [[ -d $NOVA_DIR/etc/nova/rootwrap.d ]]; then
+    # Wipe any existing rootwrap.d files first
+    if [[ -d $NOVA_CONF_DIR/rootwrap.d ]]; then
+        sudo rm -rf $NOVA_CONF_DIR/rootwrap.d
+    fi
+    # Deploy filters to /etc/nova/rootwrap.d
+    sudo mkdir -m 755 $NOVA_CONF_DIR/rootwrap.d
+    sudo cp -p $NOVA_DIR/etc/nova/rootwrap.d/*.filters $NOVA_CONF_DIR/rootwrap.d
+    sudo chown -R root:root $NOVA_CONF_DIR/rootwrap.d
+    sudo chmod 644 $NOVA_CONF_DIR/rootwrap.d/*
+    # Set up rootwrap.conf, pointing to /etc/nova/rootwrap.d
+    sudo cp -p $NOVA_DIR/etc/nova/rootwrap.conf $NOVA_CONF_DIR/
+    sudo sed -e "s:^filters_path=.*$:filters_path=$NOVA_CONF_DIR/rootwrap.d:" -i $NOVA_CONF_DIR/rootwrap.conf
+    sudo chown root:root $NOVA_CONF_DIR/rootwrap.conf
+    sudo chmod 0644 $NOVA_CONF_DIR/rootwrap.conf
+    # Specify rootwrap.conf as first parameter to nova-rootwrap
+    NOVA_ROOTWRAP="$NOVA_ROOTWRAP $NOVA_CONF_DIR/rootwrap.conf"
+    ROOTWRAP_SUDOER_CMD="$NOVA_ROOTWRAP *"
+fi
+
+# Set up the rootwrap sudoers for nova
+TEMPFILE=`mktemp`
+echo "$USER ALL=(root) NOPASSWD: $ROOTWRAP_SUDOER_CMD" >$TEMPFILE
+chmod 0440 $TEMPFILE
+sudo chown root:root $TEMPFILE
+sudo mv $TEMPFILE /etc/sudoers.d/nova-rootwrap
+
+#-root_helper=sudo /usr/local/bin/nova-rootwrap
+#+root_helper=sudo /usr/local/bin/nova-rootwrap /etc/nova/rootwrap.conf
+iniset $NOVA_CONF DEFAULT root_helper "sudo $NOVA_ROOTWRAP"
+
+
+# Temporarily skip startup...
+if [[ -n "$1" ]]; then
+
+# Migrate the database
+nova-manage db sync
+
+# Start Glance
+screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
+screen_it n-cpu "cd $NOVA_DIR && sg libvirtd $NOVA_BIN_DIR/nova-compute"
+screen_it n-crt "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-cert"
+screen_it n-vol "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-volume"
+screen_it n-net "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-network"
+screen_it n-sch "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-scheduler"
+screen_it n-novnc "cd $NOVNC_DIR && ./utils/nova-novncproxy --config-file $NOVA_CONF_DIR/$NOVA_CONF --web ."
+screen_it n-xvnc "cd $NOVA_DIR && ./bin/nova-xvpvncproxy --config-file $NOVA_CONF_DIR/$NOVA_CONF"
+screen_it n-cauth "cd $NOVA_DIR && ./bin/nova-consoleauth"
+is_service_enabled swift3 || screen_it n-obj "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-objectstore"
+fi

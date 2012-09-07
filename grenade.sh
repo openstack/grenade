@@ -72,6 +72,9 @@ $GRENADE_DIR/upgrade-keystone
 # Upgrade Glance
 $GRENADE_DIR/upgrade-glance
 
+# Upgrade Nova
+#$GRENADE_DIR/upgrade-nova
+
 # Upgrade Volumes to Cinder
 #$GRENADE_DIR/upgrade-volume
 
