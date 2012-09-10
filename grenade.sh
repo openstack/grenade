@@ -79,6 +79,7 @@ fi
 # Upgrades
 # ========
 
+$GRENADE_DIR/prep-trunk
 source $TRUNK_DEVSTACK_DIR/stackrc
 
 # Create a new named screen to run processes in
@@ -93,7 +94,6 @@ $GRENADE_DIR/upgrade-packages
 
 # Upgrade DevStack
 #$GRENADE_DIR/upgrade-devstack
-$GRENADE_DIR/prep-trunk
 
 # Upgrade Keystone
 $GRENADE_DIR/upgrade-keystone
