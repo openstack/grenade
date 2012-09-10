@@ -28,6 +28,14 @@ set -o xtrace
 # As cinder is new, an upgrade for  nova-volume to nova-volume is performed
 # first, then the migration to cinder is performed.
 
+cd $TRUNK_DEVSTACK_DIR
+source $TRUNK_DEVSTACK_DIR/stackrc
+
+source $TRUNK_DEVSTACK_DIR/lib/cinder
+
+# Kill any running daemons
+stop_cinder
+
 
 # DevStack-specific
 # -----------------
@@ -69,12 +77,9 @@ MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
-cd $TRUNK_DEVSTACK_DIR
-source $TRUNK_DEVSTACK_DIR/stackrc
-
-source $TRUNK_DEVSTACK_DIRlib/cinder
 install_cinder
 configure_cinder
+init_cinder
 
 # There's a patch applied to cinder-manage without the supporting bits
 # in cinder yet (https://review.openstack.org/#/c/11510/)
@@ -87,3 +92,5 @@ echo cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN
 
 # Revert the revert
 #git reset --hard
+
+start_cinder
