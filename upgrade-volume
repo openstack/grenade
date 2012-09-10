@@ -31,10 +31,17 @@ set -o xtrace
 cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
 
+SERVICE_HOST=${SERVICE_HOST:-localhost}
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+source $TRUNK_DEVSTACK_DIR/lib/keystone
 source $TRUNK_DEVSTACK_DIR/lib/cinder
 
 # Kill any running daemons
-stop_cinder
+#stop_cinder
+# Kill running Nova Volume and Cinder processes
+for serv in c-sch c-api c-vol n-vol; do
+    screen -S $SCREEN_NAME -p $serv -X kill
+done
 
 
 # DevStack-specific
@@ -57,6 +64,7 @@ if [[ -r $ESSEX_VOLUME_BACKING_FILE ]]; then
     echo "Essex file exists, save it"
     # Release it from LVM
     sudo vgchange -an $ESSEX_VOLUME_GROUP
+    sudo vgrename $ESSEX_VOLUME_GROUP $FOLSOM_VOLUME_GROUP
     LOOP_DEV=$(sudo pvs -o pv_name,vg_name | awk "/$ESSEX_VOLUME_GROUP/ { print \$1 }")
     sudo losetup -d $LOOP_DEV || true
     mkdir -p $DATA_DIR
@@ -67,11 +75,6 @@ fi
 
 # Migrate to Cinder
 # -----------------
-
-# Kill running Nova Volume and Cinder processes
-for serv in c-sch c-api c-vol n-vol; do
-    screen -S $SCREEN_NAME -p $serv -X kill
-done
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
