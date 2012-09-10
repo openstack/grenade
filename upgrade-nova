@@ -46,6 +46,7 @@ fi
 NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
 NOVA_CONF=${NOVA_CONF:-$NOVA_CONF_DIR/nova.conf}
 NOVA_API_PASTE_INI=${NOVA_API_PASTE_INI:-$NOVA_CONF_DIR/api-paste.ini}
+NOVNC_DIR=$DEST/noVNC
 
 QUANTUMCLIENT_DIR=$DEST/python-quantumclient
 QUANTUM_DIR=$DEST/quantum
@@ -182,6 +183,13 @@ iniset $NOVA_CONF DEFAULT root_helper "sudo $NOVA_ROOTWRAP"
 # Migrate the database
 nova-manage db sync
 
+# Update noVNC to new repo
+if is_service_enabled n-novnc; then
+    mv $NOVNC_DIR $NOVNC_DIR.$START_RELEASE
+    # a websockets/html5 or flash powered VNC console for vm instances
+    git_clone $NOVNC_REPO $NOVNC_DIR $NOVNC_BRANCH
+fi
+
 # Start Glance
 screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
 screen_it n-cpu "cd $NOVA_DIR && sg libvirtd $NOVA_BIN_DIR/nova-compute"
@@ -190,6 +198,6 @@ screen_it n-vol "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-volume"
 screen_it n-net "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-network"
 screen_it n-sch "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-scheduler"
 screen_it n-novnc "cd $NOVNC_DIR && ./utils/nova-novncproxy --config-file $NOVA_CONF --web ."
-screen_it n-xvnc "cd $NOVA_DIR && ./bin/nova-xvpvncproxy --config-file $NOVA_CONF"
-screen_it n-cauth "cd $NOVA_DIR && ./bin/nova-consoleauth"
+screen_it n-xvnc "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-xvpvncproxy --config-file $NOVA_CONF"
+screen_it n-cauth "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-consoleauth"
 is_service_enabled swift3 || screen_it n-obj "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-objectstore"
