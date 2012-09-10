@@ -47,12 +47,42 @@ $GRENADE_DIR/setup-javelin
 $WORK_DEVSTACK_DIR/unstack.sh
 
 
+# Logging
+# =======
+
+# Set up logging
+# Set ``LOGFILE`` to turn on logging
+# Append '.xxxxxxxx' to the given name to maintain history
+# where 'xxxxxxxx' is a representation of the date the file was created
+if [[ -n "$LOGFILE" ]]; then
+    LOGDAYS=${LOGDAYS:-7}
+    TIMESTAMP_FORMAT=${TIMESTAMP_FORMAT:-"%F-%H%M%S"}
+    CURRENT_LOG_TIME=$(date "+$TIMESTAMP_FORMAT")
+
+    # First clean up old log files.  Use the user-specified ``LOGFILE``
+    # as the template to search for, appending '.*' to match the date
+    # we added on earlier runs.
+    LOGDIR=$(dirname "$LOGFILE")
+    LOGNAME=$(basename "$LOGFILE")
+    mkdir -p $LOGDIR
+    find $LOGDIR -maxdepth 1 -name $LOGNAME.\* -mtime +$LOGDAYS -exec rm {} \;
+
+    LOGFILE=$LOGFILE.${CURRENT_LOG_TIME}
+    # Redirect stdout/stderr to tee to write the log file
+    exec 1> >( tee "${LOGFILE}" ) 2>&1
+    echo "grenade.sh log $LOGFILE"
+    # Specified logfile name always links to the most recent log
+    ln -sf $LOGFILE $LOGDIR/$LOGNAME
+fi
+
+
 # Upgrades
 # ========
 
 source $TRUNK_DEVSTACK_DIR/stackrc
 
 # Create a new named screen to run processes in
+SCREEN_NAME=${SCREEN_NAME:-stack}
 screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
 sleep 1
 # Set a reasonable statusbar
