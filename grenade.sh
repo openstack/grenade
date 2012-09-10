@@ -82,7 +82,6 @@ fi
 source $TRUNK_DEVSTACK_DIR/stackrc
 
 # Create a new named screen to run processes in
-SCREEN_NAME=${SCREEN_NAME:-stack}
 screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
 sleep 1
 # Set a reasonable statusbar

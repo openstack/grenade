@@ -70,7 +70,7 @@ fi
 
 # Kill running Nova Volume and Cinder processes
 for serv in c-sch c-api c-vol n-vol; do
-    screen -S stack -p $serv -X kill
+    screen -S $SCREEN_NAME -p $serv -X kill
 done
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}

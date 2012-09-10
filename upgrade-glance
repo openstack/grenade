@@ -26,8 +26,9 @@ set -o xtrace
 # Based on http://bcwaldon.cc/2012/09/05/glance-essex-to-folsom-upgrade.html
 
 # Kill a running Keystone
-screen -S stack -p g-api -X kill
-screen -S stack -p g-reg -X kill
+for serv in g-api g-reg; do
+    screen -S $SCREEN_NAME -p $serv -X kill
+done
 
 GLANCECLIENT_DIR=$DEST/python-glanceclient
 GLANCE_DIR=$DEST/glance

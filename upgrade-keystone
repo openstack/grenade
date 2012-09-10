@@ -24,7 +24,7 @@ set -o xtrace
 # ================
 
 # Kill a running Keystone
-screen -S stack -p key -X kill
+screen -S $SCREEN_NAME -p key -X kill
 
 # DevStack defaults to the template backend, we're not going to change that here.
 # Yet.
