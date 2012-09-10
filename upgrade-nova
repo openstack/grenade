@@ -47,16 +47,35 @@ NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
 NOVA_CONF=${NOVA_CONF:-$NOVA_CONF_DIR/nova.conf}
 NOVA_API_PASTE_INI=${NOVA_API_PASTE_INI:-$NOVA_CONF_DIR/api-paste.ini}
 
+QUANTUMCLIENT_DIR=$DEST/python-quantumclient
+QUANTUM_DIR=$DEST/quantum
+
 SYSLOG=`trueorfalse False $SYSLOG`
 
 # Duplicate some setup bits from trunk DevStack
 cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
 
-# install_nova()
+# Get functions from current DevStack
+source $TRUNK_DEVSTACK_DIR/lib/cinder
+
 RECLONE=yes
+
+install_cinder
+setup_develop $CINDERCLIENT_DIR
+
+# install_quantumclient()
+sudo chown -R `whoami` $QUANTUMCLIENT_DIR
+git_clone $QUANTUM_CLIENT_REPO $QUANTUMCLIENT_DIR $QUANTUM_CLIENT_BRANCH
+setup_develop $QUANTUMCLIENT_DIR
+
+# install_nova()
+sudo chown -R `whoami` $NOVACLIENT_DIR $NOVA_DIR
 git_clone $NOVACLIENT_REPO $NOVACLIENT_DIR $NOVACLIENT_BRANCH
 git_clone $NOVA_REPO $NOVA_DIR $NOVA_BRANCH
+
+# configure_quantumclient()
+setup_develop $QUANTUMCLIENT_DIR
 
 # configure_nova()
 setup_develop $NOVACLIENT_DIR
@@ -160,10 +179,6 @@ sudo mv $TEMPFILE /etc/sudoers.d/nova-rootwrap
 #+root_helper=sudo /usr/local/bin/nova-rootwrap /etc/nova/rootwrap.conf
 iniset $NOVA_CONF DEFAULT root_helper "sudo $NOVA_ROOTWRAP"
 
-
-# Temporarily skip startup...
-if [[ -n "$1" ]]; then
-
 # Migrate the database
 nova-manage db sync
 
@@ -174,8 +189,7 @@ screen_it n-crt "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-cert"
 screen_it n-vol "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-volume"
 screen_it n-net "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-network"
 screen_it n-sch "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-scheduler"
-screen_it n-novnc "cd $NOVNC_DIR && ./utils/nova-novncproxy --config-file $NOVA_CONF_DIR/$NOVA_CONF --web ."
-screen_it n-xvnc "cd $NOVA_DIR && ./bin/nova-xvpvncproxy --config-file $NOVA_CONF_DIR/$NOVA_CONF"
+screen_it n-novnc "cd $NOVNC_DIR && ./utils/nova-novncproxy --config-file $NOVA_CONF --web ."
+screen_it n-xvnc "cd $NOVA_DIR && ./bin/nova-xvpvncproxy --config-file $NOVA_CONF"
 screen_it n-cauth "cd $NOVA_DIR && ./bin/nova-consoleauth"
 is_service_enabled swift3 || screen_it n-obj "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-objectstore"
-fi
