@@ -31,6 +31,10 @@ rm -rf $TRUNK_DEVSTACK_DIR
 # check out devstack
 git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
 
+if [[ -d $DEST/images ]]; then
+    rsync -a $DEST/images $TRUNK_DEVSTACK_DIR/files
+fi
+
 # Set up localrc
 cp -p $GRENADE_DIR/devstack.localrc.trunk $TRUNK_DEVSTACK_DIR/localrc
 
