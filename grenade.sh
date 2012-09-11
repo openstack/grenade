@@ -98,6 +98,16 @@ if [[ -n "$LOGFILE" ]]; then
 fi
 
 
+# Save databases
+# --------------
+
+mkdir -p $SAVE_DIR
+for db in keystone glance nova; do
+    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$START_RELEASE
+done
+stop $STOP mysqldump 90
+
+
 # Upgrades
 # ========
 
