@@ -46,6 +46,8 @@ function stop() {
 # Install 'Work' Build of OpenStack
 # =================================
 
+source $WORK_DEVSTACK_DIR/stackrc
+
 $GRENADE_DIR/prep-work
 stop $STOP prep-work 01
 
