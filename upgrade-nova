@@ -185,7 +185,7 @@ nova-manage db sync
 
 # Update noVNC to new repo
 if is_service_enabled n-novnc; then
-    mv $NOVNC_DIR $NOVNC_DIR.$START_RELEASE
+    [[ -d $NOVNC_DIR.$START_RELEASE ]] || mv $NOVNC_DIR $NOVNC_DIR.$START_RELEASE
     # a websockets/html5 or flash powered VNC console for vm instances
     git_clone $NOVNC_REPO $NOVNC_DIR $NOVNC_BRANCH
 fi
