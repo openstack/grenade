@@ -7,6 +7,10 @@
 # Grenade assumes it is running on the system that will be hosting the
 # upgrade processes
 
+# ``grenade.sh [-s stop-label]``
+#
+# ``stop-label`` is the name of the step after which the script will stop.
+# This is useful for debugging upgrades.
 
 # Keep track of the devstack directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
@@ -25,26 +29,44 @@ source $GRENADE_DIR/grenaderc
 # For debugging
 set -o xtrace
 
+if [[ -n "$1" && "$1" == "-s" && -n "$2" ]]; then
+    STOP=$2
+fi
+
+function stop() {
+    stop=$1
+    shift
+    if [[ "$@" =~ "$stop" ]]; then
+        echo "STOP called for $1"
+        exit 1
+    fi
+}
+
 
 # Install 'Work' Build of OpenStack
 # =================================
 
 $GRENADE_DIR/prep-work
+stop $STOP prep-work 01
 
 cd $WORK_DEVSTACK_DIR
 ./stack.sh
+stop $STOP stack.sh 10
 
 # Operation
 # ---------
 
 # Validate the install
 echo $WORK_DEVSTACK_DIR/exercise.sh
+stop $STOP exercise.sh 20
 
 # Create a project, users and instances
 $GRENADE_DIR/setup-javelin
+stop $STOP setup-javelin 30
 
 # Shut down running code
 $WORK_DEVSTACK_DIR/unstack.sh
+stop $STOP unstack.sh 40
 
 
 # Logging
@@ -80,6 +102,7 @@ fi
 # ========
 
 $GRENADE_DIR/prep-trunk
+stop $STOP prep-trunk 100
 source $TRUNK_DEVSTACK_DIR/stackrc
 
 # Create a new named screen to run processes in
@@ -91,26 +114,30 @@ screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
 
 # Upgrade OS packages and known Python updates
 $GRENADE_DIR/upgrade-packages
+stop $STOP upgrade-packages 110
 
 # Upgrade DevStack
 #$GRENADE_DIR/upgrade-devstack
+stop $STOP upgrade-devstack 120
 
 # Upgrade Keystone
 $GRENADE_DIR/upgrade-keystone
+stop $STOP upgrade-keystone 130
 
 # Upgrade Glance
 $GRENADE_DIR/upgrade-glance
+stop $STOP upgrade-glance 140
 
 # Upgrade Nova
-#$GRENADE_DIR/upgrade-nova
+$GRENADE_DIR/upgrade-nova
+stop $STOP upgrade-nova 150
 
 # Upgrade Volumes to Cinder
 #$GRENADE_DIR/upgrade-volume
+stop $STOP upgrade-volume 160
 
 
 # Fin
 # ===
 
-echo "Grenade has completed the initial setup of the upgrade test."
-echo "The following upgrade scripts are available:"
-ls $GRENADE_DIR/upgrade-*
+echo "Grenade has completed the pre-programmed upgrade scripts."
