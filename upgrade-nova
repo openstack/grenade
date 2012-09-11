@@ -181,7 +181,7 @@ sudo mv $TEMPFILE /etc/sudoers.d/nova-rootwrap
 iniset $NOVA_CONF DEFAULT root_helper "sudo $NOVA_ROOTWRAP"
 
 # Migrate the database
-nova-manage db sync
+nova-manage db sync || die "DB sync error"
 
 # Update noVNC to new repo
 if is_service_enabled n-novnc; then

@@ -85,7 +85,7 @@ for key in sql_connection sql_idle_timeout sql_max_retries sql_retry_interval db
 done
 
 # Migrate the database
-glance-manage db_sync
+glance-manage db_sync || die "DB sync error"
 
 # Start Glance
 screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=$GLANCE_CONF_DIR/glance-registry.conf"
