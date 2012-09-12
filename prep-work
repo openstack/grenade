@@ -57,7 +57,7 @@ if [[ "$START_RELEASE" == "essex" ]]; then
     # python-glanceclient is new for Folsom; to roll back to Essex it
     # must be removed and stable/essex restored in the glance repo
     source $WORK_DEVSTACK_DIR/stackrc
-    [[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLiENT_DIR
+    [[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLIENT_DIR
     if [[ -d $GLANCE_DIR ]]; then
         cd $GLANCE_DIR
         git checkout $GLANCE_BRANCH
