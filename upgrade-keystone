@@ -101,8 +101,7 @@ iniset $KEYSTONE_CONF_DIR/logging.conf logger_root handlers "devel,production"
 keystone-manage db_sync || die "DB sync error"
 
 # Set up certificates
-keystone-manage pki_setup
-die "OKI setup error"
+keystone-manage pki_setup || die "OKI setup error"
 
 # Start Keystone
 screen_it key "cd $KEYSTONE_DIR && $KEYSTONE_DIR/bin/keystone-all --config-file $KEYSTONE_CONF $KEYSTONE_LOG_CONFIG -d --debug"
