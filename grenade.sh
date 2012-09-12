@@ -103,6 +103,7 @@ fi
 # Save databases
 # --------------
 
+source $WORK_DEVSTACK_DIR/stackrc
 mkdir -p $SAVE_DIR
 for db in keystone glance nova; do
     mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$START_RELEASE
