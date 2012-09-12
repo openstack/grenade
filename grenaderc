@@ -32,6 +32,14 @@ SCREEN_NAME=${SCREEN_NAME:-stack}
 # Logging
 LOGFILE=$DEST/logs/grenade.sh.log
 
+# Project directories
+GLANCECLIENT_DIR=$DEST/python-glanceclient
+GLANCE_DIR=$DEST/glance
+KEYSTONECLIENT_DIR=$DEST/python-keystoneclient
+KEYSTONE_DIR=$DEST/keystone
+NOVACLIENT_DIR=$DEST/python-novaclient
+NOVA_DIR=$DEST/nova
+
 
 # Allow local overrides of env variables
 if [ -f $RC_DIR/localrc ]; then

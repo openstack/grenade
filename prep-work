@@ -52,6 +52,15 @@ if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
     sudo service apache2 reload
 fi
 
-# TODO(dtroyer): Needs to get rid of modern glance command too
-#                all command-line libs?  how do we want to handle them?
+# The glanceclient is new for Folsom; to roll back to Essex it
+# must be removed.
+
+source $WORK_DEVSTACK_DIR/stackrc
+
+[[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLiENT_DIR
+if [[ -d $GLANCE_DIR ]]; then
+    cd $GLANCE_DIR
+    git checkout $GLANCE_BRANCH
+    setup_develop $GLANCE_DIR
+fi
 

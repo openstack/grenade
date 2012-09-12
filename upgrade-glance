@@ -30,9 +30,6 @@ for serv in g-api g-reg; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-GLANCECLIENT_DIR=$DEST/python-glanceclient
-GLANCE_DIR=$DEST/glance
-
 GLANCE_CONF_DIR=${GLANCE_CONF_DIR:-/etc/glance}
 GLANCE_REGISTRY_CONF=${GLANCE_REGISTRY_CONF:-$GLANCE_CONF_DIR/glance-registry.conf}
 GLANCE_API_CONF=${GLANCE_API_CONF:-$GLANCE_CONF_DIR/glance-api.conf}

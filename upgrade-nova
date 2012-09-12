@@ -28,8 +28,6 @@ for serv in n-api n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-NOVACLIENT_DIR=$DEST/python-novaclient
-NOVA_DIR=$DEST/nova
 # Support entry points installation of console scripts
 if [ -d $NOVA_DIR/bin ] ; then
     NOVA_BIN_DIR=$NOVA_DIR/bin
