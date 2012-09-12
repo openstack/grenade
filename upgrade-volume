@@ -84,16 +84,7 @@ install_cinder
 configure_cinder
 init_cinder
 
-# There's a patch applied to cinder-manage without the supporting bits
-# in cinder yet (https://review.openstack.org/#/c/11510/)
-# This undoes that
-#echo git revert -n ca25ea47782be90f65e9e5311de295499de19f2b; \
-
 # Migrate the volume tables from nova to cinder
-# still broken atm...
-echo cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN
-
-# Revert the revert
-#git reset --hard
+cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN || die "DB migration error"
 
 start_cinder

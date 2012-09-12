@@ -88,15 +88,17 @@ setup_develop $NOVA_DIR
     cp -p $NOVA_CONF $NOVA_CONF.$START_RELEASE
 cp -p $NOVA_CONF.$START_RELEASE $NOVA_CONF
 
-# Move to Cinder
-#+volume_api_class=nova.volume.cinder.API
-iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
-#-volume_group=nova-volumes
-inicomment $NOVA_CONF DEFAULT volume_group
-#-volume_name_template=volume-%08x
-inicomment $NOVA_CONF DEFAULT volume_name_template
-#-iscsi_helper=tgtadm
-inicomment $NOVA_CONF DEFAULT iscsi_helper
+if is_service_enabled cinder; then
+    # Move to Cinder
+    #+volume_api_class=nova.volume.cinder.API
+    iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
+    #-volume_group=nova-volumes
+    inicomment $NOVA_CONF DEFAULT volume_group
+    #-volume_name_template=volume-%08x
+    inicomment $NOVA_CONF DEFAULT volume_name_template
+    #-iscsi_helper=tgtadm
+    inicomment $NOVA_CONF DEFAULT iscsi_helper
+fi
 
 #+compute_driver=libvirt.LibvirtDriver
 # if not Xen and not OpenVZ - unsupported at this time

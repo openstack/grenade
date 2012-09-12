@@ -144,8 +144,10 @@ stop $STOP upgrade-glance 140
 $GRENADE_DIR/upgrade-nova
 stop $STOP upgrade-nova 150
 
-# Upgrade Volumes to Cinder
-#$GRENADE_DIR/upgrade-volume
+# Upgrade Volumes to Cinder if volumes is enabled
+if is_service_enabled cinder; then
+    $GRENADE_DIR/upgrade-volume
+fi
 stop $STOP upgrade-volume 160
 
 
