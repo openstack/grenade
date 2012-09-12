@@ -1,7 +1,9 @@
-Grenade is an OpenStack upgrade test harness to exercise the
-upgrade process between releases.  It uses DevStack to perform
-the initial OpenStack install and as a reference for the final
-configuration.
+Grenade
+=======
+
+Grenade is an OpenStack test harness to exercise the upgrade process
+between releases.  It uses DevStack to perform an initial OpenStack
+install and as a reference for the final configuration.
 
 While the initial incarnation of Grenade is written to upgrade
 from Essex to Folsom it needs to be generalized for future releases.
@@ -20,8 +22,8 @@ from Essex to Folsom it needs to be generalized for future releases.
 Grenade has two DevStack installs present and distinguished between then
 as 'work' and 'trunk'.
 
-* **work**: The initial install that is will be upgraded.
-* **trunk**: The reference install of trunk OpenStack (maybe just DevStack)
+* **Work**: The initial install that is will be upgraded.
+* **Trunk**: The reference install of trunk OpenStack (maybe just DevStack)
 
 
 # Install Grenade
@@ -49,7 +51,14 @@ runs its ``stack.sh``.  This is roughly the equivalent to:
     ./stack.sh
     grenade/setup-javelin
     ./unstack.sh
+    # dump databases to $DEST/save
     grenade/prep-trunk
+    grenade/upgrade-packages
+    grenade/upgrade-devstack
+    grenade/upgrade-keystone
+    grenade/upgrade-glance
+    grenade/upgrade-nova
+    grenade/upgrade-volume
 
 The **Trunk** release (Folsom) of DevStack is installed in a different
 directory from the **Work** release.
