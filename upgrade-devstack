@@ -45,5 +45,18 @@ for service in ${WORK_ENABLED_SERVICES//,/ }; do
     fi
 done
 
-echo $WORK_ENABLED_SERVICES
-echo $ENABLED_SERVICES
+# Write new config to trunk DevStack
+echo -e "\nENABLED_SERVICES=$ENABLED_SERVICES" >>$TRUNK_DEVSTACK_DIR/localrc
+
+# Handle Defaults Changes
+# -----------------------
+
+# Keystone Backend
+WORK_KEYSTONE_CATALOG_BACKEND=$(source $WORK_DEVSTACK_DIR/stackrc; echo $KEYSTONE_CATALOG_BACKEND)
+TRUNK_KEYSTONE_CATALOG_BACKEND=$(source $TRUNK_DEVSTACK_DIR/stackrc; echo $KEYSTONE_CATALOG_BACKEND)
+if [[ "$WORK_KEYSTONE_CATALOG_BACKEND" != "$TRUNK_KEYSTONE_CATALOG_BACKEND" || \
+        ( -z $WORK_KEYSTONE_CATALOG_BACKEND && -z $TRUNK_KEYSTONE_CATALOG_BACKEND ]]; then
+    TRUNK_KEYSTONE_CATALOG_BACKEND=${TRUNK_KEYSTONE_CATALOG_BACKEND:-template}
+    # They're different, migrate work to trunk
+    echo "KEYSTONE_CATALOG_BACKEND=$WORK_KEYSTONE_CATALOG_BACKEND" >>$TRUNK_DEVSTACK_DIR/localrc
+fi
