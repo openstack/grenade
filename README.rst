@@ -38,6 +38,11 @@ Grenade includes ``devstack.localrc.work`` for DevStack that is used to
 customize its behaviour for use with Grenade.  By default ``setup-grenade``
 will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
 
+Grenade also uses ``devstack.localrc`` if it exists; it is appended to
+``localrc`` in each of the DevStack environments as the final overriding
+configuration.  Grenade does not supply this file and will not overwrite
+it if it exists.
+
 
 # Prepare For An Upgrade
 

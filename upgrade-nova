@@ -194,7 +194,7 @@ if is_service_enabled n-novnc; then
     git_clone $NOVNC_REPO $NOVNC_DIR $NOVNC_BRANCH
 fi
 
-# Start Glance
+# Start Nova
 screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
 screen_it n-cpu "cd $NOVA_DIR && sg libvirtd $NOVA_BIN_DIR/nova-compute"
 screen_it n-crt "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-cert"
