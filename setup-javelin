@@ -73,18 +73,18 @@ CIRROS_IMAGE=cirros-${BASE_NAME}
 CIRROS_DIR=$WORK_DEVSTACK_DIR/files/images/$CIRROS_IMAGE-uec
 KERNEL=$CIRROS_DIR/$CIRROS_IMAGE-vmlinuz
 RAMDISK=$CIRROS_DIR/$CIRROS_IMAGE-initrd
-IMAGE=$CIRROS_DIR/$CIRROS_IMAGE-blank.img
+ROOTDISK=$CIRROS_DIR/$CIRROS_IMAGE-blank.img
 JAVELIN_IMAGE=javelin-${BASE_NAME}-uec
 
-IMAGE=$(glance index | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f1)
+IMAGE=$(glance image-list | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f2)
 if [[ -z "$IMAGE" ]]; then
     RVAL=$(glance add --silent-upload name=$JAVELIN_IMAGE-kernel is_public=True container_format=aki disk_format=aki <"$KERNEL")
     KERNEL_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
     RVAL=$(glance add --silent-upload name=$JAVELIN_IMAGE-ramdisk is_public=True container_format=ari disk_format=ari <"$RAMDISK")
     RAMDISK_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
-    glance add name=$JAVELIN_IMAGE.img is_public=True container_format=ami disk_format=ami ${KERNEL_ID:+kernel_id=$KERNEL_ID} ${RAMDISK_ID:+ramdisk_id=$RAMDISK_ID}  < <(zcat --force "${IMAGE}")
+    glance add name=$JAVELIN_IMAGE.img is_public=True container_format=ami disk_format=ami ${KERNEL_ID:+kernel_id=$KERNEL_ID} ${RAMDISK_ID:+ramdisk_id=$RAMDISK_ID}  < "${ROOTDISK}"
 
-    IMAGE=$(glance index | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f1)
+    IMAGE=$(glance image-list | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f2)
     die_if_not_set IMAGE "Failure getting image"
 fi
 
