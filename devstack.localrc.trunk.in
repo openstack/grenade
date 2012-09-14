@@ -22,3 +22,10 @@ SERVICE_TOKEN=cd0d1a03-b701-4fcb-801a-8b4d0bc3d06e
 SKIP_EXERCISES=boot_from_volume
 STACK_LOG=stack.sh.log
 VOLUME_BACKING_FILE_SIZE=10000M
+
+# DevStack moved the state and data dirs for Glance and Nova 14Sep2010
+# Put them back
+CINDER_STATE_PATH=$CINDER_DIR
+GLANCE_CACHE_DIR=$GLACNE_DIR/cache
+GLANCE_IMAGE_DIR=$GLANCE_DIR/images
+NOVA_STATE_DIR=$NOVA_DIR
