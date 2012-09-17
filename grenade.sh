@@ -102,15 +102,20 @@ else
     exec 6>&3
 fi
 
-# For debugging
+# This script exits on an error so that errors don't compound and you see
+# only the first error that occured.
+set -o errexit
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
 
 # Install 'Work' Build of OpenStack
 # =================================
 
-echo_summary "Sourcing work DevStack config"
-source $WORK_DEVSTACK_DIR/stackrc
+#echo_summary "Sourcing work DevStack config"
+#source $WORK_DEVSTACK_DIR/stackrc
 
 echo_summary "Running prep-work"
 $GRENADE_DIR/prep-work
@@ -181,23 +186,23 @@ stop $STOP upgrade-devstack 120
 
 # Upgrade Keystone
 echo_summary "Running upgrade-keystone"
-$GRENADE_DIR/upgrade-keystone
+$GRENADE_DIR/upgrade-keystone || die "Failure in upgrade-keystone"
 stop $STOP upgrade-keystone 130
 
 # Upgrade Glance
 echo_summary "Running upgrade-glance"
-$GRENADE_DIR/upgrade-glance
+$GRENADE_DIR/upgrade-glance || die "Failure in upgrade-glancwe"
 stop $STOP upgrade-glance 140
 
 # Upgrade Nova
 echo_summary "Running upgrade-nova"
-$GRENADE_DIR/upgrade-nova
+$GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
 stop $STOP upgrade-nova 150
 
 # Upgrade Volumes to Cinder if volumes is enabled
 if is_service_enabled cinder; then
     echo_summary "Running upgrade-volume"
-    $GRENADE_DIR/upgrade-volume
+    $GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
 fi
 stop $STOP upgrade-volume 160
 
