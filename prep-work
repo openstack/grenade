@@ -58,6 +58,8 @@ if [[ "$START_RELEASE" == "essex" ]]; then
     # must be removed and stable/essex restored in the glance repo
     source $WORK_DEVSTACK_DIR/stackrc
     [[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLIENT_DIR
+    [[ -x /usr/local/bin/glance ]] && sudo rm /usr/local/bin/glance
+    pip freeze | grep -q python-glanceclient && sudo pip uninstall python-glanceclient
     if [[ -d $GLANCE_DIR ]]; then
         cd $GLANCE_DIR
         git checkout $GLANCE_BRANCH
