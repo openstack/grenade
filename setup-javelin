@@ -76,7 +76,8 @@ RAMDISK=$CIRROS_DIR/$CIRROS_IMAGE-initrd
 ROOTDISK=$CIRROS_DIR/$CIRROS_IMAGE-blank.img
 JAVELIN_IMAGE=javelin-${BASE_NAME}-uec
 
-IMAGE=$(glance image-list | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f2)
+# Old glance client cuts off name field, use nova image-list for now
+IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
 if [[ -z "$IMAGE" ]]; then
     RVAL=$(glance add --silent-upload name=$JAVELIN_IMAGE-kernel is_public=True container_format=aki disk_format=aki <"$KERNEL")
     KERNEL_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
@@ -84,7 +85,7 @@ if [[ -z "$IMAGE" ]]; then
     RAMDISK_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
     glance add name=$JAVELIN_IMAGE.img is_public=True container_format=ami disk_format=ami ${KERNEL_ID:+kernel_id=$KERNEL_ID} ${RAMDISK_ID:+ramdisk_id=$RAMDISK_ID}  < "${ROOTDISK}"
 
-    IMAGE=$(glance image-list | egrep " $JAVELIN_IMAGE.img " | head -1 | cut -d' ' -f2)
+    IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
     die_if_not_set IMAGE "Failure getting image"
 fi
 
