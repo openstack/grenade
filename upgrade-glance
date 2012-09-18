@@ -65,8 +65,9 @@ source $TRUNK_DEVSTACK_DIR/stackrc
 
 # install_glance()
 RECLONE=yes
-sudo chown -R `whoami` $GLANCECLIENT_DIR $GLANCE_DIR
+[[ -d $GLANCECLIENT_DIR ]] && sudo chown -R `whoami` $GLANCECLIENT_DIR
 git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH
+[[ -d $GLANCE_DIR ]] && sudo chown -R `whoami` $GLANCE_DIR
 git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH
 
 # configure_glance()
