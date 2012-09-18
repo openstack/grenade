@@ -157,6 +157,22 @@ done
 stop $STOP mysqldump 90
 
 
+# Cache downloaded instances
+# --------------------------
+
+echo_summary "Caching downloaded images"
+mkdir -p $DEST/images
+echo "Images: $IMAGE_URLS"
+for image_url in ${IMAGE_URLS//,/ }; do
+    IMAGE_FNAME=`basename "$image_url"`
+    if [[ -r $WORK_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
+        rsync -av $WORK_DEVSTACK_DIR/files/$IMAGE_FNAME $DEST/images
+    fi
+done
+rsync -av $WORK_DEVSTACK_DIR/files/images $DEST/images
+stop $STOP image-cache 92
+
+
 # Upgrades
 # ========
 

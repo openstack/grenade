@@ -25,11 +25,6 @@ set -o xtrace
 # System Preparation
 # ==================
 
-# Optimization for slow Internet
-if [[ -d $WORK_DEVSTACK_DIR/files/images ]]; then
-    rsync -a $WORK_DEVSTACK_DIR/files/images $DEST
-fi
-
 # perform cleanup to ensure a clean starting environment
 rm -rf $WORK_DEVSTACK_DIR
 
@@ -37,7 +32,7 @@ rm -rf $WORK_DEVSTACK_DIR
 git_clone $WORK_DEVSTACK_REPO $WORK_DEVSTACK_DIR $WORK_DEVSTACK_BRANCH
 
 if [[ -d $DEST/images ]]; then
-    rsync -a $DEST/images $WORK_DEVSTACK_DIR/files
+    rsync -a $DEST/images/* $WORK_DEVSTACK_DIR/files
 fi
 
 # Set up localrc

@@ -32,7 +32,7 @@ rm -rf $TRUNK_DEVSTACK_DIR
 git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
 
 if [[ -d $DEST/images ]]; then
-    rsync -a $DEST/images $TRUNK_DEVSTACK_DIR/files
+    rsync -a $DEST/images/* $TRUNK_DEVSTACK_DIR/files
 fi
 
 # Set up localrc
