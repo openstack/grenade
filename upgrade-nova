@@ -100,16 +100,17 @@ if is_service_enabled cinder; then
     inicomment $NOVA_CONF DEFAULT iscsi_helper
 fi
 
-#+compute_driver=libvirt.LibvirtDriver
-# if not Xen and not OpenVZ - unsupported at this time
-iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
-
 #+libvirt_cpu_mode=none
 iniset $NOVA_CONF DEFAULT libvirt_cpu_mode none
 
 #-connection_type=libvirt
+#+compute_driver=libvirt.LibvirtDriver
 # if not OpenVZ - not supported...leave in even if it is the default
-#inicomment $NOVA_CONF DEFAULT connection_type
+if [[ "$(iniget $NOVA_CONF DEFAULT connection_type)" == "libvirt" ]]; then
+    # Explicitly set the new default value
+    inicomment $NOVA_CONF DEFAULT connection_type
+    iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
+fi
 
 if [ "$SYSLOG" != "False" ]; then
     iniset $NOVA_CONF DEFAULT use_syslog True
