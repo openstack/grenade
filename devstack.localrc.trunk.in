@@ -1,4 +1,5 @@
 # localrc for DevStack trunk installation (master)
+GRENADE_PHASE=trunk
 
 # These are set by setup-grenade
 HOST_IP=

@@ -1,4 +1,5 @@
 # localrc for DevStack work installation (stable/essex)
+GRENADE_PHASE=work
 
 # These are set by setup-grenade
 HOST_IP=
