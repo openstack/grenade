@@ -64,7 +64,7 @@ install_cinder
 setup_develop $CINDERCLIENT_DIR
 
 # install_quantumclient()
-sudo chown -R `whoami` $QUANTUMCLIENT_DIR
+[[ -d $QUANTUMCLIENT_DIR ]] && sudo chown -R `whoami` $QUANTUMCLIENT_DIR
 git_clone $QUANTUM_CLIENT_REPO $QUANTUMCLIENT_DIR $QUANTUM_CLIENT_BRANCH
 setup_develop $QUANTUMCLIENT_DIR
 
