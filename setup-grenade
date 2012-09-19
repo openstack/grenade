@@ -10,7 +10,7 @@ SRC_DIR=$(cd $(dirname "$0") && pwd)
 # Source params
 source $SRC_DIR/grenaderc
 
-GRENADE_REPO=git@github.com:dtroyer/grenade.git
+GRENADE_REPO=git@github.com:nebula/grenade.git
 GRENADE_DIR=$DEST/grenade
 
 HOST=${1:-localhost}
