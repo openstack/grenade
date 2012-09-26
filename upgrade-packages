@@ -29,7 +29,8 @@ GLANCE_PIPS="jsonschema warlock<2"
 
 # Glance and Nova pin boto to 2.1.1
 # oneiric has 2.0.0 and precise has 2.2.2
-NOVA_PIPS="boto==2.1.1"
+# Nova needs SQLAlchemy 0.7.8
+NOVA_PIPS="boto==2.1.1 SQLAlchemy>=0.7.8"
 
 # Horizon requires Django >= 1.4
 HORIZON_PIPS=" \

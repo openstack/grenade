@@ -134,6 +134,11 @@ if [[ "$(iniget $NOVA_CONF DEFAULT connection_type)" == "libvirt" ]]; then
     inicomment $NOVA_CONF DEFAULT connection_type
     iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
 fi
+if [[ "$(iniget $NOVA_CONF DEFAULT connection_type)" == "xenapi" ]]; then
+    # Explicitly set the new default value
+    inicomment $NOVA_CONF DEFAULT connection_type
+    iniset $NOVA_CONF DEFAULT compute_driver xenapi.XenAPIDriver
+fi
 
 if [ "$SYSLOG" != "False" ]; then
     iniset $NOVA_CONF DEFAULT use_syslog True
