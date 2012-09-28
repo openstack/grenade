@@ -22,8 +22,7 @@ set -o xtrace
 ssh -t $DEST_USER@$HOST " \
     sudo mkdir -p $DEST; \
     [[ -w $DEST ]] || sudo chown `whoami` $DEST; \
-    [[ -d $GRENADE_DIR ]] && rm -rf $GRENADE_DIR; \
-    git clone $GRENADE_REPO $GRENADE_DIR; \
+    [[ -d $GRENADE_DIR ]] || git clone $GRENADE_REPO $GRENADE_DIR; \
     IP=\$(ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }'); \
     echo "IP: \$IP"; \
     sed \"
