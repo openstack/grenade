@@ -59,6 +59,7 @@ source $TRUNK_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 source $TRUNK_DEVSTACK_DIR/lib/keystone
+source $TRUNK_DEVSTACK_DIR/lib/nova
 source $TRUNK_DEVSTACK_DIR/lib/cinder
 
 # Kill any running daemons
@@ -106,10 +107,40 @@ BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 
 install_cinder
 configure_cinder
+
+# Reconfigure nova
+if is_service_enabled nova; then
+    # Stop Nova's API server
+    screen -S $SCREEN_NAME -p n-api -X kill
+
+    # Move to Cinder
+    #+volume_api_class=nova.volume.cinder.API
+    iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
+    #-volume_group=nova-volumes
+    inicomment $NOVA_CONF DEFAULT volume_group
+    #-volume_name_template=volume-%08x
+    inicomment $NOVA_CONF DEFAULT volume_name_template
+    #-iscsi_helper=tgtadm
+    inicomment $NOVA_CONF DEFAULT iscsi_helper
+
+    # Force nova volumes off
+    #+enabled_apis=ec2,osapi_compute,metadata
+    iniset $NOVA_CONF DEFAULT enabled_apis $(echo $NOVA_ENABLED_APIS | sed "s/osapi_volume,//")
+
+    # Restart Nova's API server
+    screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
+fi
+
 init_cinder
 
 # Migrate the volume tables from nova to cinder
 cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN || die "DB migration error"
+
+# Move tgt files
+#cinder-manage copy_ptgt_files --src=$NOVA_STATE_PATH/volumes --dest=$CINDER_STATE_PATH/volumes
+
+# Restart n-api to change
+    screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
 
 start_cinder
 

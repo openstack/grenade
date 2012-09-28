@@ -51,24 +51,6 @@ for serv in n-api n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-# Support entry points installation of console scripts
-if [ -d $NOVA_DIR/bin ] ; then
-    NOVA_BIN_DIR=$NOVA_DIR/bin
-else
-    NOVA_BIN_DIR=/usr/local/bin
-fi
-
-if [[ "$os_PACKAGE" = "deb" ]]; then
-    NOVA_ROOTWRAP=/usr/local/bin/nova-rootwrap
-else
-    NOVA_ROOTWRAP=/usr/bin/nova-rootwrap
-fi
-
-NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
-NOVA_CONF=${NOVA_CONF:-$NOVA_CONF_DIR/nova.conf}
-NOVA_API_PASTE_INI=${NOVA_API_PASTE_INI:-$NOVA_CONF_DIR/api-paste.ini}
-NOVNC_DIR=$DEST/noVNC
-
 QUANTUMCLIENT_DIR=$DEST/python-quantumclient
 QUANTUM_DIR=$DEST/quantum
 
@@ -79,12 +61,9 @@ cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
 
 # Get functions from current DevStack
-source $TRUNK_DEVSTACK_DIR/lib/cinder
+source $TRUNK_DEVSTACK_DIR/lib/nova
 
-RECLONE=yes
-
-install_cinder
-setup_develop $CINDERCLIENT_DIR
+NOVNC_DIR=$DEST/noVNC
 
 # install_quantumclient()
 [[ -d $QUANTUMCLIENT_DIR ]] && sudo chown -R `whoami` $QUANTUMCLIENT_DIR
@@ -93,14 +72,14 @@ setup_develop $QUANTUMCLIENT_DIR
 
 # install_nova()
 sudo chown -R `whoami` $NOVACLIENT_DIR $NOVA_DIR
-git_clone $NOVACLIENT_REPO $NOVACLIENT_DIR $NOVACLIENT_BRANCH
-git_clone $NOVA_REPO $NOVA_DIR $NOVA_BRANCH
+install_novaclient
+install_nova
 
 # configure_quantumclient()
 setup_develop $QUANTUMCLIENT_DIR
 
 # configure_nova()
-setup_develop $NOVACLIENT_DIR
+configure_novaclient
 setup_develop $NOVA_DIR
 
 # ``nova.conf``
@@ -110,18 +89,6 @@ setup_develop $NOVA_DIR
 [[ -r $NOVA_CONF.$START_RELEASE ]] || \
     cp -p $NOVA_CONF $NOVA_CONF.$START_RELEASE
 cp -p $NOVA_CONF.$START_RELEASE $NOVA_CONF
-
-if is_service_enabled cinder; then
-    # Move to Cinder
-    #+volume_api_class=nova.volume.cinder.API
-    iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
-    #-volume_group=nova-volumes
-    inicomment $NOVA_CONF DEFAULT volume_group
-    #-volume_name_template=volume-%08x
-    inicomment $NOVA_CONF DEFAULT volume_name_template
-    #-iscsi_helper=tgtadm
-    inicomment $NOVA_CONF DEFAULT iscsi_helper
-fi
 
 #+libvirt_cpu_mode=none
 iniset $NOVA_CONF DEFAULT libvirt_cpu_mode none
@@ -155,13 +122,6 @@ else
     iniset $NOVA_CONF DEFAULT  logging_context_format_string "%(asctime)s %(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s] %(instance)s%(message)s"
 fi
 
-if is_service_enabled cinder; then
-    # Force nova volumes off
-    NOVA_ENABLED_APIS=$(echo $NOVA_ENABLED_APIS | sed "s/osapi_volume,//")
-fi
-#+enabled_apis=ec2,osapi_compute,metadata
-iniset $NOVA_CONF DEFAULT enabled_apis $NOVA_ENABLED_APIS
-
 # ``api-paste.ini``
 # Get template from source and migrate auth settings
 
@@ -183,38 +143,17 @@ cp -p $NOVA_DIR/etc/nova/policy.json $NOVA_CONF_DIR
 # (owned by root) and add a parameter to ``$NOVA_ROOTWRAP``
 ROOTWRAP_SUDOER_CMD="$NOVA_ROOTWRAP"
 if [[ -d $NOVA_DIR/etc/nova/rootwrap.d ]]; then
-    # Wipe any existing rootwrap.d files first
-    if [[ -d $NOVA_CONF_DIR/rootwrap.d ]]; then
-        sudo rm -rf $NOVA_CONF_DIR/rootwrap.d
-    fi
-    # Deploy filters to /etc/nova/rootwrap.d
-    sudo mkdir -m 755 $NOVA_CONF_DIR/rootwrap.d
-    sudo cp -p $NOVA_DIR/etc/nova/rootwrap.d/*.filters $NOVA_CONF_DIR/rootwrap.d
-    sudo chown -R root:root $NOVA_CONF_DIR/rootwrap.d
-    sudo chmod 644 $NOVA_CONF_DIR/rootwrap.d/*
-    # Set up rootwrap.conf, pointing to /etc/nova/rootwrap.d
-    sudo cp -p $NOVA_DIR/etc/nova/rootwrap.conf $NOVA_CONF_DIR/
-    sudo sed -e "s:^filters_path=.*$:filters_path=$NOVA_CONF_DIR/rootwrap.d:" -i $NOVA_CONF_DIR/rootwrap.conf
-    sudo chown root:root $NOVA_CONF_DIR/rootwrap.conf
-    sudo chmod 0644 $NOVA_CONF_DIR/rootwrap.conf
-    # Specify rootwrap.conf as first parameter to nova-rootwrap
-    NOVA_ROOTWRAP="$NOVA_ROOTWRAP $NOVA_CONF_DIR/rootwrap.conf"
-    ROOTWRAP_SUDOER_CMD="$NOVA_ROOTWRAP *"
+    configure_nova_rootwrap
 fi
-
-# Set up the rootwrap sudoers for nova
-TEMPFILE=`mktemp`
-echo "$USER ALL=(root) NOPASSWD: $ROOTWRAP_SUDOER_CMD" >$TEMPFILE
-chmod 0440 $TEMPFILE
-sudo chown root:root $TEMPFILE
-sudo mv $TEMPFILE /etc/sudoers.d/nova-rootwrap
 
 #-root_helper=sudo /usr/local/bin/nova-rootwrap
 #+root_helper=sudo /usr/local/bin/nova-rootwrap /etc/nova/rootwrap.conf
-iniset $NOVA_CONF DEFAULT root_helper "sudo $NOVA_ROOTWRAP"
+#iniset $NOVA_CONF DEFAULT root_helper "sudo $ROOTWRAP_SUDOER_CMD"
+inicomment $NOVA_CONF DEFAULT root_helper
+iniset $NOVA_CONF DEFAULT rootwrap_config $NOVA_CONF_DIR/rootwrap.conf
 
 # Migrate the database
-nova-manage db sync || die "DB sync error"
+nova-manage --config-file $NOVA_CONF db sync || die "DB sync error"
 
 # Update noVNC to new repo
 if is_service_enabled n-novnc; then
@@ -224,15 +163,11 @@ if is_service_enabled n-novnc; then
 fi
 
 # Start Nova
+# n-api is started independently in stack.sh
 screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
-screen_it n-cpu "cd $NOVA_DIR && sg libvirtd $NOVA_BIN_DIR/nova-compute"
-screen_it n-crt "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-cert"
-screen_it n-vol "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-volume"
-screen_it n-net "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-network"
-screen_it n-sch "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-scheduler"
-screen_it n-novnc "cd $NOVNC_DIR && ./utils/nova-novncproxy --config-file $NOVA_CONF --web ."
-screen_it n-xvnc "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-xvpvncproxy --config-file $NOVA_CONF"
-screen_it n-cauth "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-consoleauth"
+
+start_nova
+
 is_service_enabled swift3 || screen_it n-obj "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-objectstore"
 
 set +o xtrace

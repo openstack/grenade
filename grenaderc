@@ -40,7 +40,6 @@ KEYSTONE_DIR=$DEST/keystone
 NOVACLIENT_DIR=$DEST/python-novaclient
 NOVA_DIR=$DEST/nova
 
-
 # Allow local overrides of env variables
 if [ -f $RC_DIR/localrc ]; then
     source $RC_DIR/localrc
@@ -48,3 +47,6 @@ fi
 
 
 # Defaults that use values from localrc go here
+
+# We need RECLONE to get the updated branches; not everyone wants it though
+RECLONE=${RECLONE:-yes}
