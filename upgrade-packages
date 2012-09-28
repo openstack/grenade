@@ -43,9 +43,9 @@ HORIZON_PIPS=" \
 # Quantum client requirements
 QUANTUM_PIPS="pyparsing cliff>=1.1.2 cmd2"
 
-# SQLAlchemy LCD is 0.7.3 ((cinder, nova)
+# SQLAlchemy is 0.7.8 ((cinder, nova)
 PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS \
-   SQLAlchemy>=0.7.3"
+   SQLAlchemy>=0.7.8"
 
 pip_install $PIPS
 
