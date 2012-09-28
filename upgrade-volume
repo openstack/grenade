@@ -51,6 +51,8 @@ set -o xtrace
 # As cinder is new, an upgrade for  nova-volume to nova-volume is performed
 # first, then the migration to cinder is performed.
 
+DATA_DIR=${DATA_DIR:-${DEST}/data}
+
 cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
 
@@ -77,7 +79,6 @@ done
 # * default size is now 5GB, we don't change that here
 
 # Put this here since Folsom DevStack defaults it in stack.sh
-DATA_DIR=${DATA_DIR:-${DEST}/data}
 ESSEX_VOLUME_BACKING_FILE=${ESSEX_VOLUME_BACKING_FILE:-$DEST/nova-volumes-backing-file}
 ESSEX_VOLUME_GROUP=${ESSEX_VOLUME_GROUP:-nova-volumes}
 FOLSOM_VOLUME_BACKING_FILE=${FOLSOM_VOLUME_BACKING_FILE:-$DATA_DIR/stack-volumes-backing-file}
