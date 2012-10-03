@@ -126,37 +126,6 @@ cd $WORK_DEVSTACK_DIR
 ./stack.sh
 stop $STOP stack.sh 10
 
-# Operation
-# ---------
-
-# Validate the install
-echo_summary "Running work exercises"
-echo $WORK_DEVSTACK_DIR/exercise.sh
-stop $STOP exercise.sh 20
-
-# Create a project, users and instances
-echo_summary "Creating Javelin project"
-$GRENADE_DIR/setup-javelin
-stop $STOP setup-javelin 30
-
-# Shut down running code
-echo_summary "Running work unstack.sh"
-$WORK_DEVSTACK_DIR/unstack.sh
-stop $STOP unstack.sh 40
-
-# Save databases
-# --------------
-
-echo_summary "Sourcing work DevStack config"
-source $WORK_DEVSTACK_DIR/stackrc
-echo_summary "Dumping work databases"
-mkdir -p $SAVE_DIR
-for db in keystone glance nova; do
-    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$START_RELEASE
-done
-stop $STOP mysqldump 90
-
-
 # Cache downloaded instances
 # --------------------------
 
@@ -170,57 +139,84 @@ for image_url in ${IMAGE_URLS//,/ }; do
     fi
 done
 rsync -av $WORK_DEVSTACK_DIR/files/images $DEST/images
-stop $STOP image-cache 92
+stop $STOP image-cache 20
+
+
+# Operation
+# ---------
+
+# Validate the install
+echo_summary "Running work exercises"
+echo $WORK_DEVSTACK_DIR/exercise.sh
+stop $STOP exercise.sh 110
+
+# Create a project, users and instances
+echo_summary "Creating Javelin project"
+$GRENADE_DIR/setup-javelin
+stop $STOP setup-javelin 120
+
+# Save some stuff before we shut that whole thing down
+echo_summary "Saving current state information"
+$GRENADE_DIR/save-state
+stop $STOP save-state 130
+
+# Shut down running code
+echo_summary "Running work unstack.sh"
+$WORK_DEVSTACK_DIR/unstack.sh
+stop $STOP unstack.sh 140
+
+# Save databases
+# --------------
+
+echo_summary "Sourcing work DevStack config"
+source $WORK_DEVSTACK_DIR/stackrc
+echo_summary "Dumping work databases"
+mkdir -p $SAVE_DIR
+for db in keystone glance nova; do
+    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$START_RELEASE
+done
+stop $STOP mysqldump 150
 
 
 # Upgrades
 # ========
 
+# Get trunk bits ready
 echo_summary "Running prep-trunk"
 $GRENADE_DIR/prep-trunk
-stop $STOP prep-trunk 100
-
-echo_summary "Sourcing trunk DevStack config"
-source $TRUNK_DEVSTACK_DIR/stackrc
-
-# Create a new named screen to run processes in
-screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
-sleep 1
-# Set a reasonable statusbar
-SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
-screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
+stop $STOP prep-trunk 210
 
 # Upgrade OS packages and known Python updates
 echo_summary "Running upgrade-packages"
 $GRENADE_DIR/upgrade-packages
-stop $STOP upgrade-packages 110
+stop $STOP upgrade-packages 220
 
 # Upgrade DevStack
 echo_summary "Running upgrade-devstack"
 #$GRENADE_DIR/upgrade-devstack
-stop $STOP upgrade-devstack 120
+stop $STOP upgrade-devstack 230
 
 # Upgrade Keystone
 echo_summary "Running upgrade-keystone"
 $GRENADE_DIR/upgrade-keystone || die "Failure in upgrade-keystone"
-stop $STOP upgrade-keystone 130
+stop $STOP upgrade-keystone 240
 
 # Upgrade Glance
 echo_summary "Running upgrade-glance"
 $GRENADE_DIR/upgrade-glance || die "Failure in upgrade-glancwe"
-stop $STOP upgrade-glance 140
+stop $STOP upgrade-glance 250
 
 # Upgrade Nova
 echo_summary "Running upgrade-nova"
 $GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
-stop $STOP upgrade-nova 150
+stop $STOP upgrade-nova 260
 
 # Upgrade Volumes to Cinder if volumes is enabled
 if is_service_enabled cinder; then
     echo_summary "Running upgrade-volume"
     $GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
 fi
-stop $STOP upgrade-volume 160
+stop $STOP upgrade-volume 270
 
 
 # Fin
