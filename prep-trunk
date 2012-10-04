@@ -26,11 +26,20 @@ set -o xtrace
 # ==================
 
 # perform cleanup to ensure a clean starting environment
-rm -rf $TRUNK_DEVSTACK_DIR
+##add a config opt to still do this?
+#rm -rf $TRUNK_DEVSTACK_DIR
 
-# check out devstack
-git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
+# Get DevStack if it doesn't exist
+if [[ ! -d $TRUNK_DEVSTACK_DIR ]]; then
+    git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
+fi
 
+# Set up localrc
+if [[ ! -r $TRUNK_DEVSTACK_DIR/localrc ]]; then
+    cp -p $GRENADE_DIR/devstack.localrc.trunk $TRUNK_DEVSTACK_DIR/localrc
+fi
+
+# Load up a copy of the downloaded images if not present
 if [[ -d $DEST/images ]]; then
     rsync -a $DEST/images/* $TRUNK_DEVSTACK_DIR/files
 fi
