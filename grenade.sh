@@ -102,6 +102,23 @@ else
     exec 6>&3
 fi
 
+# Set up logging of screen windows
+# Set ``SCREEN_LOGDIR`` to turn on logging of screen windows to the
+# directory specified in ``SCREEN_LOGDIR``, we will log to the the file
+# ``screen-$SERVICE_NAME-$TIMESTAMP.log`` in that dir and have a link
+# ``screen-$SERVICE_NAME.log`` to the latest log file.
+# Logs are kept for as long specified in ``LOGDAYS``.
+if [[ -n "$SCREEN_LOGDIR" ]]; then
+
+    # We make sure the directory is created.
+    if [[ -d "$SCREEN_LOGDIR" ]]; then
+        # We cleanup the old logs
+        find $SCREEN_LOGDIR -maxdepth 1 -name screen-\*.log -mtime +$LOGDAYS -exec rm {} \;
+    else
+        mkdir -p $SCREEN_LOGDIR
+    fi
+fi
+
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occured.
 set -o errexit

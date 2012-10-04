@@ -31,6 +31,10 @@ SCREEN_NAME=${SCREEN_NAME:-stack}
 
 # Logging
 LOGFILE=$DEST/logs/grenade.sh.log
+LOGDAYS=1
+TIMESTAMP_FORMAT="%F-%H%M%S"
+CURRENT_LOG_TIME=${CURRENT_LOG_TIME:-$(date "+$TIMESTAMP_FORMAT")}
+SCREEN_LOGDIR=$DEST/logs/screen
 
 # Project directories
 GLANCECLIENT_DIR=$DEST/python-glanceclient
