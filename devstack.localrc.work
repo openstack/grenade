@@ -1,9 +1,8 @@
 # localrc for DevStack work installation (stable/essex)
 GRENADE_PHASE=work
 
-# These are set by setup-grenade
+# Default to selecting an interface via the default route
 HOST_IP=
-DEST=
 
 # Timeouts
 ACTIVE_TIMEOUT=120

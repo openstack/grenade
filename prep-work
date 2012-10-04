@@ -36,7 +36,9 @@ if [[ -d $DEST/images ]]; then
 fi
 
 # Set up localrc
-cp -p $GRENADE_DIR/devstack.localrc.work $WORK_DEVSTACK_DIR/localrc
+if [[ ! -r $WORK_DEVSTACK_DIR/localrc ]]; then
+    cat $GRENADE_DIR/devstack.localrc.work $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
+fi
 
 # clean up apache config
 # essex devstack uses 000-default

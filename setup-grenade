@@ -3,19 +3,32 @@
 #
 # Assumes ssh keys set up to an account with root privs
 
+# Configuration:
+# * Reads ``grenaderc`` (and ``localrc``) if present;
+# * Reads ``localrc`` if present and ``grenaderc`` is not present
+# * Runs with sane defaults if no ``*rc`` file is present
 
-# Keep track of the devstack directory
+# Keep track of the source directory
 SRC_DIR=$(cd $(dirname "$0") && pwd)
 
-# Source params
-source $SRC_DIR/grenaderc
-
+# Set up some defaults if grenaderc is not present
 GRENADE_REPO=git@github.com:nebula/grenade.git
 GRENADE_DIR=$DEST/grenade
+GRENADE_BRANCH=master
+
+DEST=/opt/stack
+GRENADE_DIR=$DEST/grenade
+
+# Source params
+if [[ -r $SRC_DIR/grenaderc ]]; then
+    source $SRC_DIR/grenaderc
+elif [[ -r $SRCDIR/localrc ]]; then
+    source $SRC_DIR/localrc
+fi
 
 HOST=${1:-localhost}
 
-DEST_USER=${USER:-${LOGNAME:-fred}}
+DEST_USER=${USER:-${LOGNAME:-stack}}
 
 set -o xtrace
 
@@ -23,27 +36,14 @@ ssh -t $DEST_USER@$HOST " \
     sudo mkdir -p $DEST; \
     [[ -w $DEST ]] || sudo chown `whoami` $DEST; \
     [[ -d $GRENADE_DIR ]] || git clone $GRENADE_REPO $GRENADE_DIR; \
-    IP=\$(ip addr show dev eth0 | awk '/inet / { split(\$2,a,\"/\"); print a[1] }'); \
-    echo "IP: \$IP"; \
-    sed \"
-        /^DEST=/s|^DEST=.*$|DEST=$DEST|;
-        /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
-    \" $GRENADE_DIR/devstack.localrc.work.in >$GRENADE_DIR/devstack.localrc.work; \
-    sed \"
-        /^DEST=/s|^DEST=.*$|DEST=$DEST|;
-        /^HOST_IP=/s|^HOST_IP=.*$|HOST_IP=\$IP|;
-    \" $GRENADE_DIR/devstack.localrc.trunk.in >$GRENADE_DIR/devstack.localrc.trunk; \
+    [[ -d $GRENADE_DIR ]] && (cd $GRENADE_DIR; git checkout $GRENADE_BRANCH); \
 "
 
 # Copy devstack.localrc if it exists
 if [[ -r $SRC_DIR/devstack.localrc ]]; then
 	scp -p $SRC_DIR/devstack.localrc $DEST_USER@$HOST:$GRENADE_DIR
 fi
-
-# And append it to the work and trunk localrc files
-ssh -t $DEST_USER@$HOST " \
-    [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
-        >>$GRENADE_DIR/devstack.localrc.work; \
-    [[ -r $GRENADE_DIR/devstack.localrc ]] && cat $GRENADE_DIR/devstack.localrc \
-        >>$GRENADE_DIR/devstack.localrc.trunk; \
-"
+# Copy localrc if it exists
+if [[ -r $SRC_DIR/localrc ]]; then
+	scp -p $SRC_DIR/localrc $DEST_USER@$HOST:$GRENADE_DIR
+fi
