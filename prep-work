@@ -34,19 +34,17 @@ if [[ ! -d $WORK_DEVSTACK_DIR ]]; then
     git_clone $WORK_DEVSTACK_REPO $WORK_DEVSTACK_DIR $WORK_DEVSTACK_BRANCH
 fi
 
-# Set up localrc
-if [[ ! -r $WORK_DEVSTACK_DIR/localrc ]]; then
-    cp -p $GRENADE_DIR/devstack.localrc.work $WORK_DEVSTACK_DIR/localrc
-fi
-
 # Load up a copy of the downloaded images if not present
 if [[ -d $DEST/images ]]; then
     rsync -a $DEST/images/* $WORK_DEVSTACK_DIR/files
 fi
 
-# Set up localrc
+# Set up work localrc
 if [[ ! -r $WORK_DEVSTACK_DIR/localrc ]]; then
-    cat $GRENADE_DIR/devstack.localrc.work $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
+    cat $GRENADE_DIR/devstack.localrc.work >$WORK_DEVSTACK_DIR/localrc
+    if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
+        $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
+    fi
 fi
 
 # clean up apache config

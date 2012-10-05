@@ -34,22 +34,29 @@ system that will run the upgrade testing.
 
     ./setup-grenade testbox
 
-Grenade includes ``devstack.localrc.work`` for DevStack that is used to
-customize its behaviour for use with Grenade.  By default ``setup-grenade``
-will set HOST_IP and DEST when copying it to the Grenade DevStack direcotry.
+Grenade includes ``devstack.localrc.work`` and ``devstack.localrc.trunk``
+for DevStack that is used to customize its behaviour for use with Grenade.
+If ``$DEST/devstack.essex/localrc`` does not exist the following is
+performed by ``prep-work``:
 
-Grenade also uses ``devstack.localrc`` if it exists; it is appended to
-``localrc`` in each of the DevStack environments as the final overriding
-configuration.  Grenade does not supply this file and will not overwrite
+* ``devstack.localrc.work`` is copied to to ``$DEST/devstack.essex/localrc``
+* if ``devstack.localrc`` exists it is appended ``$DEST/devstack.essex/localrc``
+
+Similar steps are performed by ``prep-trunk`` for ``devstack.folsom``.
+
+``devstack.localrc`` is not included in Grenade and will not be overwritten
 it if it exists.
 
 
-# Prepare For An Upgrade
+# Prepare For An Upgrade Test
 
     ./grenade.sh
 
 ``grenade.sh`` installs DevStack for the **Work** release (Essex) and
-runs its ``stack.sh``.  This is roughly the equivalent to:
+runs its ``stack.sh``.  Then it creates a 'javelin' project containing
+some non-default configuration.
+
+This is roughly the equivalent to:
 
     grenade/prep-work
     cd /opt/stack/devstack.essex
