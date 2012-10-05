@@ -229,10 +229,8 @@ $GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
 stop $STOP upgrade-nova 260
 
 # Upgrade Volumes to Cinder if volumes is enabled
-if is_service_enabled cinder; then
-    echo_summary "Running upgrade-volume"
-    $GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
-fi
+echo_summary "Running upgrade-volume"
+$GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
 stop $STOP upgrade-volume 270
 
 

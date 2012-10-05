@@ -139,9 +139,6 @@ cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN || di
 # Move tgt files
 #cinder-manage copy_ptgt_files --src=$NOVA_STATE_PATH/volumes --dest=$CINDER_STATE_PATH/volumes
 
-# Restart n-api to change
-    screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
-
 start_cinder
 
 set +o xtrace
