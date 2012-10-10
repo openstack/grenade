@@ -63,6 +63,9 @@ GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.i
 cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
 
+# Get functions from current DevStack
+source $TRUNK_DEVSTACK_DIR/lib/glance
+
 # install_glance()
 [[ -d $GLANCECLIENT_DIR ]] && sudo chown -R `whoami` $GLANCECLIENT_DIR
 git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH

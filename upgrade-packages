@@ -60,3 +60,8 @@ if [[ "$os_PACKAGE" = "deb" ]]; then
 else
     install_package $(get_packages $TRUNK_DEVSTACK_DIR/files/rpms)
 fi
+
+# Restart Services
+sudo service rabbitmq-server stop
+sudo killall beam epmd
+sudo service rabbitmq-server start
