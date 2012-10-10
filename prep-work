@@ -63,11 +63,14 @@ if [[ "$START_RELEASE" == "essex" ]]; then
     source $WORK_DEVSTACK_DIR/stackrc
     [[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLIENT_DIR
     [[ -x /usr/local/bin/glance ]] && sudo rm /usr/local/bin/glance
-    pip freeze | grep -q python-glanceclient && sudo pip uninstall python-glanceclient
-    if [[ -d $GLANCE_DIR ]]; then
-        cd $GLANCE_DIR
-        git checkout $GLANCE_BRANCH
-        setup_develop $GLANCE_DIR
-    fi
+    PIP=$(which pip)
+    if [[ -n "$PIP" ]]; then
+		$PIP freeze | grep -q python-glanceclient && sudo $PIP uninstall python-glanceclient
+		if [[ -d $GLANCE_DIR ]]; then
+			cd $GLANCE_DIR
+			git checkout $GLANCE_BRANCH
+			setup_develop $GLANCE_DIR
+		fi
+	fi
 fi
 
