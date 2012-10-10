@@ -53,4 +53,4 @@ fi
 # Defaults that use values from localrc go here
 
 # We need RECLONE to get the updated branches; not everyone wants it though
-RECLONE=${RECLONE:-yes}
+RECLONE=${RECLONE:-no}
