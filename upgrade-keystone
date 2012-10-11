@@ -68,6 +68,9 @@ source $TRUNK_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
+# Work around an old stable/essex devstack hack
+[[ -r $KEYSTONE_DIR/etc/keystone.conf.sample ]] && rm $KEYSTONE_DIR/etc/keystone.conf.sample
+
 # install_keystone()
 sudo chown -R `whoami` $KEYSTONECLIENT_DIR $KEYSTONE_DIR
 git_clone $KEYSTONECLIENT_REPO $KEYSTONECLIENT_DIR $KEYSTONECLIENT_BRANCH
