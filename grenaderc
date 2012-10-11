@@ -9,6 +9,7 @@ GIT_BASE=https://github.com
 
 # Destination path for installation ``DEST``
 DEST=/opt/stack
+DATA_DIR=${DEST}/data
 
 # Release info
 START_RELEASE=essex
