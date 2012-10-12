@@ -5,10 +5,22 @@ Grenade is an OpenStack test harness to exercise the upgrade process
 between releases.  It uses DevStack to perform an initial OpenStack
 install and as a reference for the final configuration.
 
-While the initial incarnation of Grenade is written to upgrade
-from Essex to Folsom it needs to be generalized for future releases.
+This branch tests the upgrade path from Essex to Folsom for Keystone,
+Glance, Nova and migrating from Nova volumes to Cinder.
 
-# Goals
+Status
+------
+
+There are a couple of known problems with this branch that were left
+behind in order to focus on putting the Folsom -> Grizzly branch
+into CI testing:
+
+* Instances do not start properly, failing with RPC timeouts
+* Volumes are not migrated completely.  This _may_ be due related to https://bugs.launchpad.net/nova/+bug/1065702.
+
+
+Goals
+-----
 
 * Install base Essex OpenStack using stable/essex DevStack
 * Perform basic testing (exercise.sh)
@@ -17,7 +29,8 @@ from Essex to Folsom it needs to be generalized for future releases.
 * Run upgrade scripts preserving (running?) instances and data
 
 
-# Terminology
+Terminology
+-----------
 
 Grenade has two DevStack installs present and distinguished between then
 as 'work' and 'trunk'.
@@ -26,11 +39,14 @@ as 'work' and 'trunk'.
 * **Trunk**: The reference install of trunk OpenStack (maybe just DevStack)
 
 
-# Install Grenade
+Install Grenade
+---------------
 
 Grenade knows how to install a current release of itself using the included
 ``setup-grenade`` script.  The only argument is the hostname of the target
 system that will run the upgrade testing.
+
+::
 
     ./setup-grenade testbox
 
@@ -48,7 +64,10 @@ Similar steps are performed by ``prep-trunk`` for ``devstack.folsom``.
 it if it exists.
 
 
-# Prepare For An Upgrade Test
+Prepare For An Upgrade Test
+---------------------------
+
+::
 
     ./grenade.sh
 
@@ -56,7 +75,7 @@ it if it exists.
 runs its ``stack.sh``.  Then it creates a 'javelin' project containing
 some non-default configuration.
 
-This is roughly the equivalent to:
+This is roughly the equivalent to::
 
     grenade/prep-work
     cd /opt/stack/devstack.essex
@@ -83,7 +102,8 @@ is configured to populate the databases with some non-default content::
 Set up the **javelin** credentials with ``javelinrc``.
 
 
-# Testing Upgrades
+Testing Upgrades
+----------------
 
 The ``upgrade-*`` scripts are the individual components of the
 DevStack/Grenade upgrade process.  They typically stop any running
