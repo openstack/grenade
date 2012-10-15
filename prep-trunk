@@ -43,7 +43,7 @@ fi
 if [[ ! -r $TRUNK_DEVSTACK_DIR/localrc ]]; then
     cat $GRENADE_DIR/devstack.localrc.trunk >$TRUNK_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        $GRENADE_DIR/devstack.localrc >>$TRUNK_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$TRUNK_DEVSTACK_DIR/localrc
     fi
 fi
 
