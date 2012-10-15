@@ -29,34 +29,15 @@ set -o xtrace
 # Translate Services
 # ------------------
 
-WORK_ENABLED_SERVICES=$(source $WORK_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
-ENABLED_SERVICES=""
+#WORK_ENABLED_SERVICES=$(source $WORK_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
+#ENABLED_SERVICES=""
 
-for service in ${WORK_ENABLED_SERVICES//,/ }; do
-    if [[ $service == n-vol ]]; then
-        # Migrate from nova volumes to cinder
-        enable_service c-api c-sch c-vol
-    elif [[ $service == key ]]; then
-        # placeholder for now
-        enable_service key
-    else
-        # Passthrough
-        enable_service $service
-    fi
-done
+# NOOP for now!
 
 # Write new config to trunk DevStack
-echo -e "\nENABLED_SERVICES=$ENABLED_SERVICES" >>$TRUNK_DEVSTACK_DIR/localrc
+#echo -e "\nENABLED_SERVICES=$ENABLED_SERVICES" >>$TRUNK_DEVSTACK_DIR/localrc
 
 # Handle Defaults Changes
 # -----------------------
 
-# Keystone Backend
-WORK_KEYSTONE_CATALOG_BACKEND=$(source $WORK_DEVSTACK_DIR/stackrc; echo $KEYSTONE_CATALOG_BACKEND)
-TRUNK_KEYSTONE_CATALOG_BACKEND=$(source $TRUNK_DEVSTACK_DIR/stackrc; echo $KEYSTONE_CATALOG_BACKEND)
-if [[ "$WORK_KEYSTONE_CATALOG_BACKEND" != "$TRUNK_KEYSTONE_CATALOG_BACKEND" || \
-        ( -z $WORK_KEYSTONE_CATALOG_BACKEND && -z $TRUNK_KEYSTONE_CATALOG_BACKEND ]]; then
-    TRUNK_KEYSTONE_CATALOG_BACKEND=${TRUNK_KEYSTONE_CATALOG_BACKEND:-template}
-    # They're different, migrate work to trunk
-    echo "KEYSTONE_CATALOG_BACKEND=$WORK_KEYSTONE_CATALOG_BACKEND" >>$TRUNK_DEVSTACK_DIR/localrc
-fi
+# NOOP for now!

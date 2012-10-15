@@ -53,29 +53,24 @@ for serv in g-api g-reg; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-GLANCE_CONF_DIR=${GLANCE_CONF_DIR:-/etc/glance}
-GLANCE_REGISTRY_CONF=${GLANCE_REGISTRY_CONF:-$GLANCE_CONF_DIR/glance-registry.conf}
-GLANCE_API_CONF=${GLANCE_API_CONF:-$GLANCE_CONF_DIR/glance-api.conf}
-GLANCE_REGISTRY_PASTE_INI=${GLANCE_REGISTRY_PASTE_INI:-$GLANCE_CONF_DIR/glance-registry-paste.ini}
-GLANCE_API_PASTE_INI=${GLANCE_API_PASTE_INI:-$GLANCE_CONF_DIR/glance-api-paste.ini}
-
 # Duplicate some setup bits from trunk DevStack
 cd $TRUNK_DEVSTACK_DIR
 source $TRUNK_DEVSTACK_DIR/stackrc
+SERVICE_HOST=${SERVICE_HOST:-localhost}
+S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
 # Get functions from current DevStack
 source $TRUNK_DEVSTACK_DIR/lib/glance
 
 # install_glance()
 [[ -d $GLANCECLIENT_DIR ]] && sudo chown -R `whoami` $GLANCECLIENT_DIR
-git_clone $GLANCECLIENT_REPO $GLANCECLIENT_DIR $GLANCECLIENT_BRANCH
+install_glanceclient
 [[ -d $GLANCE_DIR ]] && sudo chown -R `whoami` $GLANCE_DIR
-git_clone $GLANCE_REPO $GLANCE_DIR $GLANCE_BRANCH
+install_glance
 
+configure_glanceclient
 # configure_glance()
 setup_develop $GLANCE_DIR
-# _Must_ do client after service due to cli binary conflicts
-setup_develop $GLANCECLIENT_DIR
 
 # Save original files and prepare to upgrade conf files
 [[ -r $GLANCE_REGISTRY_CONF.$START_RELEASE ]] || \
@@ -86,33 +81,17 @@ setup_develop $GLANCECLIENT_DIR
 
 [[ -r $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE ]] || \
     cp -p $GLANCE_REGISTRY_PASTE_INI $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE
-cp $GLANCE_DIR/etc/glance-registry-paste.ini $GLANCE_REGISTRY_PASTE_INI
 
 [[ -r $GLANCE_API_PASTE_INI.$START_RELEASE ]] || \
     cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$START_RELEASE
-cp $GLANCE_DIR/etc/glance-api-paste.ini $GLANCE_API_PASTE_INI
 
-# Migrate the auth info from paste to config
-echo -e "\n[keystone_authtoken]" >>$GLANCE_REGISTRY_CONF
-echo -e "\n[keystone_authtoken]" >>$GLANCE_API_CONF
-for key in auth_host auth_port auth_protocol admin_tenant_name admin_user admin_password; do
-    iniset $GLANCE_REGISTRY_CONF keystone_authtoken $key $(iniget $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE filter:authtoken $key)
-    iniset $GLANCE_API_CONF keystone_authtoken $key $(iniget $GLANCE_API_PASTE_INI.$START_RELEASE filter:authtoken $key)
-done
-
-# Copy glance-registry sql config to glance-api to enable v2 API
-iniset $GLANCE_API_CONF DEFAULT enable_v2_api true
-for key in sql_connection sql_idle_timeout sql_max_retries sql_retry_interval db_auto_create; do
-    VAL=$(iniget $GLANCE_REGISTRY_CONF DEFAULT $key)
-    [[ -n "$VAL" ]] && iniset $GLANCE_API_CONF DEFAULT $key $VAL
-done
+# NOOP for now!
 
 # Migrate the database
 glance-manage db_sync || die "DB sync error"
 
 # Start Glance
-screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=$GLANCE_CONF_DIR/glance-registry.conf"
-screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=$GLANCE_CONF_DIR/glance-api.conf"
+start_glance
 
 set +o xtrace
 echo "*********************************************************************"

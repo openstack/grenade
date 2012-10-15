@@ -24,35 +24,21 @@ set -o xtrace
 # ====================
 
 # Glance
-# Glance client wants warlock < 2
-GLANCE_PIPS="jsonschema warlock<2"
+GLANCE_PIPS=""
 
-# Glance and Nova pin boto to 2.1.1
-# oneiric has 2.0.0 and precise has 2.2.2
-# Nova needs SQLAlchemy 0.7.8
-NOVA_PIPS="boto==2.1.1 SQLAlchemy>=0.7.8"
+# Nova
+NOVA_PIPS=""
 
-# Horizon requires Django >= 1.4
-HORIZON_PIPS=" \
-    Django>=1.4 \
-    django-appconf \
-    django-compressor \
-    django-openstack-auth \
-    pytz \
-"
+# Horizon
+HORIZON_PIPS=""
 
-# Quantum client requirements
-QUANTUM_PIPS="pyparsing cliff>=1.1.2 cmd2"
+# Quantum
+QUANTUM_PIPS=""
 
 # SQLAlchemy is 0.7.8 ((cinder, nova)
-PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS \
-   SQLAlchemy>=0.7.8"
+PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS"
 
 #pip_install $PIPS
-
-# APTS="python-beautifulsoup python-wsgi-intercept"
-# BeautifulSoup==3.2.0
-# wsgi-intercept==0.4
 
 # Install package requirements
 if [[ "$os_PACKAGE" = "deb" ]]; then
@@ -63,5 +49,5 @@ fi
 
 # Restart Services
 sudo service rabbitmq-server stop
-sudo killall beam epmd
+sudo killall epmd
 sudo service rabbitmq-server start

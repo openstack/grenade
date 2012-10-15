@@ -12,8 +12,8 @@ DEST=/opt/stack
 DATA_DIR=${DEST}/data
 
 # Release info
-START_RELEASE=essex
-FINAL_RELEASE=folsom
+START_RELEASE=folsom
+FINAL_RELEASE=grizzly
 
 # DevStack sources
 WORK_DEVSTACK_REPO=$GIT_BASE/openstack-dev/devstack.git

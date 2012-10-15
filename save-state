@@ -36,26 +36,8 @@ source $GRENADE_DIR/grenaderc
 set -o xtrace
 
 
-# Save Volume State
-# =================
+# NOOP for now!
 
-# Save volume info since Essex didn't save tgt files properly?
-# Only create the files where n-vol would look for them
-# The rest is done in upgrade-nova and upgrade-volume
-
-VOLUME_GROUP=nova-volumes
-NOVA_STATE_DIR=${NOVA_STATE_DIR:-$DEST/nova}
-mkdir -p $NOVA_STATE_DIR/volumes
-
-for t in $(sudo tgtadm --op show --mode target | awk "/^Target / { print \$3 }"); do
-    VOL_NAME=${t##*:}
-    [[ -r $NOVA_STATE_DIR/volumes/$VOL_NAME ]] && mv $NOVA_STATE_DIR/volumes/$VOL_NAME $NOVA_STATE_DIR/volumes/$VOL_NAME.save
-    cat <<EOF >$NOVA_STATE_DIR/volumes/$VOL_NAME
-<target $t>
- backing-store /dev/$VOLUME_GROUP/$VOL_NAME
-</target>
-EOF
-done
 
 set +o xtrace
 echo "*********************************************************************"

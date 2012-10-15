@@ -70,34 +70,6 @@ for serv in c-sch c-api c-vol n-vol; do
 done
 
 
-# DevStack-specific
-# -----------------
-
-# DevStack changed the default storage for volumes between Essex and Folsom
-# * move /opt/stack/nova-volumes-backing-file to
-#   /opt/stack/data/stack-volumes-backing-file
-# * volume group name changed from nova-volumes to stack-volumes
-# * default size is now 5GB, we don't change that here
-
-# Put this here since Folsom DevStack defaults it in stack.sh
-ESSEX_VOLUME_BACKING_FILE=${ESSEX_VOLUME_BACKING_FILE:-$DEST/nova-volumes-backing-file}
-ESSEX_VOLUME_GROUP=${ESSEX_VOLUME_GROUP:-nova-volumes}
-FOLSOM_VOLUME_BACKING_FILE=${FOLSOM_VOLUME_BACKING_FILE:-$DATA_DIR/stack-volumes-backing-file}
-FOLSOM_VOLUME_GROUP=${FOLSOM_VOLUME_GROUP:-stack-volumes}
-
-if [[ -r $ESSEX_VOLUME_BACKING_FILE ]]; then
-    echo "Essex file exists, save it"
-    # Release it from LVM
-    sudo vgchange -an $ESSEX_VOLUME_GROUP
-    sudo vgrename $ESSEX_VOLUME_GROUP $FOLSOM_VOLUME_GROUP
-    LOOP_DEV=$(sudo pvs -o pv_name,vg_name | awk "/$ESSEX_VOLUME_GROUP/ { print \$1 }")
-    sudo losetup -d $LOOP_DEV || true
-    mkdir -p $DATA_DIR
-    mv $ESSEX_VOLUME_BACKING_FILE $FOLSOM_VOLUME_BACKING_FILE
-    # Let DevStack startup handle it from here?
-fi
-
-
 # Migrate to Cinder
 # -----------------
 
@@ -106,38 +78,13 @@ MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 install_cinder
-configure_cinder
+setup_develop $CINDER_DIR
+setup_develop $CINDERCLIENT_DIR
 
-# Reconfigure nova
-if is_service_enabled nova; then
-    # Stop Nova's API server
-    screen -S $SCREEN_NAME -p n-api -X kill
-
-    # Move to Cinder
-    #+volume_api_class=nova.volume.cinder.API
-    iniset $NOVA_CONF DEFAULT volume_api_class nova.volume.cinder.API
-    #-volume_group=nova-volumes
-    inicomment $NOVA_CONF DEFAULT volume_group
-    #-volume_name_template=volume-%08x
-    inicomment $NOVA_CONF DEFAULT volume_name_template
-    #-iscsi_helper=tgtadm
-    inicomment $NOVA_CONF DEFAULT iscsi_helper
-
-    # Force nova volumes off
-    #+enabled_apis=ec2,osapi_compute,metadata
-    iniset $NOVA_CONF DEFAULT enabled_apis $(echo $NOVA_ENABLED_APIS | sed "s/osapi_volume,//")
-
-    # Restart Nova's API server
-    screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
-fi
-
-init_cinder
+# NOOP for now!
 
 # Migrate the volume tables from nova to cinder
 cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN || die "DB migration error"
-
-# Move tgt files
-#cinder-manage copy_ptgt_files --src=$NOVA_STATE_PATH/volumes --dest=$CINDER_STATE_PATH/volumes
 
 start_cinder
 

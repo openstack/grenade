@@ -43,34 +43,6 @@ fi
 if [[ ! -r $WORK_DEVSTACK_DIR/localrc ]]; then
     cat $GRENADE_DIR/devstack.localrc.work >$WORK_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
     fi
 fi
-
-# clean up apache config
-# essex devstack uses 000-default
-# folsom devstack uses horizon -> ../sites-available/horizon
-if [[ -e /etc/apache2/sites-enabled/horizon ]]; then
-    # Clean up folsom-style
-    sudo a2dissite horizon
-    sudo service apache2 reload
-fi
-
-# Essex-specific prep
-if [[ "$START_RELEASE" == "essex" ]]; then
-    # python-glanceclient is new for Folsom; to roll back to Essex it
-    # must be removed and stable/essex restored in the glance repo
-    source $WORK_DEVSTACK_DIR/stackrc
-    [[ -d $GLANCECLIENT_DIR ]] && rm -rf $GLANCECLIENT_DIR
-    [[ -x /usr/local/bin/glance ]] && sudo rm /usr/local/bin/glance
-    PIP=$(which pip)
-    if [[ -n "$PIP" ]]; then
-		$PIP freeze | grep -q python-glanceclient && sudo $PIP uninstall python-glanceclient
-		if [[ -d $GLANCE_DIR ]]; then
-			cd $GLANCE_DIR
-			git checkout $GLANCE_BRANCH
-			setup_develop $GLANCE_DIR
-		fi
-	fi
-fi
-

@@ -43,17 +43,8 @@ fi
 if [[ ! -r $TRUNK_DEVSTACK_DIR/localrc ]]; then
     cat $GRENADE_DIR/devstack.localrc.trunk >$TRUNK_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        $GRENADE_DIR/devstack.localrc >>$TRUNK_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$TRUNK_DEVSTACK_DIR/localrc
     fi
-fi
-
-# clean up apache config
-# essex devstack uses 000-default
-# folsom devstack uses horizon -> ../sites-available/horizon
-if [[ -e /etc/apache2/sites-enabled/000-default ]]; then
-    # Clean up folsom-style
-    sudo rm /etc/apache2/sites-enabled/000-default
-    sudo service apache2 reload
 fi
 
 # Set up Screen
