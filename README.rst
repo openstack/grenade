@@ -39,7 +39,11 @@ as 'work' and 'trunk'.
 Install Grenade
 ---------------
 
-Grenade knows how to install a current release of itself using the included
+Get Grenade from GitHub in the usual way::
+
+    git clone https://github.com/nebula/grenade.git
+
+Grenade knows how to install the current master branch using the included
 ``setup-grenade`` script.  The only argument is the hostname of the target
 system that will run the upgrade testing.
 
@@ -47,9 +51,15 @@ system that will run the upgrade testing.
 
     ./setup-grenade testbox
 
+The Grenade repo and branch used can be changed by adding something like
+this to ``localrc``::
+
+    GRENADE_REPO=git@github.com:dtroyer/grenade.git
+    GRENADE_BRANCH=dt-test
+
 Grenade includes ``devstack.localrc.work`` and ``devstack.localrc.trunk``
-for DevStack that is used to customize its behaviour for use with Grenade.
-If ``$DEST/devstack.essex/localrc`` does not exist the following is
+for DevStack that are used to customize its behaviour for use with Grenade.
+If ``$DEST/devstack.$START_RELEASE/localrc`` does not exist the following is
 performed by ``prep-work``:
 
 * ``devstack.localrc.work`` is copied to to ``$DEST/devstack.folsom/localrc``
@@ -57,8 +67,20 @@ performed by ``prep-work``:
 
 Similar steps are performed by ``prep-trunk`` for ``devstack.grizzly``.
 
-``devstack.localrc`` is not included in Grenade and will not be overwritten
-it if it exists.
+``devstack.localrc`` will be appended to both DevStack ``localrc`` files if it
+exists.  ``devstack.localrc`` is not included in Grenade and will not be
+overwritten it if it exists.
+
+To handle differences between the DevStack releases ``GRENADE_PHASE`` will
+be set to ``work`` or ``trunk`` so appropriate decisions can be made::
+
+    if [[ "$GRENADE_PHASE" == "work" ]]; then
+        # Handle work-specific local
+        :
+    else
+        # Handle trunk-specific local
+        :
+    fi
 
 
 Prepare For An Upgrade Test
