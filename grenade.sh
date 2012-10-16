@@ -128,6 +128,14 @@ set -o errexit
 set -o xtrace
 
 
+# More Setup
+# ==========
+
+# Set up for exercises
+WORK_RUN_EXERCISES=${WORK_RUN_EXERCISES:-RUN_EXERCISES}
+TRUNK_RUN_EXERCISES=${TRUNK_RUN_EXERCISES:-RUN_EXERCISES}
+
+
 # Install 'Work' Build of OpenStack
 # =================================
 
@@ -164,8 +172,10 @@ stop $STOP image-cache 20
 
 # Validate the install
 echo_summary "Running work exercises"
-echo $WORK_DEVSTACK_DIR/exercise.sh
-stop $STOP exercise.sh 110
+if [[ "$WORK_RUN_EXERCISES" == "True" ]]; then
+	$WORK_DEVSTACK_DIR/exercise.sh
+fi
+stop $STOP work-exercise 110
 
 # Create a project, users and instances
 echo_summary "Creating Javelin project"
@@ -232,6 +242,17 @@ stop $STOP upgrade-nova 260
 echo_summary "Running upgrade-volume"
 $GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
 stop $STOP upgrade-volume 270
+
+
+# Upgrade Tests
+# =============
+
+# Validate the upgrade
+echo_summary "Running trunk exercises"
+if [[ "$TRUNK_RUN_EXERCISES" == "True" ]]; then
+	$TRUNK_DEVSTACK_DIR/exercise.sh
+fi
+stop $STOP trunk-exercise 310
 
 
 # Fin
