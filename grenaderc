@@ -29,8 +29,6 @@ TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 
 # Allow skipping the exercises
 RUN_EXERCISES=True
-BASE_RUN_EXERCISES=${RUN_EXERCISES:=True}
-TARGET_RUN_EXERCISES=${RUN_EXERCISES:=True}
 
 # Saved stuff
 SAVE_DIR=$DEST/save
@@ -63,3 +61,7 @@ fi
 
 # We need RECLONE to get the updated branches; not everyone wants it though
 RECLONE=${RECLONE:-no}
+
+# Set these after localrc so user can pick-n-choose
+BASE_RUN_EXERCISES=${RUN_EXERCISES:=True}
+TARGET_RUN_EXERCISES=${RUN_EXERCISES:=True}

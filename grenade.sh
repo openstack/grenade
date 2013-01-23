@@ -163,7 +163,7 @@ for image_url in ${IMAGE_URLS//,/ }; do
         rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $DEST/images
     fi
 done
-rsync -av $BASE_DEVSTACK_DIR/files/images $DEST/images
+rsync -av $BASE_DEVSTACK_DIR/files/images/ $DEST/images
 stop $STOP image-cache 20
 
 
@@ -199,7 +199,7 @@ echo_summary "Sourcing base DevStack config"
 source $BASE_DEVSTACK_DIR/stackrc
 echo_summary "Dumping base databases"
 mkdir -p $SAVE_DIR
-for db in keystone glance nova; do
+for db in keystone glance nova cinder; do
     mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$BASE_RELEASE
 done
 stop $STOP mysqldump 150
