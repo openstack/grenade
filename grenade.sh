@@ -12,7 +12,7 @@
 # ``stop-label`` is the name of the step after which the script will stop.
 # This is useful for debugging upgrades.
 
-# Keep track of the devstack directory
+# Keep track of the Grenade directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions

@@ -1,8 +1,10 @@
-# localrc for DevStack work installation (stable/essex)
-GRENADE_PHASE=work
+# localrc for DevStack base installation (stable/folsom)
+GRENADE_PHASE=base
 
 # Default to selecting an interface via the default route
 unset HOST_IP
+
+DEST=$TOP_DIR/..
 
 # Timeouts
 ACTIVE_TIMEOUT=120
@@ -12,7 +14,6 @@ SERVICE_TIMEOUT=120
 
 ADMIN_PASSWORD=0penstack
 API_RATE_LIMIT=False
-#KEYSTONE_CATALOG_BACKEND=sql
 LOGDAYS=1
 LOGFILE=$DEST/logs/stack.sh.log
 MYSQL_PASSWORD=superstack

@@ -36,6 +36,29 @@ as 'base' and 'target'.
 * **Target**: The reference install of target OpenStack (maybe just DevStack)
 
 
+Directory Structure
+-------------------
+
+Grenade creates a set of directories for both the base and target
+OpenStack installation sources and DevStack.
+
+$DEST
+ |- data
+ |- logs                # Grenade logs
+ |- <base>
+ |   |- logs            # base DevStack logs
+ |   |- devstack
+ |   |- cinder
+ |   |- ...
+ |   |- swift
+ |- <target>
+ |   |- logs            # target DevStack logs
+ |   |- devstack
+ |   |- cinder
+ |   |- ...
+ |   |- swift
+
+
 Install Grenade
 ---------------
 

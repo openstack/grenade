@@ -13,16 +13,19 @@ DATA_DIR=${DEST}/data
 
 # Release info
 BASE_RELEASE=folsom
+BASE_RELEASE_DIR=$DEST/$BASE_RELEASE
+
 TARGET_RELEASE=grizzly
+TARGET_RELEASE_DIR=$DEST/$TARGET_RELEASE
 
 # DevStack sources
 BASE_DEVSTACK_REPO=$GIT_BASE/openstack-dev/devstack.git
 BASE_DEVSTACK_BRANCH=stable/$BASE_RELEASE
-BASE_DEVSTACK_DIR=$DEST/devstack.$BASE_RELEASE
+BASE_DEVSTACK_DIR=$BASE_RELEASE_DIR/devstack
 
 TARGET_DEVSTACK_REPO=$BASE_DEVSTACK_REPO
 TARGET_DEVSTACK_BRANCH=master
-TARGET_DEVSTACK_DIR=$DEST/devstack.$TARGET_RELEASE
+TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 
 # Allow skipping the exercises
 RUN_EXERCISES=True
@@ -43,12 +46,12 @@ CURRENT_LOG_TIME=${CURRENT_LOG_TIME:-$(date "+$TIMESTAMP_FORMAT")}
 SCREEN_LOGDIR=$DEST/logs/screen
 
 # Project directories
-GLANCECLIENT_DIR=$DEST/python-glanceclient
-GLANCE_DIR=$DEST/glance
-KEYSTONECLIENT_DIR=$DEST/python-keystoneclient
-KEYSTONE_DIR=$DEST/keystone
-NOVACLIENT_DIR=$DEST/python-novaclient
-NOVA_DIR=$DEST/nova
+GLANCECLIENT_DIR=python-glanceclient
+GLANCE_DIR=glance
+KEYSTONECLIENT_DIR=python-keystoneclient
+KEYSTONE_DIR=keystone
+NOVACLIENT_DIR=python-novaclient
+NOVA_DIR=nova
 
 # Allow local overrides of env variables
 if [ -f $RC_DIR/localrc ]; then
