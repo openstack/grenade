@@ -132,22 +132,22 @@ set -o xtrace
 # ==========
 
 # Set up for exercises
-WORK_RUN_EXERCISES=${WORK_RUN_EXERCISES:-RUN_EXERCISES}
-TRUNK_RUN_EXERCISES=${TRUNK_RUN_EXERCISES:-RUN_EXERCISES}
+BASE_RUN_EXERCISES=${BASE_RUN_EXERCISES:-RUN_EXERCISES}
+TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-RUN_EXERCISES}
 
 
-# Install 'Work' Build of OpenStack
+# Install 'Base' Build of OpenStack
 # =================================
 
-#echo_summary "Sourcing work DevStack config"
-#source $WORK_DEVSTACK_DIR/stackrc
+#echo_summary "Sourcing base DevStack config"
+#source $BASE_DEVSTACK_DIR/stackrc
 
-echo_summary "Running prep-work"
-$GRENADE_DIR/prep-work
-stop $STOP prep-work 01
+echo_summary "Running prep-base"
+$GRENADE_DIR/prep-base
+stop $STOP prep-base 01
 
-echo_summary "Running work stack.sh"
-cd $WORK_DEVSTACK_DIR
+echo_summary "Running base stack.sh"
+cd $BASE_DEVSTACK_DIR
 ./stack.sh
 stop $STOP stack.sh 10
 
@@ -159,11 +159,11 @@ mkdir -p $DEST/images
 echo "Images: $IMAGE_URLS"
 for image_url in ${IMAGE_URLS//,/ }; do
     IMAGE_FNAME=`basename "$image_url"`
-    if [[ -r $WORK_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
-        rsync -av $WORK_DEVSTACK_DIR/files/$IMAGE_FNAME $DEST/images
+    if [[ -r $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
+        rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $DEST/images
     fi
 done
-rsync -av $WORK_DEVSTACK_DIR/files/images $DEST/images
+rsync -av $BASE_DEVSTACK_DIR/files/images $DEST/images
 stop $STOP image-cache 20
 
 
@@ -171,11 +171,11 @@ stop $STOP image-cache 20
 # ---------
 
 # Validate the install
-echo_summary "Running work exercises"
-if [[ "$WORK_RUN_EXERCISES" == "True" ]]; then
-	$WORK_DEVSTACK_DIR/exercise.sh
+echo_summary "Running base exercises"
+if [[ "$BASE_RUN_EXERCISES" == "True" ]]; then
+	$BASE_DEVSTACK_DIR/exercise.sh
 fi
-stop $STOP work-exercise 110
+stop $STOP base-exercise 110
 
 # Create a project, users and instances
 echo_summary "Creating Javelin project"
@@ -188,19 +188,19 @@ $GRENADE_DIR/save-state
 stop $STOP save-state 130
 
 # Shut down running code
-echo_summary "Running work unstack.sh"
-$WORK_DEVSTACK_DIR/unstack.sh
+echo_summary "Running base unstack.sh"
+$BASE_DEVSTACK_DIR/unstack.sh
 stop $STOP unstack.sh 140
 
 # Save databases
 # --------------
 
-echo_summary "Sourcing work DevStack config"
-source $WORK_DEVSTACK_DIR/stackrc
-echo_summary "Dumping work databases"
+echo_summary "Sourcing base DevStack config"
+source $BASE_DEVSTACK_DIR/stackrc
+echo_summary "Dumping base databases"
 mkdir -p $SAVE_DIR
 for db in keystone glance nova; do
-    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$START_RELEASE
+    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$BASE_RELEASE
 done
 stop $STOP mysqldump 150
 
@@ -208,10 +208,10 @@ stop $STOP mysqldump 150
 # Upgrades
 # ========
 
-# Get trunk bits ready
-echo_summary "Running prep-trunk"
-$GRENADE_DIR/prep-trunk
-stop $STOP prep-trunk 210
+# Get target bits ready
+echo_summary "Running prep-target"
+$GRENADE_DIR/prep-target
+stop $STOP prep-target 210
 
 # Upgrade OS packages and known Python updates
 echo_summary "Running upgrade-packages"
@@ -248,11 +248,11 @@ stop $STOP upgrade-volume 270
 # =============
 
 # Validate the upgrade
-echo_summary "Running trunk exercises"
-if [[ "$TRUNK_RUN_EXERCISES" == "True" ]]; then
-	$TRUNK_DEVSTACK_DIR/exercise.sh
+echo_summary "Running target exercises"
+if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
+	$TARGET_DEVSTACK_DIR/exercise.sh
 fi
-stop $STOP trunk-exercise 310
+stop $STOP target-exercise 310
 
 
 # Fin

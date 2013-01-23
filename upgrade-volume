@@ -53,14 +53,14 @@ set -o xtrace
 
 DATA_DIR=${DATA_DIR:-${DEST}/data}
 
-cd $TRUNK_DEVSTACK_DIR
-source $TRUNK_DEVSTACK_DIR/stackrc
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/stackrc
 
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
-source $TRUNK_DEVSTACK_DIR/lib/keystone
-source $TRUNK_DEVSTACK_DIR/lib/nova
-source $TRUNK_DEVSTACK_DIR/lib/cinder
+source $TARGET_DEVSTACK_DIR/lib/keystone
+source $TARGET_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/cinder
 
 # Kill any running daemons
 #stop_cinder
@@ -75,7 +75,7 @@ done
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 install_cinder
 setup_develop $CINDER_DIR

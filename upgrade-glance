@@ -53,14 +53,14 @@ for serv in g-api g-reg; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-# Duplicate some setup bits from trunk DevStack
-cd $TRUNK_DEVSTACK_DIR
-source $TRUNK_DEVSTACK_DIR/stackrc
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
 # Get functions from current DevStack
-source $TRUNK_DEVSTACK_DIR/lib/glance
+source $TARGET_DEVSTACK_DIR/lib/glance
 
 # install_glance()
 [[ -d $GLANCECLIENT_DIR ]] && sudo chown -R `whoami` $GLANCECLIENT_DIR
@@ -73,17 +73,17 @@ configure_glanceclient
 setup_develop $GLANCE_DIR
 
 # Save original files and prepare to upgrade conf files
-[[ -r $GLANCE_REGISTRY_CONF.$START_RELEASE ]] || \
-    cp -p $GLANCE_REGISTRY_CONF $GLANCE_REGISTRY_CONF.$START_RELEASE
+[[ -r $GLANCE_REGISTRY_CONF.$BASE_RELEASE ]] || \
+    cp -p $GLANCE_REGISTRY_CONF $GLANCE_REGISTRY_CONF.$BASE_RELEASE
 
-[[ -r $GLANCE_API_CONF.$START_RELEASE ]] || \
-    cp -p $GLANCE_API_CONF $GLANCE_API_CONF.$START_RELEASE
+[[ -r $GLANCE_API_CONF.$BASE_RELEASE ]] || \
+    cp -p $GLANCE_API_CONF $GLANCE_API_CONF.$BASE_RELEASE
 
-[[ -r $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE ]] || \
-    cp -p $GLANCE_REGISTRY_PASTE_INI $GLANCE_REGISTRY_PASTE_INI.$START_RELEASE
+[[ -r $GLANCE_REGISTRY_PASTE_INI.$BASE_RELEASE ]] || \
+    cp -p $GLANCE_REGISTRY_PASTE_INI $GLANCE_REGISTRY_PASTE_INI.$BASE_RELEASE
 
-[[ -r $GLANCE_API_PASTE_INI.$START_RELEASE ]] || \
-    cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$START_RELEASE
+[[ -r $GLANCE_API_PASTE_INI.$BASE_RELEASE ]] || \
+    cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$BASE_RELEASE
 
 # NOOP for now!
 

@@ -29,13 +29,13 @@ set -o xtrace
 # Translate Services
 # ------------------
 
-#WORK_ENABLED_SERVICES=$(source $WORK_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
+#BASE_ENABLED_SERVICES=$(source $BASE_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
 #ENABLED_SERVICES=""
 
 # NOOP for now!
 
-# Write new config to trunk DevStack
-#echo -e "\nENABLED_SERVICES=$ENABLED_SERVICES" >>$TRUNK_DEVSTACK_DIR/localrc
+# Write new config to target DevStack
+#echo -e "\nENABLED_SERVICES=$ENABLED_SERVICES" >>$TARGET_DEVSTACK_DIR/localrc
 
 # Handle Defaults Changes
 # -----------------------

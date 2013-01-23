@@ -42,9 +42,9 @@ PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS"
 
 # Install package requirements
 if [[ "$os_PACKAGE" = "deb" ]]; then
-    install_package $(get_packages $TRUNK_DEVSTACK_DIR/files/apts)
+    install_package $(get_packages $TARGET_DEVSTACK_DIR/files/apts)
 else
-    install_package $(get_packages $TRUNK_DEVSTACK_DIR/files/rpms)
+    install_package $(get_packages $TARGET_DEVSTACK_DIR/files/rpms)
 fi
 
 # Restart Services

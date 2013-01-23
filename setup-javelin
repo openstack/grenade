@@ -24,7 +24,7 @@ set -o xtrace
 # ======================
 
 # Get DevStack Configuration
-source $WORK_DEVSTACK_DIR/openrc admin admin
+source $BASE_DEVSTACK_DIR/openrc admin admin
 
 # Our configuration
 source $GRENADE_DIR/javelin.conf
@@ -59,7 +59,7 @@ keystone user-role-add --tenant_id $JAVELIN_TENANT \
 # Switch Identities
 # -----------------
 
-source $WORK_DEVSTACK_DIR/openrc $JPROJECT $JUSER
+source $BASE_DEVSTACK_DIR/openrc $JPROJECT $JUSER
 export OS_PASSWORD=$JPASSWORD
 
 
@@ -70,7 +70,7 @@ export OS_PASSWORD=$JPASSWORD
 # Assumes DevStack.$START has already set this up
 BASE_NAME=0.3.0-x86_64
 CIRROS_IMAGE=cirros-${BASE_NAME}
-CIRROS_DIR=$WORK_DEVSTACK_DIR/files/images/$CIRROS_IMAGE-uec
+CIRROS_DIR=$BASE_DEVSTACK_DIR/files/images/$CIRROS_IMAGE-uec
 KERNEL=$CIRROS_DIR/$CIRROS_IMAGE-vmlinuz
 RAMDISK=$CIRROS_DIR/$CIRROS_IMAGE-initrd
 ROOTDISK=$CIRROS_DIR/$CIRROS_IMAGE-blank.img

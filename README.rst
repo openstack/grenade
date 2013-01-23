@@ -14,15 +14,15 @@ If you are looking for the Essex -> Folsom upgrade check out the
 Status
 ------
 
-Development has begun for the Folsom -> Grizzly upgrade.
+Development has begun for the Folsom (base-release) -> Grizzly (target-release) upgrade.
 
 Goals
 -----
 
-* Install base OpenStack using current stable/XXXX DevStack
+* Install base OpenStack using current stable/<base-release> DevStack
 * Perform basic testing (exercise.sh)
 * Create some non-default configuration to use as a conversion reference
-* Install current trunk DevStack to support the upgrades
+* Install current target DevStack to support the upgrades
 * Run upgrade scripts preserving (running?) instances and data
 
 
@@ -30,10 +30,10 @@ Terminology
 -----------
 
 Grenade has two DevStack installs present and distinguished between then
-as 'work' and 'trunk'.
+as 'base' and 'target'.
 
-* **Work**: The initial install that is will be upgraded.
-* **Trunk**: The reference install of trunk OpenStack (maybe just DevStack)
+* **Base**: The initial install that is will be upgraded.
+* **Target**: The reference install of target OpenStack (maybe just DevStack)
 
 
 Install Grenade
@@ -57,28 +57,28 @@ this to ``localrc``::
     GRENADE_REPO=git@github.com:dtroyer/grenade.git
     GRENADE_BRANCH=dt-test
 
-Grenade includes ``devstack.localrc.work`` and ``devstack.localrc.trunk``
+Grenade includes ``devstack.localrc.base`` and ``devstack.localrc.target``
 for DevStack that are used to customize its behaviour for use with Grenade.
-If ``$DEST/devstack.$START_RELEASE/localrc`` does not exist the following is
-performed by ``prep-work``:
+If ``$DEST/devstack.$BASE_RELEASE/localrc`` does not exist the following is
+performed by ``prep-base``:
 
-* ``devstack.localrc.work`` is copied to to ``$DEST/devstack.folsom/localrc``
+* ``devstack.localrc.base`` is copied to to ``$DEST/devstack.folsom/localrc``
 * if ``devstack.localrc`` exists it is appended ``$DEST/devstack.folsom/localrc``
 
-Similar steps are performed by ``prep-trunk`` for ``devstack.grizzly``.
+Similar steps are performed by ``prep-target`` for ``devstack.grizzly``.
 
 ``devstack.localrc`` will be appended to both DevStack ``localrc`` files if it
 exists.  ``devstack.localrc`` is not included in Grenade and will not be
 overwritten it if it exists.
 
 To handle differences between the DevStack releases ``GRENADE_PHASE`` will
-be set to ``work`` or ``trunk`` so appropriate decisions can be made::
+be set to ``base`` or ``target`` so appropriate decisions can be made::
 
-    if [[ "$GRENADE_PHASE" == "work" ]]; then
-        # Handle work-specific local
+    if [[ "$GRENADE_PHASE" == "base" ]]; then
+        # Handle base-specific local
         :
     else
-        # Handle trunk-specific local
+        # Handle target-specific local
         :
     fi
 
@@ -90,19 +90,19 @@ Prepare For An Upgrade Test
 
     ./grenade.sh
 
-``grenade.sh`` installs DevStack for the **Work** release (Folsom) and
+``grenade.sh`` installs DevStack for the **Base** release (Folsom) and
 runs its ``stack.sh``.  Then it creates a 'javelin' project containing
 some non-default configuration.
 
 This is roughly the equivalent to::
 
-    grenade/prep-work
+    grenade/prep-base
     cd /opt/stack/devstack.essex
     ./stack.sh
     grenade/setup-javelin
     ./unstack.sh
     # dump databases to $DEST/save
-    grenade/prep-trunk
+    grenade/prep-target
     grenade/upgrade-packages
     grenade/upgrade-devstack
     grenade/upgrade-keystone
@@ -110,10 +110,10 @@ This is roughly the equivalent to::
     grenade/upgrade-nova
     grenade/upgrade-volume
 
-The **Trunk** release (Grizzly) of DevStack is installed in a different
-directory from the **Work** release.
+The **Target** release (Grizzly) of DevStack is installed in a different
+directory from the **Base** release.
 
-While the **Work** release is running an imaginary **Javelin** tenant
+While the **Base** release is running an imaginary **Javelin** tenant
 is configured to populate the databases with some non-default content::
 
     grenade/setup-javelin

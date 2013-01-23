@@ -5,12 +5,11 @@ Contributing to Grenade
 General
 -------
 
-Grenade is written in POSIX shell script. It is specifies BASH and is
+Grenade is written in POSIX shell script. It specifies BASH and is
 compatible with Bash 3.
 
 Grenade's official repository is located on GitHub at
 https://github.com/nebula/grenade.git.
-
 
 
 Scripts
@@ -28,7 +27,7 @@ a subdirectory::
     GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 Many scripts will utilize shared functions from the ``functions`` file.  This
-file is copied directly from DevStack (late folsom-vintage).  There is also an
+file is copied directly from DevStack trunk periodically.  There is also an
 rc file (``grenaderc``) that is sourced to set the default configuration of
 the user environment::
 

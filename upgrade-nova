@@ -56,14 +56,14 @@ QUANTUM_DIR=$DEST/quantum
 
 SYSLOG=`trueorfalse False $SYSLOG`
 
-# Duplicate some setup bits from trunk DevStack
-cd $TRUNK_DEVSTACK_DIR
-source $TRUNK_DEVSTACK_DIR/stackrc
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 
 # Get functions from current DevStack
-source $TRUNK_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/nova
 
 NOVNC_DIR=$DEST/noVNC
 
@@ -88,9 +88,9 @@ setup_develop $NOVA_DIR
 # Normally created from scratch on each run if ``stack.sh``
 # Until we can call that without duplicating the code just convert the old one
 
-[[ -r $NOVA_CONF.$START_RELEASE ]] || \
-    cp -p $NOVA_CONF $NOVA_CONF.$START_RELEASE
-#cp -p $NOVA_CONF.$START_RELEASE $NOVA_CONF
+[[ -r $NOVA_CONF.$BASE_RELEASE ]] || \
+    cp -p $NOVA_CONF $NOVA_CONF.$BASE_RELEASE
+#cp -p $NOVA_CONF.$BASE_RELEASE $NOVA_CONF
 
 # NOOP for now!
 

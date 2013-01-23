@@ -51,14 +51,14 @@ screen -S $SCREEN_NAME -p key -X kill
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $WORK_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
-# Duplicate some setup bits from trunk DevStack
-cd $TRUNK_DEVSTACK_DIR
-source $TRUNK_DEVSTACK_DIR/stackrc
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
-source $TRUNK_DEVSTACK_DIR/lib/keystone
+source $TARGET_DEVSTACK_DIR/lib/keystone
 
 # install_keystone()
 sudo chown -R `whoami` $KEYSTONECLIENT_DIR $KEYSTONE_DIR
@@ -70,7 +70,7 @@ configure_keystoneclient
 setup_develop $KEYSTONE_DIR
 
 # Save current conf file for some reason...
-[[ -r $KEYSTONE_CONF.$START_RELEASE ]] || cp -p $KEYSTONE_CONF $KEYSTONE_CONF.$START_RELEASE
+[[ -r $KEYSTONE_CONF.$BASE_RELEASE ]] || cp -p $KEYSTONE_CONF $KEYSTONE_CONF.$BASE_RELEASE
 
 # NOOP for now!
 

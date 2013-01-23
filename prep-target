@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# ``prep-trunk`` handles the preparations for installing and configuring
-# the "trunk" configuration of DevStack.
+# ``prep-target`` handles the preparations for installing and configuring
+# the "target" configuration of DevStack.
 
 
 # Keep track of the devstack directory
@@ -27,31 +27,31 @@ set -o xtrace
 
 # perform cleanup to ensure a clean starting environment
 ##add a config opt to still do this?
-#rm -rf $TRUNK_DEVSTACK_DIR
+#rm -rf $TARGET_DEVSTACK_DIR
 
 # Get DevStack if it doesn't exist
-if [[ ! -d $TRUNK_DEVSTACK_DIR ]]; then
-    git_clone $TRUNK_DEVSTACK_REPO $TRUNK_DEVSTACK_DIR $TRUNK_DEVSTACK_BRANCH
+if [[ ! -d $TARGET_DEVSTACK_DIR ]]; then
+    git_clone $TARGET_DEVSTACK_REPO $TARGET_DEVSTACK_DIR $TARGET_DEVSTACK_BRANCH
 fi
 
 # Load up a copy of the downloaded images if not present
 if [[ -d $DEST/images ]]; then
-    rsync -a $DEST/images/* $TRUNK_DEVSTACK_DIR/files
+    rsync -a $DEST/images/* $TARGET_DEVSTACK_DIR/files
 fi
 
-# Set up trunk localrc
-if [[ ! -r $TRUNK_DEVSTACK_DIR/localrc ]]; then
-    cat $GRENADE_DIR/devstack.localrc.trunk >$TRUNK_DEVSTACK_DIR/localrc
+# Set up target localrc
+if [[ ! -r $TARGET_DEVSTACK_DIR/localrc ]]; then
+    cat $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        cat $GRENADE_DIR/devstack.localrc >>$TRUNK_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
     fi
 fi
 
 # Set up Screen
 # =============
 
-# Get trunk config
-source $TRUNK_DEVSTACK_DIR/stackrc
+# Get target config
+source $TARGET_DEVSTACK_DIR/stackrc
 
 # Create a new named screen to run processes in
 screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash

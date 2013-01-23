@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# ``prep-work`` handles the preparations for installing and configuring
-# the "work" configuration of DevStack.
+# ``prep-base`` handles the preparations for installing and configuring
+# the "base" configuration of DevStack.
 
 
 # Keep track of the devstack directory
@@ -27,22 +27,22 @@ set -o xtrace
 
 # perform cleanup to ensure a clean starting environment
 ##add a config opt to still do this?
-##rm -rf $WORK_DEVSTACK_DIR
+##rm -rf $BASE_DEVSTACK_DIR
 
 # Get DevStack if it doesn't exist
-if [[ ! -d $WORK_DEVSTACK_DIR ]]; then
-    git_clone $WORK_DEVSTACK_REPO $WORK_DEVSTACK_DIR $WORK_DEVSTACK_BRANCH
+if [[ ! -d $BASE_DEVSTACK_DIR ]]; then
+    git_clone $BASE_DEVSTACK_REPO $BASE_DEVSTACK_DIR $BASE_DEVSTACK_BRANCH
 fi
 
 # Load up a copy of the downloaded images if not present
 if [[ -d $DEST/images ]]; then
-    rsync -a $DEST/images/* $WORK_DEVSTACK_DIR/files
+    rsync -a $DEST/images/* $BASE_DEVSTACK_DIR/files
 fi
 
-# Set up work localrc
-if [[ ! -r $WORK_DEVSTACK_DIR/localrc ]]; then
-    cat $GRENADE_DIR/devstack.localrc.work >$WORK_DEVSTACK_DIR/localrc
+# Set up base localrc
+if [[ ! -r $BASE_DEVSTACK_DIR/localrc ]]; then
+    cat $GRENADE_DIR/devstack.localrc.base >$BASE_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        cat $GRENADE_DIR/devstack.localrc >>$WORK_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$BASE_DEVSTACK_DIR/localrc
     fi
 fi
