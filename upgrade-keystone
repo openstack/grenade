@@ -42,6 +42,9 @@ set -o errexit
 # an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
+
 
 # Upgrade Keystone
 # ================
@@ -58,10 +61,10 @@ cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
 # install_keystone()
-#sudo chown -R `whoami` $KEYSTONECLIENT_DIR $KEYSTONE_DIR
 install_keystoneclient
 install_keystone
 
@@ -73,115 +76,7 @@ configure_keystoneclient
 # We make the same changes to the Grizzly keystone.conf (so far) so just
 # do a normal configure_keystone().
 configure_keystone
-#setup_develop $KEYSTONE_DIR
 
-
-# keystone.conf
-cat <<EOF >/tmp/keystone.diff
-+# Path to your policy definition containing identity actions
-+# TODO(dolph): This config method will probably be deprecated during grizzly
-+# policy_file = policy.json
-+
-+# Rule to check if no matching policy definition is found
-+# FIXME(dolph): This should really be defined as [policy] default_rule
-+# policy_default_rule = admin_required
-
- [sql]
--connection = mysql://root:superstack@localhost/keystone?charset=utf8
-+connection = postgresql://root:superstack@localhost/keystone?client_encoding=utf8
-
- [policy]
--# driver = keystone.policy.backends.rules.Policy
-+# driver = keystone.policy.backends.sql.Policy
-
- [signing]
--#token_format = UUID
-+token_format = PKI
-+#token_format = PKI
- ...
--#token_format = PKI
-
- [ldap]
- ...
- # use_dumb_member = False
-+# allow_subtree_delete = False
-+# dumb_member = cn=dumb,dc=example,dc=com
-
- # user_tree_dn = ou=Users,dc=example,dc=com
-+# user_filter =
- ...
-+# user_mail_attribute = email
-+# user_pass_attribute = userPassword
-+# user_enabled_attribute = enabled
-+# user_enabled_mask = 0
-+# user_enabled_default = True
-+# user_attribute_ignore = tenant_id,tenants
-+# user_allow_create = True
-+# user_allow_update = True
-+# user_allow_delete = True
-
- # tenant_tree_dn = ou=Groups,dc=example,dc=com
-+# tenant_filter =
- ...
- # tenant_name_attribute = ou
-+# tenant_desc_attribute = desc
-+# tenant_enabled_attribute = enabled
-+# tenant_attribute_ignore =
-+# tenant_allow_create = True
-+# tenant_allow_update = True
-+# tenant_allow_delete = True
-
- # role_tree_dn = ou=Roles,dc=example,dc=com
-+# role_filter =
- # role_objectclass = organizationalRole
- # role_id_attribute = cn
-+# role_name_attribute = ou
- # role_member_attribute = roleOccupant
-+# role_attribute_ignore =
-+# role_allow_create = True
-+# role_allow_update = True
-+# role_allow_delete = True
-
-+[filter:sizelimit]
-+paste.filter_factory = keystone.middleware:RequestBodySizeLimiter.factory
-
-+[app:service_v3]
-+paste.app_factory = keystone.service:v3_app_factory
-
- [pipeline:public_api]
--pipeline = stats_monitoring url_normalize token_auth admin_token_auth xml_body json_body debug ec2_extension user_crud_extension public_service
-+pipeline = sizelimit stats_monitoring url_normalize token_auth admin_token_auth xml_body json_body debug ec2_extension user_crud_extension public_service
-
- [pipeline:admin_api]
--pipeline = stats_monitoring url_normalize token_auth admin_token_auth xml_body json_body debug stats_reporting ec2_extension s3_extension crud_extension admin_service
-+pipeline = sizelimit stats_monitoring url_normalize token_auth admin_token_auth xml_body json_body debug stats_reporting ec2_extension s3_extension crud_extension admin_service
-
-+[pipeline:api_v3]
-+pipeline = sizelimit stats_monitoring url_normalize token_auth admin_token_auth xml_body json_body debug stats_reporting ec2_extension s3_extension service_v3
-
- [pipeline:public_version_api]
--pipeline = stats_monitoring url_normalize xml_body public_version_service
-+pipeline = sizelimit stats_monitoring url_normalize xml_body public_version_service
-
- [pipeline:admin_version_api]
--pipeline = stats_monitoring url_normalize xml_body admin_version_service
-+pipeline = sizelimit stats_monitoring url_normalize xml_body admin_version_service
-
- [composite:main]
- use = egg:Paste#urlmap
- /v2.0 = public_api
-+/v3 = api_v3
- / = public_version_api
-
- [composite:admin]
- use = egg:Paste#urlmap
- /v2.0 = admin_api
-+/v3 = api_v3
- / = admin_version_api
-
-----
-all of policy.json
-EOF
 
 # Simulate init_keystone()
 # -------------------------
