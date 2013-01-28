@@ -47,6 +47,7 @@ if [[ ! -r $TARGET_DEVSTACK_DIR/localrc ]]; then
     fi
 fi
 
+
 # Set up Screen
 # =============
 
@@ -59,3 +60,33 @@ sleep 1
 # Set a reasonable statusbar
 SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
 screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
+
+
+# Set up Logging
+# ==============
+
+# Set up logging for ``stack.sh``
+# Set ``LOGFILE`` to turn on logging
+# Append '.xxxxxxxx' to the given name to maintain history
+# where 'xxxxxxxx' is a representation of the date the file was created
+TIMESTAMP_FORMAT=${TIMESTAMP_FORMAT:-"%F-%H%M%S"}
+if [[ -n "$LOGFILE" || -n "$SCREEN_LOGDIR" ]]; then
+    LOGDAYS=${LOGDAYS:-7}
+    CURRENT_LOG_TIME=$(date "+$TIMESTAMP_FORMAT")
+fi
+
+if [[ -n "$LOGFILE" ]]; then
+    # First clean up old log files.  Use the user-specified ``LOGFILE``
+    # as the template to search for, appending '.*' to match the date
+    # we added on earlier runs.
+    LOGDIR=$(dirname "$LOGFILE")
+    LOGNAME=$(basename "$LOGFILE")
+    mkdir -p $LOGDIR
+    find $LOGDIR -maxdepth 1 -name $LOGNAME.\* -mtime +$LOGDAYS -exec rm {} \;
+    LOGFILE=$LOGFILE.${CURRENT_LOG_TIME}
+    SUMFILE=$LOGFILE.${CURRENT_LOG_TIME}.summary
+fi
+
+if [[ -n "$SCREEN_LOGDIR" ]]; then
+    mkdir -p $SCREEN_LOGDIR
+fi
