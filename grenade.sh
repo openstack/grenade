@@ -155,15 +155,15 @@ stop $STOP stack.sh 10
 # --------------------------
 
 echo_summary "Caching downloaded images"
-mkdir -p $DEST/images
+mkdir -p $BASE_RELEASE_DIR/images
 echo "Images: $IMAGE_URLS"
 for image_url in ${IMAGE_URLS//,/ }; do
     IMAGE_FNAME=`basename "$image_url"`
     if [[ -r $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
-        rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $DEST/images
+        rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
     fi
 done
-rsync -av $BASE_DEVSTACK_DIR/files/images/ $DEST/images
+rsync -av $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
 stop $STOP image-cache 20
 
 
@@ -215,7 +215,7 @@ stop $STOP prep-target 210
 
 # Upgrade OS packages and known Python updates
 echo_summary "Running upgrade-packages"
-$GRENADE_DIR/upgrade-packages
+#$GRENADE_DIR/upgrade-packages
 stop $STOP upgrade-packages 220
 
 # Upgrade DevStack
