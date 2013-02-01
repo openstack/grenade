@@ -51,6 +51,9 @@ KEYSTONE_DIR=keystone
 NOVACLIENT_DIR=python-novaclient
 NOVA_DIR=nova
 
+# Timeouts
+SERVICE_TIMEOUT=120
+
 # Allow local overrides of env variables
 if [ -f $RC_DIR/localrc ]; then
     source $RC_DIR/localrc
