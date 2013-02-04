@@ -42,35 +42,38 @@ set -o errexit
 # an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
+
 
 # Upgrade Images
 # ==============
 
-# Based on http://bcwaldon.cc/2012/09/05/glance-essex-to-folsom-upgrade.html
-
-# Kill a running Keystone
+# Kill a running Glance
 for serv in g-api g-reg; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
+
+MYSQL_HOST=${MYSQL_HOST:-localhost}
+MYSQL_USER=${MYSQL_USER:-root}
+BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+source $TARGET_DEVSTACK_DIR/lib/database
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/glance
 
 # install_glance()
-[[ -d $GLANCECLIENT_DIR ]] && sudo chown -R `whoami` $GLANCECLIENT_DIR
 install_glanceclient
-[[ -d $GLANCE_DIR ]] && sudo chown -R `whoami` $GLANCE_DIR
 install_glance
 
 configure_glanceclient
-# configure_glance()
-setup_develop $GLANCE_DIR
+
 
 # Save original files and prepare to upgrade conf files
 [[ -r $GLANCE_REGISTRY_CONF.$BASE_RELEASE ]] || \
@@ -85,10 +88,14 @@ setup_develop $GLANCE_DIR
 [[ -r $GLANCE_API_PASTE_INI.$BASE_RELEASE ]] || \
     cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$BASE_RELEASE
 
-# NOOP for now!
+# configure_glance()
+setup_develop $GLANCE_DIR
 
+
+# Simulate init_glance()
 # Migrate the database
 glance-manage db_sync || die "DB sync error"
+
 
 # Start Glance
 start_glance

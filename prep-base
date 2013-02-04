@@ -41,7 +41,9 @@ fi
 
 # Set up base localrc
 if [[ ! -r $BASE_DEVSTACK_DIR/localrc ]]; then
-    cat $GRENADE_DIR/devstack.localrc.base >$BASE_DEVSTACK_DIR/localrc
+    sed -e "
+        s|\@BASE_RELEASE_DIR\@|$BASE_RELEASE_DIR|
+    " $GRENADE_DIR/devstack.localrc.base >$BASE_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
         cat $GRENADE_DIR/devstack.localrc >>$BASE_DEVSTACK_DIR/localrc
     fi

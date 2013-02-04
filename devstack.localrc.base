@@ -4,7 +4,7 @@ GRENADE_PHASE=base
 # Default to selecting an interface via the default route
 unset HOST_IP
 
-DEST=$BASE_RELEASE_DIR
+DEST=@BASE_RELEASE_DIR@
 
 # Timeouts
 ACTIVE_TIMEOUT=120
