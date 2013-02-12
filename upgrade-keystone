@@ -59,6 +59,7 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
+DATA_DIR=${DEST}/data
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 source $TARGET_DEVSTACK_DIR/lib/database
@@ -66,18 +67,16 @@ source $TARGET_DEVSTACK_DIR/lib/database
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
-# install_keystone()
-install_keystoneclient
-install_keystone
-
-configure_keystoneclient
-
 # Save current conf files for some reason...
 [[ -r $KEYSTONE_CONF.$BASE_RELEASE ]] || cp -p $KEYSTONE_CONF $KEYSTONE_CONF.$BASE_RELEASE
 [[ -r $KEYSTONE_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $KEYSTONE_CONF_DIR/policy.json $KEYSTONE_CONF_DIR/policy.json.$BASE_RELEASE
 
-# We make the same changes to the Grizzly keystone.conf (so far) so just
-# do a normal configure_keystone().
+# install_keystone()
+install_keystoneclient
+install_keystone
+
+# configure_keystone()
+configure_keystoneclient
 configure_keystone
 
 # Simulate init_keystone()
@@ -89,11 +88,12 @@ keystone-manage pki_setup || die "PKI setup error"
 
 
 ### Fix a missed upgrade bit
+### Reported in bug 1119789
 
 # Table 'role' column 'extra' is varchar(64) when upgraded from folsom
 # and varchar(255) when created in trunk.  The upgraded value is NULL
 # while the trunk value is '{}'.  Oops!
-mysql -uroot -psuperstack keystone -e "alter table role modify name varchar(255);update role set extra = '{}';"
+mysql -uroot -p$MYSQL_PASSWORD keystone -e "alter table role modify name varchar(255);update role set extra = '{}';"
 
 
 # Start Keystone

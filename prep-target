@@ -41,7 +41,9 @@ fi
 
 # Set up target localrc
 if [[ ! -r $TARGET_DEVSTACK_DIR/localrc ]]; then
-    cat $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
+    sed -e "
+        s|\@TARGET_RELEASE_DIR\@|$TARGET_RELEASE_DIR|
+    " $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
         cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
     fi
@@ -60,6 +62,9 @@ sleep 1
 # Set a reasonable statusbar
 SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
 screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
+
+# Prep the service check bits
+init_service_check
 
 
 # Set up Logging
@@ -90,3 +95,13 @@ fi
 if [[ -n "$SCREEN_LOGDIR" ]]; then
     mkdir -p $SCREEN_LOGDIR
 fi
+
+
+# Set up Data
+# ===========
+
+# Copy data dir
+rsync -av $BASE_RELEASE_DIR/data $TARGET_RELEASE_DIR
+
+# temporarily move base data aside to make sure it isn't being used...
+mv $BASE_RELEASE_DIR/data $BASE_RELEASE_DIR/data.hide

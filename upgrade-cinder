@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``upgrade-volume``
+# ``upgrade-cinder``
 
 # ``upgrade-nova`` must be complete for this to work!!!
 
@@ -44,47 +44,55 @@ set -o errexit
 # an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
 
-# Upgrade Volumes
-# ===============
 
-# As cinder is new, an upgrade for  nova-volume to nova-volume is performed
-# first, then the migration to cinder is performed.
+# Upgrade Cinder
+# ==============
 
-DATA_DIR=${DATA_DIR:-${DEST}/data}
-
-cd $TARGET_DEVSTACK_DIR
-source $TARGET_DEVSTACK_DIR/stackrc
-
-SERVICE_HOST=${SERVICE_HOST:-localhost}
-SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
-source $TARGET_DEVSTACK_DIR/lib/keystone
-source $TARGET_DEVSTACK_DIR/lib/nova
-source $TARGET_DEVSTACK_DIR/lib/cinder
-
-# Kill any running daemons
-#stop_cinder
-# Kill running Nova Volume and Cinder processes
-for serv in c-sch c-api c-vol n-vol; do
+# Kill running Cinder processes
+for serv in c-api c-sch c-vol; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
-
-
-# Migrate to Cinder
-# -----------------
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/stackrc
+DATA_DIR=${DEST}/data
+SERVICE_HOST=${SERVICE_HOST:-localhost}
+SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/keystone
+
+source $TARGET_DEVSTACK_DIR/lib/cinder
+
+# Save current conf files for some reason...
+[[ -r $CINDER_CONF.$BASE_RELEASE ]] || cp -p $CINDER_CONF $CINDER_CONF.$BASE_RELEASE
+[[ -r $CINDER_CONF_DIR/api-paste.ini.$BASE_RELEASE ]] || cp -p $CINDER_CONF_DIR/api-paste.ini $CINDER_CONF_DIR/api-paste.ini.$BASE_RELEASE
+[[ -r $CINDER_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $CINDER_CONF_DIR/policy.json $CINDER_CONF_DIR/policy.json.$BASE_RELEASE
+
+# install_cinder()
 install_cinder
-setup_develop $CINDER_DIR
-setup_develop $CINDERCLIENT_DIR
 
-# NOOP for now!
+# configure_cinder()
+configure_cinder
 
-# Migrate the volume tables from nova to cinder
-cinder-manage migrate import_db --src=$BASE_SQL_CONN --dest=$BASE_SQL_CONN || die "DB migration error"
+# Simulate init_cinder()
+create_cinder_volume_group
+create_cinder_cache_dir
+
+# Migrate the database
+cinder-manage db sync || die "DB migration error"
+
+# Let grizzly devstack re-create the include file
+sudo rm /etc/tgt/conf.d/cinder.conf
 
 start_cinder
 

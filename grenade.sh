@@ -188,9 +188,11 @@ $GRENADE_DIR/save-state
 stop $STOP save-state 130
 
 # Shut down running code
-echo_summary "Running base unstack.sh"
-$BASE_DEVSTACK_DIR/unstack.sh
-stop $STOP unstack.sh 140
+echo_summary "Shutting down base"
+# unstack.sh is too aggressive in cleaning up by default
+# so we'll do it ourselves...
+$GRENADE_DIR/stop-base
+stop $STOP stop-base 140
 
 # Save databases
 # --------------
@@ -238,10 +240,10 @@ echo_summary "Running upgrade-nova"
 $GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
 stop $STOP upgrade-nova 260
 
-# Upgrade Volumes to Cinder if volumes is enabled
-echo_summary "Running upgrade-volume"
-$GRENADE_DIR/upgrade-volume || die "Failure in upgrade-volume"
-stop $STOP upgrade-volume 270
+# Upgrade Cinder
+echo_summary "Running upgrade-cinder"
+$GRENADE_DIR/upgrade-cinder || die "Failure in upgrade-cinder"
+stop $STOP upgrade-cinder 270
 
 
 # Upgrade Tests
@@ -253,6 +255,18 @@ if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
 	$TARGET_DEVSTACK_DIR/exercise.sh
 fi
 stop $STOP target-exercise 310
+
+
+# Save databases
+# --------------
+
+echo_summary "Sourcing target DevStack config"
+source $TARGET_DEVSTACK_DIR/stackrc
+echo_summary "Dumping target databases"
+mkdir -p $SAVE_DIR
+for db in keystone glance nova cinder; do
+    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$TARGET_RELEASE
+done
 
 
 # Fin

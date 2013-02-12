@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+# ``stop-base`` handles bringing down the base DevStack more gently
+# than unstack.sh.  We want to save the data so that it can be
+# restarted under the target DevStack.  This leaves /opt/stack/<base>/data
+# in a state where it can be copied to the target directory.
+
+
+# Keep track of the devstack directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+# Duplicate some setup bits from base DevStack
+source $BASE_DEVSTACK_DIR/stackrc
+DATA_DIR=${DEST}/data
+
+source $BASE_DEVSTACK_DIR/lib/cinder
+
+
+# Shut down running processes in screen - most of them
+SCREEN=$(which screen)
+if [[ -n "$SCREEN" ]]; then
+    SESSION=$(screen -ls | awk '/[0-9].stack/ { print $1 }')
+    if [[ -n "$SESSION" ]]; then
+        screen -X -S $SESSION quit
+    fi
+fi
+
+# Handle iSCSI targets here...don't delete, just stop
+if [[ "$os_PACKAGE" = "deb" ]]; then
+    stop_service tgt
+else
+    stop_service tgtd
+fi
+
+# Unplumb the LVM backing file
+sudo vgchange -a n stack-volumes
+DEV=$(sudo losetup -j $DATA_DIR/${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print $1 }')
+sudo losetup -d $DEV

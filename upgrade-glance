@@ -46,7 +46,7 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Images
+# Upgrade Glance
 # ==============
 
 # Kill a running Glance
@@ -61,19 +61,17 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
+DATA_DIR=${DEST}/data
 SERVICE_HOST=${SERVICE_HOST:-localhost}
-S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/keystone
+
+SYSLOG=`trueorfalse False $SYSLOG`
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/glance
-
-# install_glance()
-install_glanceclient
-install_glance
-
-configure_glanceclient
-
 
 # Save original files and prepare to upgrade conf files
 [[ -r $GLANCE_REGISTRY_CONF.$BASE_RELEASE ]] || \
@@ -88,11 +86,17 @@ configure_glanceclient
 [[ -r $GLANCE_API_PASTE_INI.$BASE_RELEASE ]] || \
     cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$BASE_RELEASE
 
-# configure_glance()
-setup_develop $GLANCE_DIR
+# install_glance()
+install_glanceclient
+install_glance
 
+# configure_glance()
+configure_glanceclient
+configure_glance
 
 # Simulate init_glance()
+create_glance_cache_dir
+
 # Migrate the database
 glance-manage db_sync || die "DB sync error"
 

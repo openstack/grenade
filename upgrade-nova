@@ -42,6 +42,9 @@ set -o errexit
 # an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
+
 
 # Upgrade Nova
 # ============
@@ -51,59 +54,55 @@ for serv in n-api n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
-QUANTUMCLIENT_DIR=$DEST/python-quantumclient
-QUANTUM_DIR=$DEST/quantum
-
-SYSLOG=`trueorfalse False $SYSLOG`
+MYSQL_HOST=${MYSQL_HOST:-localhost}
+MYSQL_USER=${MYSQL_USER:-root}
+BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
+DATA_DIR=${DEST}/data
 SERVICE_HOST=${SERVICE_HOST:-localhost}
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+source $TARGET_DEVSTACK_DIR/lib/database
+
+SYSLOG=`trueorfalse False $SYSLOG`
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/baremetal
+source $TARGET_DEVSTACK_DIR/lib/quantum
+
+# install_quantumclient()
+install_quantumclient
+setup_quantumclient
 
 NOVNC_DIR=$DEST/noVNC
 
-# install_quantumclient()
-[[ -d $QUANTUMCLIENT_DIR ]] && sudo chown -R `whoami` $QUANTUMCLIENT_DIR
-git_clone $QUANTUM_CLIENT_REPO $QUANTUMCLIENT_DIR $QUANTUM_CLIENT_BRANCH
-setup_develop $QUANTUMCLIENT_DIR
+# Save current conf files for some reason...
+[[ -r $NOVA_CONF.$BASE_RELEASE ]] || cp -p $NOVA_CONF $NOVA_CONF.$BASE_RELEASE
+[[ -r $NOVA_CONF_DIR/api-paste.ini.$BASE_RELEASE ]] || cp -p $NOVA_CONF_DIR/api-paste.ini $NOVA_CONF_DIR/api-paste.ini.$BASE_RELEASE
+[[ -r $NOVA_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $NOVA_CONF_DIR/policy.json $NOVA_CONF_DIR/policy.json.$BASE_RELEASE
 
 # install_nova()
-sudo chown -R `whoami` $NOVACLIENT_DIR $NOVA_DIR
 install_novaclient
 install_nova
 
-# configure_quantumclient()
-setup_develop $QUANTUMCLIENT_DIR
-
 # configure_nova()
 configure_novaclient
-setup_develop $NOVA_DIR
+configure_nova
 
-# ``nova.conf``
-# Normally created from scratch on each run if ``stack.sh``
-# Until we can call that without duplicating the code just convert the old one
-
-[[ -r $NOVA_CONF.$BASE_RELEASE ]] || \
-    cp -p $NOVA_CONF $NOVA_CONF.$BASE_RELEASE
-#cp -p $NOVA_CONF.$BASE_RELEASE $NOVA_CONF
-
-# NOOP for now!
+# Simulate init_nova()
+create_nova_cache_dir
+create_nova_keys_dir
 
 # Migrate the database
 nova-manage --config-file $NOVA_CONF db sync || die "DB sync error"
 
 # Start Nova
-# n-api is started independently in stack.sh
-screen_it n-api "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-api"
-
+start_nova_api
 start_nova
-
-is_service_enabled swift3 || screen_it n-obj "cd $NOVA_DIR && $NOVA_BIN_DIR/nova-objectstore"
 
 set +o xtrace
 echo "*********************************************************************"
