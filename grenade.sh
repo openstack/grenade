@@ -194,18 +194,6 @@ echo_summary "Shutting down base"
 $GRENADE_DIR/stop-base
 stop $STOP stop-base 140
 
-# Save databases
-# --------------
-
-echo_summary "Sourcing base DevStack config"
-source $BASE_DEVSTACK_DIR/stackrc
-echo_summary "Dumping base databases"
-mkdir -p $SAVE_DIR
-for db in keystone glance nova cinder; do
-    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$BASE_RELEASE
-done
-stop $STOP mysqldump 150
-
 
 # Upgrades
 # ========
