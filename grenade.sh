@@ -233,6 +233,11 @@ echo_summary "Running upgrade-cinder"
 $GRENADE_DIR/upgrade-cinder || die "Failure in upgrade-cinder"
 stop $STOP upgrade-cinder 270
 
+# Upgrade Swift
+echo_summary "Running upgrade-swift"
+$GRENADE_DIR/upgrade-swift || die "Failure in upgrade-swift"
+stop $STOP upgrade-swift 280
+
 
 # Upgrade Tests
 # =============
