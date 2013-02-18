@@ -93,6 +93,9 @@ install_nova
 configure_novaclient
 configure_nova
 
+# Create nova.conf
+create_nova_conf
+
 # Simulate init_nova()
 create_nova_cache_dir
 create_nova_keys_dir
