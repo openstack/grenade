@@ -101,7 +101,7 @@ fi
 # ===========
 
 # Copy data dir
-rsync -av $BASE_RELEASE_DIR/data $TARGET_RELEASE_DIR
+sudo rsync -av $BASE_RELEASE_DIR/data $TARGET_RELEASE_DIR
 
 # temporarily move base data aside to make sure it isn't being used...
 mv $BASE_RELEASE_DIR/data $BASE_RELEASE_DIR/data.hide
