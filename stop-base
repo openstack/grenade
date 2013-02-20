@@ -39,6 +39,11 @@ if [[ -n "$SCREEN" ]]; then
     fi
 fi
 
+# Swift runs daemons
+if is_service_enabled swift; then
+    swift-init all stop 2>/dev/null || true
+fi
+
 # Handle iSCSI targets here...don't delete, just stop
 if [[ "$os_PACKAGE" = "deb" ]]; then
     stop_service tgt

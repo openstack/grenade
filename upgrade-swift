@@ -71,6 +71,12 @@ SERVICE_TOKEN=${SERVICE_TOKEN:-aa-token-bb}
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
 source $TARGET_DEVSTACK_DIR/lib/swift
+SWIFT_CONFIG_PROXY_SERVER=${SWIFT_CONFIG_DIR}/proxy-server.conf
+SWIFT_CONF=${SWIFT_CONFIG_DIR}/swift.conf
+
+# Save current conf files for some reason...
+[[ -r $SWIFT_CONFIG_PROXY_SERVER.$BASE_RELEASE ]] || cp -p $SWIFT_CONFIG_PROXY_SERVER $SWIFT_CONFIG_PROXY_SERVER.$BASE_RELEASE
+[[ -r $SWIFT_CONF.$BASE_RELEASE ]] || cp -p $SWIFT_CONF $SWIFT_CONF.$BASE_RELEASE
 
 # install_swift()
 install_swift
