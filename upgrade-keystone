@@ -93,7 +93,7 @@ keystone-manage pki_setup || die "PKI setup error"
 # Table 'role' column 'extra' is varchar(64) when upgraded from folsom
 # and varchar(255) when created in trunk.  The upgraded value is NULL
 # while the trunk value is '{}'.  Oops!
-mysql -uroot -p$MYSQL_PASSWORD keystone -e "alter table role modify name varchar(255);update role set extra = '{}';"
+mysql -uroot -p$MYSQL_PASSWORD keystone -e "alter table role modify name varchar(255);update role set extra = '{}' where extra is NULL;"
 
 
 # Start Keystone
