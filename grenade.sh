@@ -7,9 +7,12 @@
 # Grenade assumes it is running on the system that will be hosting the
 # upgrade processes
 
-# ``grenade.sh [-s stop-label]``
+# ``grenade.sh [-b] [-t] [-s stop-label] [-q]``
 #
-# ``stop-label`` is the name of the step after which the script will stop.
+# ``-b``	Run only the base part
+# ``-t``	Run only the target part (assumes a base run is in place)
+# ``-q``	Quiet mode
+# ``-s stop-label`` is the name of the step after which the script will stop.
 # This is useful for debugging upgrades.
 
 # Keep track of the Grenade directory
@@ -26,11 +29,23 @@ GetDistro
 # Source params
 source $GRENADE_DIR/grenaderc
 
-if [[ -n "$1" && "$1" == "-s" && -n "$2" ]]; then
-    STOP=$2
-fi
-
+RUN_BASE=$(trueorfalse True $RUN_BASE)
+RUN_TARGET=$(trueorfalse True $RUN_TARGET)
 VERBOSE=$(trueorfalse True $VERBOSE)
+
+while getopts bqs:t c; do
+	case $c in
+		b)		RUN_TARGET=False
+				;;
+		q)		VERBOSE=False
+				;;
+		s)		STOP=$2
+				;;
+		t)		RUN_BASE=False
+				;;
+	esac
+done
+shift `expr $OPTIND - 1`
 
 function echo_summary() {
     echo $@ >&6
@@ -139,127 +154,131 @@ TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-RUN_EXERCISES}
 # Install 'Base' Build of OpenStack
 # =================================
 
-#echo_summary "Sourcing base DevStack config"
-#source $BASE_DEVSTACK_DIR/stackrc
+if [[ "$RUN_BASE" == "True" ]]; then
+	#echo_summary "Sourcing base DevStack config"
+	#source $BASE_DEVSTACK_DIR/stackrc
 
-echo_summary "Running prep-base"
-$GRENADE_DIR/prep-base
-stop $STOP prep-base 01
+	echo_summary "Running prep-base"
+	$GRENADE_DIR/prep-base
+	stop $STOP prep-base 01
 
-echo_summary "Running base stack.sh"
-cd $BASE_DEVSTACK_DIR
-./stack.sh
-stop $STOP stack.sh 10
+	echo_summary "Running base stack.sh"
+	cd $BASE_DEVSTACK_DIR
+	./stack.sh
+	stop $STOP stack.sh 10
 
-# Cache downloaded instances
-# --------------------------
+	# Cache downloaded instances
+	# --------------------------
 
-echo_summary "Caching downloaded images"
-mkdir -p $BASE_RELEASE_DIR/images
-echo "Images: $IMAGE_URLS"
-for image_url in ${IMAGE_URLS//,/ }; do
-    IMAGE_FNAME=`basename "$image_url"`
-    if [[ -r $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
-        rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
-    fi
-done
-rsync -av $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
-stop $STOP image-cache 20
+	echo_summary "Caching downloaded images"
+	mkdir -p $BASE_RELEASE_DIR/images
+	echo "Images: $IMAGE_URLS"
+	for image_url in ${IMAGE_URLS//,/ }; do
+		IMAGE_FNAME=`basename "$image_url"`
+		if [[ -r $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
+			rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
+		fi
+	done
+	rsync -av $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
+	stop $STOP image-cache 20
 
 
-# Operation
-# ---------
+	# Operation
+	# ---------
 
-# Validate the install
-echo_summary "Running base exercises"
-if [[ "$BASE_RUN_EXERCISES" == "True" ]]; then
-	$BASE_DEVSTACK_DIR/exercise.sh
+	# Validate the install
+	echo_summary "Running base exercises"
+	if [[ "$BASE_RUN_EXERCISES" == "True" ]]; then
+		$BASE_DEVSTACK_DIR/exercise.sh
+	fi
+	stop $STOP base-exercise 110
+
+	# Create a project, users and instances
+	echo_summary "Creating Javelin project"
+	$GRENADE_DIR/setup-javelin
+	stop $STOP setup-javelin 120
+
+	# Save some stuff before we shut that whole thing down
+	echo_summary "Saving current state information"
+	$GRENADE_DIR/save-state
+	stop $STOP save-state 130
+
+	# Shut down running code
+	echo_summary "Shutting down base"
+	# unstack.sh is too aggressive in cleaning up by default
+	# so we'll do it ourselves...
+	$GRENADE_DIR/stop-base
+	stop $STOP stop-base 140
 fi
-stop $STOP base-exercise 110
-
-# Create a project, users and instances
-echo_summary "Creating Javelin project"
-$GRENADE_DIR/setup-javelin
-stop $STOP setup-javelin 120
-
-# Save some stuff before we shut that whole thing down
-echo_summary "Saving current state information"
-$GRENADE_DIR/save-state
-stop $STOP save-state 130
-
-# Shut down running code
-echo_summary "Shutting down base"
-# unstack.sh is too aggressive in cleaning up by default
-# so we'll do it ourselves...
-$GRENADE_DIR/stop-base
-stop $STOP stop-base 140
 
 
 # Upgrades
 # ========
 
-# Get target bits ready
-echo_summary "Running prep-target"
-$GRENADE_DIR/prep-target
-stop $STOP prep-target 210
+if [[ "$RUN_TARGET" == "True" ]]; then
+	# Get target bits ready
+	echo_summary "Running prep-target"
+	$GRENADE_DIR/prep-target
+	stop $STOP prep-target 210
 
-# Upgrade OS packages and known Python updates
-echo_summary "Running upgrade-packages"
-#$GRENADE_DIR/upgrade-packages
-stop $STOP upgrade-packages 220
+	# Upgrade OS packages and known Python updates
+	echo_summary "Running upgrade-packages"
+	#$GRENADE_DIR/upgrade-packages
+	stop $STOP upgrade-packages 220
 
-# Upgrade DevStack
-echo_summary "Running upgrade-devstack"
-#$GRENADE_DIR/upgrade-devstack
-stop $STOP upgrade-devstack 230
+	# Upgrade DevStack
+	echo_summary "Running upgrade-devstack"
+	#$GRENADE_DIR/upgrade-devstack
+	stop $STOP upgrade-devstack 230
 
-# Upgrade Keystone
-echo_summary "Running upgrade-keystone"
-$GRENADE_DIR/upgrade-keystone || die "Failure in upgrade-keystone"
-stop $STOP upgrade-keystone 240
+	# Upgrade Keystone
+	echo_summary "Running upgrade-keystone"
+	$GRENADE_DIR/upgrade-keystone || die "Failure in upgrade-keystone"
+	stop $STOP upgrade-keystone 240
 
-# Upgrade Glance
-echo_summary "Running upgrade-glance"
-$GRENADE_DIR/upgrade-glance || die "Failure in upgrade-glancwe"
-stop $STOP upgrade-glance 250
+	# Upgrade Glance
+	echo_summary "Running upgrade-glance"
+	$GRENADE_DIR/upgrade-glance || die "Failure in upgrade-glancwe"
+	stop $STOP upgrade-glance 250
 
-# Upgrade Nova
-echo_summary "Running upgrade-nova"
-$GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
-stop $STOP upgrade-nova 260
+	# Upgrade Nova
+	echo_summary "Running upgrade-nova"
+	$GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
+	stop $STOP upgrade-nova 260
 
-# Upgrade Cinder
-echo_summary "Running upgrade-cinder"
-$GRENADE_DIR/upgrade-cinder || die "Failure in upgrade-cinder"
-stop $STOP upgrade-cinder 270
+	# Upgrade Cinder
+	echo_summary "Running upgrade-cinder"
+	$GRENADE_DIR/upgrade-cinder || die "Failure in upgrade-cinder"
+	stop $STOP upgrade-cinder 270
 
-# Upgrade Swift
-echo_summary "Running upgrade-swift"
-$GRENADE_DIR/upgrade-swift || die "Failure in upgrade-swift"
-stop $STOP upgrade-swift 280
+	# Upgrade Swift
+	echo_summary "Running upgrade-swift"
+	$GRENADE_DIR/upgrade-swift || die "Failure in upgrade-swift"
+	stop $STOP upgrade-swift 280
 
 
-# Upgrade Tests
-# =============
+	# Upgrade Tests
+	# =============
 
-# Validate the upgrade
-echo_summary "Running target exercises"
-if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
-	$TARGET_DEVSTACK_DIR/exercise.sh
+	# Validate the upgrade
+	echo_summary "Running target exercises"
+	if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
+		$TARGET_DEVSTACK_DIR/exercise.sh
+	fi
+	stop $STOP target-exercise 310
+
+
+	# Save databases
+	# --------------
+
+	echo_summary "Sourcing target DevStack config"
+	source $TARGET_DEVSTACK_DIR/stackrc
+	echo_summary "Dumping target databases"
+	mkdir -p $SAVE_DIR
+	for db in keystone glance nova cinder; do
+		mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$TARGET_RELEASE
+	done
 fi
-stop $STOP target-exercise 310
-
-
-# Save databases
-# --------------
-
-echo_summary "Sourcing target DevStack config"
-source $TARGET_DEVSTACK_DIR/stackrc
-echo_summary "Dumping target databases"
-mkdir -p $SAVE_DIR
-for db in keystone glance nova cinder; do
-    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$TARGET_RELEASE
-done
 
 
 # Fin
