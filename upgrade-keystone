@@ -90,14 +90,69 @@ keystone-manage pki_setup || die "PKI setup error"
 ### Fix a missed upgrade bit
 ### Reported in bug 1119789
 
-# Table 'role' column 'extra' is varchar(64) when upgraded from folsom
-# and varchar(255) when created in trunk.  The upgraded value is NULL
-# while the trunk value is '{}'.  Oops!
-mysql -uroot -p$MYSQL_PASSWORD keystone -e "alter table role modify name varchar(255);update role set extra = '{}' where extra is NULL;"
+# First see if it is fixed yet
+extra=$(mysql -uroot -p$MYSQL_PASSWORD keystone -E -N -e "select extra from role where name = \"admin\";" | sed -n '2{p;q}')
+if [[ "$extra" == "NULL" ]]; then
+	# Table 'role' column 'extra' is varchar(64) when upgraded from folsom
+	# and varchar(255) when created in trunk.  The upgraded value is NULL
+	# while the trunk value is '{}'.  Oops!
+	mysql -uroot -p$MYSQL_PASSWORD keystone -e "alter table role modify name varchar(255);update role set extra = '{}' where extra is NULL;"
+fi
+
+
+### Roles are not correctly mapped in migration
+### Reported in bug 1131087
+
+# get_mysql_id <table> <name>
+function get_mysql_id() {
+    local table=$1
+    local name=$2
+    echo $(mysql -u$MYSQL_USER -p$MYSQL_PASSWORD keystone -E -N -e "select id from $table where name = \"$name\";" | sed -n '2{p;q}')
+}
+
+# get_mysql_roles <user-id>
+function get_mysql_roles() {
+	local user_id=$1
+    if [[ -n "$user_id" ]]; then
+        echo $(mysql -u$MYSQL_USER -p$MYSQL_PASSWORD keystone -E -N -e "select data from user_project_metadata where user_id = \"$user_id\";" | sed -n '2{p;q}')
+    fi
+}
+
+# First see if it is fixed yet
+# This should be enough to get keystone started so we can use the API to clean up the rest
+admin_id=$(get_mysql_id user admin)
+if [[ "$(get_mysql_roles $admin_id)" == "{\"roles\": [\"9fe2ff9ee4384b1894a90878d3e92bab\"]}" ]]; then
+	# Get admin role
+	role=$(get_mysql_id role admin)
+	# Add admin role where it is needed
+	for user in admin cinder glance nova swift; do
+	    user_id=$(get_mysql_id user $user)
+		data=$(get_mysql_roles $user_id)
+        role_json='{\"roles\": [\"9fe2ff9ee4384b1894a90878d3e92bab\", \"'${role}'\"]}'
+        mysql -u$MYSQL_USER -p$MYSQL_PASSWORD keystone -e "update user_project_metadata set data = \"${role_json}\" where user_id = '${user_id}';"
+	done
+fi
 
 
 # Start Keystone
 start_keystone
+
+
+### Continuation
+source $TARGET_DEVSTACK_DIR/openrc admin admin
+
+# Fix admin
+keystone user-role-remove --user admin --tenant admin --role _member_
+
+# Fix demo
+keystone user-role-remove --user demo --tenant demo --role _member_
+keystone user-role-add --user demo --tenant demo --role Member
+keystone user-role-add --user demo --tenant demo --role anotherrole
+
+# Fix javelin
+keystone user-role-remove --user javelin --tenant javelin --role _member_
+keystone user-role-add --user javelin --tenant javelin --role Member
+
 
 set +o xtrace
 echo "*********************************************************************"
