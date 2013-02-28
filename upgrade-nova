@@ -103,6 +103,11 @@ create_nova_keys_dir
 # Migrate the database
 nova-manage --config-file $NOVA_CONF db sync || die "DB sync error"
 
+
+# Need to set the default compute driver
+iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
+
+
 # Start Nova
 start_nova_api
 start_nova
