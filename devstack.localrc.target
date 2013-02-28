@@ -31,3 +31,7 @@ VOLUME_BACKING_FILE_SIZE=10000M
 enable_service swift
 SWIFT_HASH=8213897fads879789asdf789
 SWIFT_REPLICAS=1
+
+# DevStack upgraded the cirros image between folsom and grizzly, use the old one here
+DEFAULT_IMAGE_NAME=cirros-0.3.0-x86_64-uec
+IMAGE_URLS=http://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-uec.tar.gz
