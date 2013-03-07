@@ -52,6 +52,7 @@ NOVACLIENT_DIR=python-novaclient
 NOVA_DIR=nova
 
 # Timeouts
+ACTIVE_TIMEOUT=120
 SERVICE_TIMEOUT=120
 
 # Allow local overrides of env variables
