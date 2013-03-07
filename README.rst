@@ -3,25 +3,43 @@ Grenade
 
 Grenade is an OpenStack test harness to exercise the upgrade process
 between releases.  It uses DevStack to perform an initial OpenStack
-install and as a reference for the final configuration.
+install and as a reference for the final configuration.  Currently
+Grenade upgrades Keystone, Glance, Nova, Cinder and Swift in
+their default DevStack configurations.
 
-This branch tests the upgrade path from Folsom to Grizzly development 
-for Keystone, Glance, Nova and Cinder.
+The master branch tests the upgrade path from the previous release 
+(aka 'base') to the current trunk (aka 'target').  Stable branches 
+of grenade will be created soon after an OpenStack release and after
+a corresponding DevStack stable branch is available.
 
-If you are looking for the Essex -> Folsom upgrade check out the 
-``stable/folsom`` branch.
+For example, following the release of Grizzly and the creation of
+DevStack's stable/grizzly branch a similar stable/grizzly branch
+of Grenade will be created.  At that time master will be re-worked
+to base on Grizzly and the cycle will continue.
 
-Status
-------
-
-Development has begun for the Folsom (base-release) -> Grizzly (target-release) upgrade.
 
 Goals
 -----
 
+Continually test the upgrade process between OpenStack releases to
+find issues as they are introduced so they can be fixed immediately.
+
+
+Status
+------
+
+Preparations are ongoing to add Grenade as a non-voting job in the
+OpenStack CI Jenkins.
+
+* Testing of the 'javelin' project artifacts is incomplete
+
+Process
+-------
+
 * Install base OpenStack using current stable/<base-release> DevStack
 * Perform basic testing (exercise.sh)
-* Create some non-default configuration to use as a conversion reference
+* Create some artifacts in a new project ('javelin') for comparison
+  after the upgrade process.
 * Install current target DevStack to support the upgrades
 * Run upgrade scripts preserving (running?) instances and data
 
@@ -32,7 +50,7 @@ Terminology
 Grenade has two DevStack installs present and distinguished between then
 as 'base' and 'target'.
 
-* **Base**: The initial install that is will be upgraded.
+* **Base**: The initial install that will be upgraded.
 * **Target**: The reference install of target OpenStack (maybe just DevStack)
 
 
@@ -43,15 +61,17 @@ Grenade creates a set of directories for both the base and target
 OpenStack installation sources and DevStack.
 
 $DEST
- |- data
  |- logs                # Grenade logs
  |- <base>
+ |   |- data            # base data
  |   |- logs            # base DevStack logs
  |   |- devstack
+ |   |- images          # cache of downloaded images
  |   |- cinder
  |   |- ...
  |   |- swift
  |- <target>
+ |   |- data            # target data
  |   |- logs            # target DevStack logs
  |   |- devstack
  |   |- cinder
@@ -85,10 +105,10 @@ for DevStack that are used to customize its behaviour for use with Grenade.
 If ``$DEST/devstack.$BASE_RELEASE/localrc`` does not exist the following is
 performed by ``prep-base``:
 
-* ``devstack.localrc.base`` is copied to to ``$DEST/devstack.folsom/localrc``
-* if ``devstack.localrc`` exists it is appended ``$DEST/devstack.folsom/localrc``
+* ``devstack.localrc.base`` is copied to to ``$DEST/$BASE_RELEASE/devstack/localrc``
+* if ``devstack.localrc`` exists it is appended ``$DEST/$BASE_RELEASE/devstack/localrc``
 
-Similar steps are performed by ``prep-target`` for ``devstack.grizzly``.
+Similar steps are performed by ``prep-target`` for ``$DEST/$BASE_RELEASE/devstack``.
 
 ``devstack.localrc`` will be appended to both DevStack ``localrc`` files if it
 exists.  ``devstack.localrc`` is not included in Grenade and will not be
@@ -113,17 +133,18 @@ Prepare For An Upgrade Test
 
     ./grenade.sh
 
-``grenade.sh`` installs DevStack for the **Base** release (Folsom) and
+``grenade.sh`` installs DevStack for the **Base** release and
 runs its ``stack.sh``.  Then it creates a 'javelin' project containing
 some non-default configuration.
 
 This is roughly the equivalent to::
 
     grenade/prep-base
-    cd /opt/stack/devstack.essex
-    ./stack.sh
+    (cd /opt/stack/folsom/devstack
+     ./stack.sh)
     grenade/setup-javelin
-    ./unstack.sh
+    (cd /opt/stack/folsom/devstack
+     ./unstack.sh)
     # dump databases to $DEST/save
     grenade/prep-target
     grenade/upgrade-packages
@@ -131,9 +152,10 @@ This is roughly the equivalent to::
     grenade/upgrade-keystone
     grenade/upgrade-glance
     grenade/upgrade-nova
-    grenade/upgrade-volume
+    grenade/upgrade-cinder
+    grenade/upgrade-swift
 
-The **Target** release (Grizzly) of DevStack is installed in a different
+The **Target** release of DevStack is installed in a different
 directory from the **Base** release.
 
 While the **Base** release is running an imaginary **Javelin** tenant
