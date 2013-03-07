@@ -48,6 +48,15 @@ for db in keystone glance nova cinder swift; do
 done
 
 
+# Save ebtables/iptables
+# ----------------------
+
+sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
+sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
+sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
+sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
+
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"
