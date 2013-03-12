@@ -67,9 +67,8 @@ source $TARGET_DEVSTACK_DIR/lib/database
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
-# Save current conf files for some reason...
-[[ -r $KEYSTONE_CONF.$BASE_RELEASE ]] || cp -p $KEYSTONE_CONF $KEYSTONE_CONF.$BASE_RELEASE
-[[ -r $KEYSTONE_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $KEYSTONE_CONF_DIR/policy.json $KEYSTONE_CONF_DIR/policy.json.$BASE_RELEASE
+# Save current config files for posterity
+[[ -d $SAVE_DIR/etc.keystone ]] || cp -pr $KEYSTONE_CONF_DIR $SAVE_DIR/etc.keystone
 
 # install_keystone()
 install_keystoneclient

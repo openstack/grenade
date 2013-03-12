@@ -74,18 +74,8 @@ SYSLOG=`trueorfalse False $SYSLOG`
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/glance
 
-# Save original files and prepare to upgrade conf files
-[[ -r $GLANCE_REGISTRY_CONF.$BASE_RELEASE ]] || \
-    cp -p $GLANCE_REGISTRY_CONF $GLANCE_REGISTRY_CONF.$BASE_RELEASE
-
-[[ -r $GLANCE_API_CONF.$BASE_RELEASE ]] || \
-    cp -p $GLANCE_API_CONF $GLANCE_API_CONF.$BASE_RELEASE
-
-[[ -r $GLANCE_REGISTRY_PASTE_INI.$BASE_RELEASE ]] || \
-    cp -p $GLANCE_REGISTRY_PASTE_INI $GLANCE_REGISTRY_PASTE_INI.$BASE_RELEASE
-
-[[ -r $GLANCE_API_PASTE_INI.$BASE_RELEASE ]] || \
-    cp -p $GLANCE_API_PASTE_INI $GLANCE_API_PASTE_INI.$BASE_RELEASE
+# Save current config files for posterity
+[[ -d $SAVE_DIR/etc.glance ]] || cp -pr $GLANCE_CONF_DIR $SAVE_DIR/etc.glance
 
 # install_glance()
 install_glanceclient

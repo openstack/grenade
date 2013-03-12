@@ -80,10 +80,8 @@ setup_quantumclient
 
 NOVNC_DIR=$DEST/noVNC
 
-# Save current conf files for some reason...
-[[ -r $NOVA_CONF.$BASE_RELEASE ]] || cp -p $NOVA_CONF $NOVA_CONF.$BASE_RELEASE
-[[ -r $NOVA_CONF_DIR/api-paste.ini.$BASE_RELEASE ]] || cp -p $NOVA_CONF_DIR/api-paste.ini $NOVA_CONF_DIR/api-paste.ini.$BASE_RELEASE
-[[ -r $NOVA_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $NOVA_CONF_DIR/policy.json $NOVA_CONF_DIR/policy.json.$BASE_RELEASE
+# Save current config files for posterity
+[[ -d $SAVE_DIR/etc.nova ]] || cp -pr $NOVA_CONF_DIR $SAVE_DIR/etc.nova
 
 # install_nova()
 install_novaclient

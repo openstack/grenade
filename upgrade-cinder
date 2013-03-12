@@ -73,10 +73,8 @@ source $TARGET_DEVSTACK_DIR/lib/keystone
 
 source $TARGET_DEVSTACK_DIR/lib/cinder
 
-# Save current conf files for some reason...
-[[ -r $CINDER_CONF.$BASE_RELEASE ]] || cp -p $CINDER_CONF $CINDER_CONF.$BASE_RELEASE
-[[ -r $CINDER_CONF_DIR/api-paste.ini.$BASE_RELEASE ]] || cp -p $CINDER_CONF_DIR/api-paste.ini $CINDER_CONF_DIR/api-paste.ini.$BASE_RELEASE
-[[ -r $CINDER_CONF_DIR/policy.json.$BASE_RELEASE ]] || cp -p $CINDER_CONF_DIR/policy.json $CINDER_CONF_DIR/policy.json.$BASE_RELEASE
+# Save current config files for posterity
+[[ -d $SAVE_DIR/etc.cinder ]] || cp -pr $CINDER_CONF_DIR $SAVE_DIR/etc.cinder
 
 # install_cinder()
 install_cinder
