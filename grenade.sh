@@ -233,27 +233,27 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 
 	# Upgrade Keystone
 	echo_summary "Running upgrade-keystone"
-	$GRENADE_DIR/upgrade-keystone || die "Failure in upgrade-keystone"
+	$GRENADE_DIR/upgrade-keystone || die $LINENO "Failure in upgrade-keystone"
 	stop $STOP upgrade-keystone 240
 
 	# Upgrade Glance
 	echo_summary "Running upgrade-glance"
-	$GRENADE_DIR/upgrade-glance || die "Failure in upgrade-glancwe"
+	$GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glancwe"
 	stop $STOP upgrade-glance 250
 
 	# Upgrade Nova
 	echo_summary "Running upgrade-nova"
-	$GRENADE_DIR/upgrade-nova || die "Failure in upgrade-nova"
+	$GRENADE_DIR/upgrade-nova || die $LINENO "Failure in upgrade-nova"
 	stop $STOP upgrade-nova 260
 
 	# Upgrade Cinder
 	echo_summary "Running upgrade-cinder"
-	$GRENADE_DIR/upgrade-cinder || die "Failure in upgrade-cinder"
+	$GRENADE_DIR/upgrade-cinder || die $LINENO "Failure in upgrade-cinder"
 	stop $STOP upgrade-cinder 270
 
 	# Upgrade Swift
 	echo_summary "Running upgrade-swift"
-	$GRENADE_DIR/upgrade-swift || die "Failure in upgrade-swift"
+	$GRENADE_DIR/upgrade-swift || die $LINENO "Failure in upgrade-swift"
 	stop $STOP upgrade-swift 280
 
 

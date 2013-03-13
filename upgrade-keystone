@@ -81,10 +81,10 @@ configure_keystone
 
 # Simulate init_keystone()
 # Migrate the database
-keystone-manage db_sync || die "DB sync error"
+keystone-manage db_sync || die $LINENO "DB sync error"
 
 # Set up certificates
-keystone-manage pki_setup || die "PKI setup error"
+keystone-manage pki_setup || die $LINENO "PKI setup error"
 
 
 ### Fix a missed upgrade bit

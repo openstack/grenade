@@ -97,7 +97,7 @@ fi
 if ! nova secgroup-list | grep -q $JAVELIN_SECGROUP; then
     nova secgroup-create $JAVELIN_SECGROUP "$JPROJECT access rules"
     if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova secgroup-list | grep -q $JAVELIN_SECGROUP; do sleep 1; done"; then
-        die "$JAVELIN_SECGROUP security group not created"
+        die $LINENO "$JAVELIN_SECGROUP security group not created"
     fi
 fi
 
@@ -124,7 +124,7 @@ fi
 if ! nova volume-list | grep -q $JAVELIN_VOLUME; then
     nova volume-create --display_name=$JAVELIN_VOLUME 1
     if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova volume-list | grep $JAVELIN_VOLUME | grep -q available; do sleep 1; done"; then
-        die "$JAVELIN_VOLUME volume not created"
+        die $LINENO "$JAVELIN_VOLUME volume not created"
     fi
 fi
 
@@ -135,11 +135,11 @@ fi
 BOOT_TXT=$(nova boot --flavor "$FLAVOR" --image "$IMAGE" $JSERVER |  awk  "/adminPass/ { print \$2 \"=\" \$4 };/ id / { print \$2 \"=\" \$4 }"; exit ${PIPESTATUS[0]})
 ret=$?
 if [[ ! $ret = 0 ]]; then
-    die "Failed to boot $JSERVER"
+    die $LINENO "Failed to boot $JSERVER"
 fi
 eval $BOOT_TXT
 
 # Check that the status is active within ACTIVE_TIMEOUT seconds
 if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova show $id | grep status | grep -q ACTIVE; do sleep 1; done"; then
-    die "server didn't become active!"
+    die $LINENO "server didn't become active!"
 fi

@@ -106,10 +106,12 @@ for the end-user.
   (instance boot failure, for example)::
 
     swift post $CONTAINER
-    die_if_error "Failure creating container $CONTAINER"
+    if [[ $? != 0 ]]; then
+        die $LINENO "Failure creating container $CONTAINER"
+    fi
 
     FLOATING_IP=`euca-allocate-address | cut -f2`
-    die_if_not_set FLOATING_IP "Failure allocating floating IP"
+    die_if_not_set $LINENO FLOATING_IP "Failure allocating floating IP"
 
 * If you want an exercise to be skipped when for example a service wasn't
   enabled for the exercise to be run, you can exit your exercise with the

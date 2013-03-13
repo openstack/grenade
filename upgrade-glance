@@ -99,7 +99,7 @@ configure_glance
 create_glance_cache_dir
 
 # Migrate the database
-glance-manage db_sync || die "DB sync error"
+glance-manage db_sync || die $LINENO "DB sync error"
 
 
 # Start Glance
