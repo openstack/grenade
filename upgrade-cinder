@@ -87,7 +87,7 @@ create_cinder_volume_group
 create_cinder_cache_dir
 
 # Migrate the database
-cinder-manage db sync || die "DB migration error"
+cinder-manage db sync || die $LINENO "DB migration error"
 
 # Let grizzly devstack re-create the include file
 sudo rm /etc/tgt/conf.d/cinder.conf

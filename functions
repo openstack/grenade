@@ -53,12 +53,19 @@ function cp_it {
 }
 
 
-# Prints "message" and exits
-# die "message"
+# Prints line number and "message" then exits
+# die $LINENO "message"
 function die() {
     local exitcode=$?
+    if [ $exitcode == 0 ]; then
+        exitcode=1
+    fi
     set +o xtrace
-    echo $@
+    local msg="[ERROR] $0:$1 $2"
+    echo $msg 1>&2;
+    if [[ -n ${SCREEN_LOGDIR} ]]; then
+        echo $msg >> "${SCREEN_LOGDIR}/error.log"
+    fi
     exit $exitcode
 }
 
@@ -66,17 +73,37 @@ function die() {
 # Checks an environment variable is not set or has length 0 OR if the
 # exit code is non-zero and prints "message" and exits
 # NOTE: env-var is the variable name without a '$'
-# die_if_not_set env-var "message"
+# die_if_not_set $LINENO env-var "message"
 function die_if_not_set() {
     (
         local exitcode=$?
         set +o xtrace
-        local evar=$1; shift
+        local evar=$2; shift
         if ! is_set $evar || [ $exitcode != 0 ]; then
-            echo $@
-            exit -1
+            die $@
         fi
     )
+}
+
+
+# HTTP and HTTPS proxy servers are supported via the usual environment variables [1]
+# ``http_proxy``, ``https_proxy`` and ``no_proxy``. They can be set in
+# ``localrc`` or on the command line if necessary::
+#
+# [1] http://www.w3.org/Daemon/User/Proxies/ProxyClients.html
+#
+#     http_proxy=http://proxy.example.com:3128/ no_proxy=repo.example.net ./stack.sh
+
+function export_proxy_variables() {
+    if [[ -n "$http_proxy" ]]; then
+        export http_proxy=$http_proxy
+    fi
+    if [[ -n "$https_proxy" ]]; then
+        export https_proxy=$https_proxy
+    fi
+    if [[ -n "$no_proxy" ]]; then
+        export no_proxy=$no_proxy
+    fi
 }
 
 
@@ -96,20 +123,63 @@ function get_field() {
 }
 
 
+# Get the default value for HOST_IP
+# get_default_host_ip fixed_range floating_range host_ip_iface host_ip
+function get_default_host_ip() {
+    local fixed_range=$1
+    local floating_range=$2
+    local host_ip_iface=$3
+    local host_ip=$4
+
+    # Find the interface used for the default route
+    host_ip_iface=${host_ip_iface:-$(ip route | sed -n '/^default/{ s/.*dev \(\w\+\)\s\+.*/\1/; p; }' | head -1)}
+    # Search for an IP unless an explicit is set by ``HOST_IP`` environment variable
+    if [ -z "$host_ip" -o "$host_ip" == "dhcp" ]; then
+        host_ip=""
+        host_ips=`LC_ALL=C ip -f inet addr show ${host_ip_iface} | awk '/inet/ {split($2,parts,"/");  print parts[1]}'`
+        for IP in $host_ips; do
+            # Attempt to filter out IP addresses that are part of the fixed and
+            # floating range. Note that this method only works if the ``netaddr``
+            # python library is installed. If it is not installed, an error
+            # will be printed and the first IP from the interface will be used.
+            # If that is not correct set ``HOST_IP`` in ``localrc`` to the correct
+            # address.
+            if ! (address_in_net $IP $fixed_range || address_in_net $IP $floating_range); then
+                host_ip=$IP
+                break;
+            fi
+        done
+    fi
+    echo $host_ip
+}
+
+
+function _get_package_dir() {
+    local pkg_dir
+    if is_ubuntu; then
+        pkg_dir=$FILES/apts
+    elif is_fedora; then
+        pkg_dir=$FILES/rpms
+    elif is_suse; then
+        pkg_dir=$FILES/rpms-suse
+    else
+        exit_distro_not_supported "list of packages"
+    fi
+    echo "$pkg_dir"
+}
+
 # get_packages() collects a list of package names of any type from the
 # prerequisite files in ``files/{apts|rpms}``.  The list is intended
 # to be passed to a package installer such as apt or yum.
 #
-# Only packages required for the services in ``ENABLED_SERVICES`` will be
+# Only packages required for the services in 1st argument will be
 # included.  Two bits of metadata are recognized in the prerequisite files:
 # - ``# NOPRIME`` defers installation to be performed later in stack.sh
 # - ``# dist:DISTRO`` or ``dist:DISTRO1,DISTRO2`` limits the selection
 #   of the package to the distros listed.  The distro names are case insensitive.
-#
-# Uses globals ``ENABLED_SERVICES``
-# get_packages dir
 function get_packages() {
-    local package_dir=$1
+    local services=$1
+    local package_dir=$(_get_package_dir)
     local file_to_parse
     local service
 
@@ -120,7 +190,7 @@ function get_packages() {
     if [[ -z "$DISTRO" ]]; then
         GetDistro
     fi
-    for service in general ${ENABLED_SERVICES//,/ }; do
+    for service in general ${services//,/ }; do
         # Allow individual services to specify dependencies
         if [[ -e ${package_dir}/${service} ]]; then
             file_to_parse="${file_to_parse} $service"
@@ -141,6 +211,10 @@ function get_packages() {
         elif [[ $service == ceilometer-* ]]; then
             if [[ ! $file_to_parse =~ ceilometer ]]; then
                 file_to_parse="${file_to_parse} ceilometer"
+            fi
+        elif [[ $service == s-* ]]; then
+            if [[ ! $file_to_parse =~ swift ]]; then
+                file_to_parse="${file_to_parse} swift"
             fi
         elif [[ $service == n-* ]]; then
             if [[ ! $file_to_parse =~ nova ]]; then
@@ -232,6 +306,8 @@ GetOSVersion() {
             if [[ $? -eq 0 ]]; then
                 os_VENDOR="openSUSE"
             fi
+        elif [[ $os_VENDOR == "openSUSE project" ]]; then
+            os_VENDOR="openSUSE"
         elif [[ $os_VENDOR =~ Red.*Hat ]]; then
             os_VENDOR="Red Hat"
         fi
@@ -385,12 +461,10 @@ function exit_distro_not_supported {
     fi
 
     if [ $# -gt 0 ]; then
-        echo "Support for $DISTRO is incomplete: no support for $@"
+        die $LINENO "Support for $DISTRO is incomplete: no support for $@"
     else
-        echo "Support for $DISTRO is incomplete."
+        die $LINENO "Support for $DISTRO is incomplete."
     fi
-
-    exit 1
 }
 
 
@@ -517,6 +591,60 @@ $option = $value
 }
 
 
+# Get a multiple line option from an INI file
+# iniget_multiline config-file section option
+function iniget_multiline() {
+    local file=$1
+    local section=$2
+    local option=$3
+    local values
+    values=$(sed -ne "/^\[$section\]/,/^\[.*\]/ { s/^$option[ \t]*=[ \t]*//gp; }" "$file")
+    echo ${values}
+}
+
+
+# Set a multiple line option in an INI file
+# iniset_multiline config-file section option value1 value2 valu3 ...
+function iniset_multiline() {
+    local file=$1
+    local section=$2
+    local option=$3
+    shift 3
+    local values
+    for v in $@; do
+        # The later sed command inserts each new value in the line next to
+        # the section identifier, which causes the values to be inserted in
+        # the reverse order. Do a reverse here to keep the original order.
+        values="$v ${values}"
+    done
+    if ! grep -q "^\[$section\]" "$file"; then
+        # Add section at the end
+        echo -e "\n[$section]" >>"$file"
+    else
+        # Remove old values
+        sed -i -e "/^\[$section\]/,/^\[.*\]/ { /^$option[ \t]*=/ d; }" "$file"
+    fi
+    # Add new ones
+    for v in $values; do
+        sed -i -e "/^\[$section\]/ a\\
+$option = $v
+" "$file"
+    done
+}
+
+
+# Append a new option in an ini file without replacing the old value
+# iniadd config-file section option value1 value2 value3 ...
+function iniadd() {
+    local file=$1
+    local section=$2
+    local option=$3
+    shift 3
+    local values="$(iniget_multiline $file $section $option) $@"
+    iniset_multiline $file $section $option $values
+}
+
+
 # is_service_enabled() checks if the service(s) specified as arguments are
 # enabled by the user in ``ENABLED_SERVICES``.
 #
@@ -529,6 +657,9 @@ $option = $value
 #   **ceilometer** returns true if any service enabled start with **ceilometer**
 #   **glance** returns true if any service enabled start with **g-**
 #   **quantum** returns true if any service enabled start with **q-**
+#   **swift** returns true if any service enabled start with **s-**
+#   For backward compatibility if we have **swift** in ENABLED_SERVICES all the
+#   **s-** services will be enabled. This will be deprecated in the future.
 #
 # Uses global ``ENABLED_SERVICES``
 # is_service_enabled service [service ...]
@@ -541,6 +672,8 @@ function is_service_enabled() {
         [[ ${service} == "ceilometer" && ${ENABLED_SERVICES} =~ "ceilometer-" ]] && return 0
         [[ ${service} == "glance" && ${ENABLED_SERVICES} =~ "g-" ]] && return 0
         [[ ${service} == "quantum" && ${ENABLED_SERVICES} =~ "q-" ]] && return 0
+        [[ ${service} == "swift" && ${ENABLED_SERVICES} =~ "s-" ]] && return 0
+        [[ ${service} == s-* && ${ENABLED_SERVICES} =~ "swift" ]] && return 0
     done
     return 1
 }
@@ -646,6 +779,21 @@ function install_package() {
 }
 
 
+# Distro-agnostic package uninstaller
+# uninstall_package package [package ...]
+function uninstall_package() {
+    if is_ubuntu; then
+        apt_get purge "$@"
+    elif is_fedora; then
+        yum remove -y "$@"
+    elif is_suse; then
+        rpm -e "$@"
+    else
+        exit_distro_not_supported "uninstalling packages"
+    fi
+}
+
+
 # Distro-agnostic function to tell if a package is installed
 # is_package_installed package [package ...]
 function is_package_installed() {
@@ -717,26 +865,33 @@ function restart_service() {
 # Helper to launch a service in a named screen
 # screen_it service "command-line"
 function screen_it {
-    NL=`echo -ne '\015'`
     SCREEN_NAME=${SCREEN_NAME:-stack}
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
+    SCREEN_DEV=`trueorfalse True $SCREEN_DEV`
 
     if is_service_enabled $1; then
         # Append the service to the screen rc file
         screen_rc "$1" "$2"
 
         screen -S $SCREEN_NAME -X screen -t $1
-        # sleep to allow bash to be ready to be send the command - we are
-        # creating a new window in screen and then sends characters, so if
-        # bash isn't running by the time we send the command, nothing happens
-        sleep 1.5
 
         if [[ -n ${SCREEN_LOGDIR} ]]; then
             screen -S $SCREEN_NAME -p $1 -X logfile ${SCREEN_LOGDIR}/screen-${1}.${CURRENT_LOG_TIME}.log
             screen -S $SCREEN_NAME -p $1 -X log on
             ln -sf ${SCREEN_LOGDIR}/screen-${1}.${CURRENT_LOG_TIME}.log ${SCREEN_LOGDIR}/screen-${1}.log
         fi
-        screen -S $SCREEN_NAME -p $1 -X stuff "$2 || touch \"$SERVICE_DIR/$SCREEN_NAME/$1.failure\"$NL"
+
+        if [[ "$SCREEN_DEV" = "True" ]]; then
+            # sleep to allow bash to be ready to be send the command - we are
+            # creating a new window in screen and then sends characters, so if
+            # bash isn't running by the time we send the command, nothing happens
+            sleep 1.5
+
+            NL=`echo -ne '\015'`
+            screen -S $SCREEN_NAME -p $1 -X stuff "$2 || touch \"$SERVICE_DIR/$SCREEN_NAME/$1.failure\"$NL"
+        else
+            screen -S $SCREEN_NAME -p $1 -X exec /bin/bash -c "$2 || touch \"$SERVICE_DIR/$SCREEN_NAME/$1.failure\""
+        fi
     fi
 }
 
@@ -895,6 +1050,15 @@ function upload_image() {
         return
     fi
 
+    # XenServer-ovf-format images are provided as .vhd.tgz as well
+    # and should not be decompressed prior to loading
+    if [[ "$image_url" =~ '.vhd.tgz' ]]; then
+        IMAGE="$FILES/${IMAGE_FNAME}"
+        IMAGE_NAME="${IMAGE_FNAME%.vhd.tgz}"
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public=True --container-format=ovf --disk-format=vhd < "${IMAGE}"
+        return
+    fi
+
     KERNEL=""
     RAMDISK=""
     DISK_FORMAT=""
@@ -975,9 +1139,12 @@ function upload_image() {
 #  $1 The name of the database backend to use (mysql, postgresql, ...)
 function use_database {
     if [[ -z "$DATABASE_BACKENDS" ]]; then
-        # The backends haven't initialized yet, just save the selection for now
+        # No backends registered means this is likely called from ``localrc``
+        # This is now deprecated usage
         DATABASE_TYPE=$1
+        DEPRECATED_TEXT="$DEPRECATED_TEXT\nThe database backend needs to be properly set in ENABLED_SERVICES; use_database is deprecated localrc\n"
     else
+        # This should no longer get called...here for posterity
         use_exclusive_service DATABASE_BACKENDS DATABASE_TYPE $1
     fi
 }
@@ -1048,9 +1215,9 @@ function _ping_check_novanet() {
     fi
     if ! timeout $boot_timeout sh -c "$check_command"; then
         if [[ "$expected" = "True" ]]; then
-            echo "[Fail] Couldn't ping server"
+            die $LINENO "[Fail] Couldn't ping server"
         else
-            echo "[Fail] Could ping server"
+            die $LINENO "[Fail] Could ping server"
         fi
         exit 1
     fi
@@ -1074,8 +1241,7 @@ function _ssh_check_novanet() {
     local ACTIVE_TIMEOUT=$5
     local probe_cmd=""
     if ! timeout $ACTIVE_TIMEOUT sh -c "while ! ssh -o StrictHostKeyChecking=no -i $KEY_FILE ${DEFAULT_INSTANCE_USER}@$FLOATING_IP echo success ; do sleep 1; done"; then
-        echo "server didn't become ssh-able!"
-        exit 1
+        die $LINENO "server didn't become ssh-able!"
     fi
 }
 

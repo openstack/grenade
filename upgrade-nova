@@ -99,7 +99,7 @@ create_nova_cache_dir
 create_nova_keys_dir
 
 # Migrate the database
-nova-manage --config-file $NOVA_CONF db sync || die "DB sync error"
+nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
 
 # Need to set the default compute driver
