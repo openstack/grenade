@@ -68,13 +68,12 @@ export OS_PASSWORD=$JPASSWORD
 
 # It's really cirros with our own name
 # Assumes DevStack.$START has already set this up
-BASE_NAME=0.3.0-x86_64
-CIRROS_IMAGE=cirros-${BASE_NAME}
-CIRROS_DIR=$BASE_DEVSTACK_DIR/files/images/$CIRROS_IMAGE-uec
-KERNEL=$CIRROS_DIR/$CIRROS_IMAGE-vmlinuz
-RAMDISK=$CIRROS_DIR/$CIRROS_IMAGE-initrd
-ROOTDISK=$CIRROS_DIR/$CIRROS_IMAGE-blank.img
-JAVELIN_IMAGE=javelin-${BASE_NAME}-uec
+CIRROS_IMAGE=${DEFAULT_IMAGE_NAME:-cirros-0.3.0-x86_64-uec}
+CIRROS_DIR=$BASE_DEVSTACK_DIR/files/images/$CIRROS_IMAGE
+KERNEL=$CIRROS_DIR/${CIRROS_IMAGE/uec/}vmlinuz
+RAMDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}initrd
+ROOTDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}blank.img
+JAVELIN_IMAGE=${CIRROS_IMAGE/cirros/javelin}
 
 # Old glance client cuts off name field, use nova image-list for now
 IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
