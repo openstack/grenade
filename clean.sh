@@ -79,3 +79,6 @@ sudo rm -rf /var/lib/mysql
 # kill off swift, which doesn't live in screen, so doesn't die in screen
 ps auxw | grep swift | awk '{print $2}' | xargs kill
 
+# purge all the repo pulls
+sudo rm -rf $BASE_RELEASE_DIR
+sudo rm -rf $TARGET_RELEASE_DIR
