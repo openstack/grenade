@@ -54,7 +54,12 @@ fi
 # Unplumb the LVM backing file
 sudo vgchange -a n stack-volumes
 DEV=$(sudo losetup -j $DATA_DIR/${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print $1 }')
-sudo losetup -d $DEV
 
-# Unplumb the Swift data
-sudo umount ${DATA_DIR}/swift/drives/images/swift.img
+if [[ "x" != "x$DEV" ]]; then
+    sudo losetup -d $DEV
+else
+    echo "No device for backing volume"
+fi
+    # Unplumb the Swift data
+sudo umount ${DATA_DIR}/swift/drives/images/swift.img || /bin/true
+
