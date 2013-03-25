@@ -76,3 +76,6 @@ service mysqld stop
 sudo aptitude purge -y ~nmysql-server
 sudo rm -rf /var/lib/mysql
 
+# kill off swift, which doesn't live in screen, so doesn't die in screen
+ps auxw | grep swift | awk '{print $2}' | xargs kill
+
