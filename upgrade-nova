@@ -83,6 +83,7 @@ SYSLOG=`trueorfalse False $SYSLOG`
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/baremetal
 source $TARGET_DEVSTACK_DIR/lib/quantum
