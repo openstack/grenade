@@ -1,0 +1,5 @@
+# if you already have MYSQL and RABBIT setup on this system
+# from previous runs, copy this file to devstack.localrc 
+# with the appropriate passwords for override.
+MYSQL_PASSWORD=pass
+RABBIT_PASSWORD=pass
