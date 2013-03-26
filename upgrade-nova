@@ -127,6 +127,13 @@ LIBVIRT_FIREWALL_DRIVER=${LIBVIRT_FIREWALL_DRIVER:-"nova.virt.libvirt.firewall.I
 iniset $NOVA_CONF DEFAULT firewall_driver "$LIBVIRT_FIREWALL_DRIVER"
 
 
+# Upgrade Stuff
+
+# Workaround for https://bugs.launchpad.net/grenade/+bug/1160072
+# Fix default node names
+iniset $NOVA_CONF DEFAULT dhcp_domain ""
+
+
 # Start Nova
 start_nova_api
 start_nova
