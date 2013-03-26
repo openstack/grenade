@@ -131,7 +131,7 @@ iniset $NOVA_CONF DEFAULT firewall_driver "$LIBVIRT_FIREWALL_DRIVER"
 
 # Workaround for https://bugs.launchpad.net/grenade/+bug/1160072
 # Fix default node names
-iniset $NOVA_CONF DEFAULT dhcp_domain ""
+iniset $NOVA_CONF DEFAULT dhcp_domain '""'
 
 
 # Start Nova
