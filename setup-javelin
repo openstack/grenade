@@ -142,3 +142,11 @@ eval $BOOT_TXT
 if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova show $id | grep status | grep -q ACTIVE; do sleep 1; done"; then
     die $LINENO "server didn't become active!"
 fi
+
+# Put some stuff in Swift
+# -----------------------
+
+swift upload javelin /etc/hosts
+if ! swift list javelin | grep -q README; then
+    die $LINENO "Swift upload failed"
+fi
