@@ -35,8 +35,8 @@ if [[ ! -d $BASE_DEVSTACK_DIR ]]; then
 fi
 
 # Load up a copy of the downloaded images if not present
-if [[ -d $DEST/images ]]; then
-    rsync -a $DEST/images/* $BASE_DEVSTACK_DIR/files
+if [[ -d ${STACK_ROOT}/images ]]; then
+    rsync -a ${STACK_ROOT}/images/* $BASE_DEVSTACK_DIR/files
 fi
 
 # Set up base localrc

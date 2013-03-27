@@ -7,16 +7,16 @@ RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 # Another option is http://review.openstack.org/p
 GIT_BASE=https://github.com
 
-# Destination path for installation ``DEST``
-DEST=/opt/stack
-DATA_DIR=${DEST}/data
+# Destination path for installation ``STACK_ROOT``
+STACK_ROOT=/opt/stack
+DATA_DIR=${STACK_ROOT}/data
 
 # Release info
 BASE_RELEASE=folsom
-BASE_RELEASE_DIR=$DEST/$BASE_RELEASE
+BASE_RELEASE_DIR=${STACK_ROOT}/$BASE_RELEASE
 
 TARGET_RELEASE=grizzly
-TARGET_RELEASE_DIR=$DEST/$TARGET_RELEASE
+TARGET_RELEASE_DIR=${STACK_ROOT}/$TARGET_RELEASE
 
 # DevStack sources
 BASE_DEVSTACK_REPO=$GIT_BASE/openstack-dev/devstack.git
@@ -31,17 +31,17 @@ TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 RUN_EXERCISES=True
 
 # Saved stuff
-SAVE_DIR=$DEST/save
+SAVE_DIR=${STACK_ROOT}/save
 
 # Screen session name
 SCREEN_NAME=${SCREEN_NAME:-stack}
 
 # Logging
-LOGFILE=$DEST/logs/grenade.sh.log
+LOGFILE=${STACK_ROOT}/logs/grenade.sh.log
 LOGDAYS=1
 TIMESTAMP_FORMAT="%F-%H%M%S"
 CURRENT_LOG_TIME=${CURRENT_LOG_TIME:-$(date "+$TIMESTAMP_FORMAT")}
-SCREEN_LOGDIR=$DEST/logs/screen
+SCREEN_LOGDIR=${STACK_ROOT}/logs/screen
 
 # Project directories
 GLANCECLIENT_DIR=python-glanceclient

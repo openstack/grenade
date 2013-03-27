@@ -32,7 +32,7 @@ if [[ -d $BASE_DEVSTACK_DIR ]]; then
       source functions; \
       source stackrc; \
       source lib/cinder; \
-      DATA_DIR=\${DEST}/data; \
+      DATA_DIR=\${STACK_ROOT}/data; \
       ./unstack.sh --all; \
       cd -; \
       sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
@@ -49,7 +49,7 @@ if [[ -d $TARGET_DEVSTACK_DIR ]]; then
       source functions; \
       source stackrc; \
       source lib/cinder; \
-      DATA_DIR=\${DEST}/data; \
+      DATA_DIR=\${STACK_ROOT}/data; \
       ./unstack.sh --all; \
       cd -; \
       # need to test if volume is present

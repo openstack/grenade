@@ -25,7 +25,7 @@ set -o xtrace
 
 # Duplicate some setup bits from base DevStack
 source $BASE_DEVSTACK_DIR/stackrc
-DATA_DIR=${DEST}/data
+DATA_DIR=${STACK_ROOT}/data
 
 source $BASE_DEVSTACK_DIR/lib/cinder
 

@@ -60,7 +60,7 @@ Directory Structure
 Grenade creates a set of directories for both the base and target
 OpenStack installation sources and DevStack.
 
-$DEST
+$STACK_ROOT
  |- logs                # Grenade logs
  |- <base>
  |   |- data            # base data
@@ -102,13 +102,13 @@ this to ``localrc``::
 
 Grenade includes ``devstack.localrc.base`` and ``devstack.localrc.target``
 for DevStack that are used to customize its behaviour for use with Grenade.
-If ``$DEST/devstack.$BASE_RELEASE/localrc`` does not exist the following is
+If ``$BASE_DEVSTACK_DIR/localrc`` does not exist the following is
 performed by ``prep-base``:
 
-* ``devstack.localrc.base`` is copied to to ``$DEST/$BASE_RELEASE/devstack/localrc``
-* if ``devstack.localrc`` exists it is appended ``$DEST/$BASE_RELEASE/devstack/localrc``
+* ``devstack.localrc.base`` is copied to to ``$BASE_DEVSTACK_DIR/localrc``
+* if ``devstack.localrc`` exists it is appended ``$BASE_DEVSTACK_DIR/localrc``
 
-Similar steps are performed by ``prep-target`` for ``$DEST/$BASE_RELEASE/devstack``.
+Similar steps are performed by ``prep-target`` for ``$TARGET_DEVSTACK_DIR``.
 
 ``devstack.localrc`` will be appended to both DevStack ``localrc`` files if it
 exists.  ``devstack.localrc`` is not included in Grenade and will not be
@@ -145,7 +145,7 @@ This is roughly the equivalent to::
     grenade/setup-javelin
     (cd /opt/stack/folsom/devstack
      ./unstack.sh)
-    # dump databases to $DEST/save
+    # dump databases to $STACK_ROOT/save
     grenade/prep-target
     grenade/upgrade-packages
     grenade/upgrade-devstack

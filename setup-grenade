@@ -13,11 +13,11 @@ SRC_DIR=$(cd $(dirname "$0") && pwd)
 
 # Set up some defaults if grenaderc is not present
 GRENADE_REPO=https://github.com/openstack-dev/grenade.git
-GRENADE_DIR=$DEST/grenade
+GRENADE_DIR=${STACK_ROOT}/grenade
 GRENADE_BRANCH=master
 
-DEST=/opt/stack
-GRENADE_DIR=$DEST/grenade
+STACK_ROOT=/opt/stack
+GRENADE_DIR=${STACK_ROOT}/grenade
 
 # Source params
 if [[ -r $SRC_DIR/grenaderc ]]; then
@@ -33,9 +33,9 @@ DEST_USER=${USER:-${LOGNAME:-stack}}
 set -o xtrace
 
 ssh -t $DEST_USER@$HOST " \
-    sudo mkdir -p $DEST; \
-    [[ -w $DEST ]] || sudo chown `whoami` $DEST; \
-    [[ -d $GRENADE_DIR ]] || (cd $DEST; git clone $GRENADE_REPO $GRENADE_DIR); \
+    sudo mkdir -p ${STACK_ROOT}; \
+    [[ -w ${STACK_ROOT} ]] || sudo chown `whoami` ${STACK_ROOT}; \
+    [[ -d $GRENADE_DIR ]] || (cd ${STACK_ROOT}; git clone $GRENADE_REPO $GRENADE_DIR); \
     [[ -d $GRENADE_DIR ]] && (cd $GRENADE_DIR; git checkout $GRENADE_BRANCH); \
 "
 
