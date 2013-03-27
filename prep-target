@@ -43,6 +43,7 @@ fi
 if [[ ! -r $TARGET_DEVSTACK_DIR/localrc ]]; then
     sed -e "
         s|\@TARGET_RELEASE_DIR\@|$TARGET_RELEASE_DIR|
+        s|\@DATA_DIR@|$DATA_DIR|
     " $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
     if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
         cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
@@ -95,13 +96,3 @@ fi
 if [[ -n "$SCREEN_LOGDIR" ]]; then
     mkdir -p $SCREEN_LOGDIR
 fi
-
-
-# Set up Data
-# ===========
-
-# Copy data dir
-sudo rsync -av $BASE_RELEASE_DIR/data $TARGET_RELEASE_DIR
-
-# temporarily move base data aside to make sure it isn't being used...
-mv $BASE_RELEASE_DIR/data $BASE_RELEASE_DIR/data.hide
