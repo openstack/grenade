@@ -167,6 +167,18 @@ if [[ "$RUN_BASE" == "True" ]]; then
 	./stack.sh
 	stop $STOP stack.sh 10
 
+    #Clone and setup tempest
+    if [[ "$ENABLE_TEMPEST" == "True" ]]; then
+        echo "Clone and setup tempest base"
+        git_clone https://github.com/openstack/tempest.git $BASE_RELEASE_DIR/tempest stable/folsom
+        DEST_BACK=$DEST
+        DEST=$BASE_DEVSTACK_DIR
+        cd $DEST
+        tools/configure_tempest.sh
+        DEST=$DEST_BACK
+    fi
+
+
 	# Cache downloaded instances
 	# --------------------------
 
@@ -255,6 +267,13 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 	echo_summary "Running upgrade-swift"
 	$GRENADE_DIR/upgrade-swift || die $LINENO "Failure in upgrade-swift"
 	stop $STOP upgrade-swift 280
+
+    #Upgrade Tempest
+    if [[ "$ENABLE_TEMPEST" == "True" ]]; then
+        echo_summary "Running upgrade-tempest"
+        $GRENADE_DIR/upgrade-tempest || die $LINENO "Failure in upgrade-tempest"
+        stop $STOP upgrade-tempest 290
+    fi
 
 
 	# Upgrade Tests
