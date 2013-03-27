@@ -58,10 +58,12 @@ MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
 
+# set data dir before we switch DEST on us
+DATA_DIR=${DEST}/data
+
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
-DATA_DIR=${DEST}/data
 
 # From stack.sh
 FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
@@ -132,7 +134,7 @@ iniset $NOVA_CONF DEFAULT firewall_driver "$LIBVIRT_FIREWALL_DRIVER"
 
 # Workaround for https://bugs.launchpad.net/grenade/+bug/1160072
 # Fix default node names
-iniset $NOVA_CONF DEFAULT dhcp_domain '""'
+# iniset $NOVA_CONF DEFAULT dhcp_domain '""'
 
 
 # Start Nova
