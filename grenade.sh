@@ -15,6 +15,9 @@
 # ``-s stop-label`` is the name of the step after which the script will stop.
 # This is useful for debugging upgrades.
 
+# Temporary to figure out why fails are happening
+set -o xtrace
+
 # Keep track of the Grenade directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
@@ -81,6 +84,8 @@ if [[ -n "$LOGFILE" ]]; then
     # we added on earlier runs.
     LOGDIR=$(dirname "$LOGFILE")
     LOGNAME=$(basename "$LOGFILE")
+    echo "Creating $LOGDIR...."
+
     mkdir -p $LOGDIR
     find $LOGDIR -maxdepth 1 -name $LOGNAME.\* -mtime +$LOGDAYS -exec rm {} \;
     LOGFILE=$LOGFILE.${CURRENT_LOG_TIME}
@@ -166,18 +171,6 @@ if [[ "$RUN_BASE" == "True" ]]; then
 	cd $BASE_DEVSTACK_DIR
 	./stack.sh
 	stop $STOP stack.sh 10
-
-    #Clone and setup tempest
-    if [[ "$ENABLE_TEMPEST" == "True" ]]; then
-        echo "Clone and setup tempest base"
-        git_clone https://github.com/openstack/tempest.git $BASE_RELEASE_DIR/tempest stable/folsom
-        DEST_BACK=$DEST
-        DEST=$BASE_DEVSTACK_DIR
-        cd $DEST
-        tools/configure_tempest.sh
-        DEST=$DEST_BACK
-    fi
-
 
 	# Cache downloaded instances
 	# --------------------------
