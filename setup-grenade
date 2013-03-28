@@ -41,9 +41,9 @@ ssh -t $DEST_USER@$HOST " \
 
 # Copy devstack.localrc if it exists
 if [[ -r $SRC_DIR/devstack.localrc ]]; then
-	scp -p $SRC_DIR/devstack.localrc $DEST_USER@$HOST:$GRENADE_DIR
+    scp -p $SRC_DIR/devstack.localrc $DEST_USER@$HOST:$GRENADE_DIR
 fi
 # Copy localrc if it exists
 if [[ -r $SRC_DIR/localrc ]]; then
-	scp -p $SRC_DIR/localrc $DEST_USER@$HOST:$GRENADE_DIR
+    scp -p $SRC_DIR/localrc $DEST_USER@$HOST:$GRENADE_DIR
 fi
