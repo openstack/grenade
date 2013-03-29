@@ -15,9 +15,6 @@
 # ``-s stop-label`` is the name of the step after which the script will stop.
 # This is useful for debugging upgrades.
 
-# Temporary to figure out why fails are happening
-set -o xtrace
-
 # Keep track of the Grenade directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
