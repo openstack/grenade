@@ -61,20 +61,18 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/stackrc
+FILES=$TARGET_DEVSTACK_DIR/files
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 SERVICE_TOKEN=${SERVICE_TOKEN:-aa-token-bb}
-#source $TARGET_DEVSTACK_DIR/lib/database
-#source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
 source $TARGET_DEVSTACK_DIR/lib/swift
-SWIFT_CONFIG_PROXY_SERVER=${SWIFT_CONFIG_DIR}/proxy-server.conf
-SWIFT_CONF=${SWIFT_CONFIG_DIR}/swift.conf
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.swift ]] || cp -pr $SWIFT_CONF_DIR $SAVE_DIR/etc.swift
+cp -pr /etc/rsyncd.conf $SAVE_DIR
 
 # install_swift()
 install_swift
@@ -84,9 +82,27 @@ install_swiftclient
 configure_swift
 configure_swiftclient
 
-# Simulate init_swift()
-init_swift
 
+# Simulate swift_init()
+
+# Create cache dir
+USER_GROUP=$(id -g)
+sudo mkdir -p ${SWIFT_DATA_DIR}/{drives,cache,run,logs}
+sudo chown -R $USER:${USER_GROUP} ${SWIFT_DATA_DIR}
+
+# Create auth cache dir
+sudo mkdir -p $SWIFT_AUTH_CACHE_DIR
+sudo chown $STACK_USER $SWIFT_AUTH_CACHE_DIR
+rm -f $SWIFT_AUTH_CACHE_DIR/*
+
+# Mount backing disk
+if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
+    sudo mount -t xfs -o loop,noatime,nodiratime,nobarrier,logbufs=8  \
+        ${SWIFT_DATA_DIR}/drives/images/swift.img ${SWIFT_DATA_DIR}/drives/sdb1
+fi
+
+
+# Start Swift
 start_swift
 
 set +o xtrace

@@ -245,6 +245,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/upgrade-keystone || die $LINENO "Failure in upgrade-keystone"
     stop $STOP upgrade-keystone 240
 
+    # Upgrade Swift
+    echo_summary "Running upgrade-swift"
+    $GRENADE_DIR/upgrade-swift || die $LINENO "Failure in upgrade-swift"
+    stop $STOP upgrade-swift 245
+
     # Upgrade Glance
     echo_summary "Running upgrade-glance"
     $GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glancwe"
@@ -260,12 +265,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/upgrade-cinder || die $LINENO "Failure in upgrade-cinder"
     stop $STOP upgrade-cinder 270
 
-    # Upgrade Swift
-    echo_summary "Running upgrade-swift"
-    $GRENADE_DIR/upgrade-swift || die $LINENO "Failure in upgrade-swift"
-    stop $STOP upgrade-swift 280
-
-    #Upgrade Tempest
+    # Upgrade Tempest
     if [[ "$ENABLE_TEMPEST" == "True" ]]; then
         echo_summary "Running upgrade-tempest"
         $GRENADE_DIR/upgrade-tempest || die $LINENO "Failure in upgrade-tempest"
