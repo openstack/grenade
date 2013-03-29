@@ -20,8 +20,6 @@ GetDistro
 # Source params
 source $GRENADE_DIR/grenaderc
 
-# For debugging
-set -o xtrace
 
 # Duplicate some setup bits from base DevStack
 source $BASE_DEVSTACK_DIR/stackrc
@@ -29,6 +27,10 @@ DATA_DIR=${STACK_ROOT}/data
 
 source $BASE_DEVSTACK_DIR/lib/cinder
 
+# For debugging
+set -o xtrace
+
+echo "Shutting down devstack in screen"
 
 # Shut down running processes in screen - most of them
 SCREEN=$(which screen)
@@ -63,3 +65,17 @@ fi
     # Unplumb the Swift data
 sudo umount ${DATA_DIR}/swift/drives/images/swift.img || /bin/true
 
+# ensure everything is shut down
+STILL_RUNNING=""
+for name in ${FOLSOM_SERVICES}; do
+    if is_running ${name}; then
+        STILL_RUNNING="$STILL_RUNNING $name"
+    fi
+done
+
+if [[ -n "$STILL_RUNNING" ]]; then
+    echo "The following services are still running: $STILL_RUNNING"
+    # do a process dump at the end, just to see how bad things really are
+    ps auxw
+    exit 1
+fi

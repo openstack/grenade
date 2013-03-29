@@ -1305,6 +1305,15 @@ function get_pip_command() {
     fi
 }
 
+# Find out if a process exists by partial name.
+function is_running() {
+    local name=$1
+    ps auxw | grep -v grep | grep ${name} > /dev/null
+    RC=$?
+    # some times I really hate bash reverse binary logic
+    return $RC
+}
+
 # Restore xtrace
 $XTRACE
 

@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# ``upgrade-sanity``
+
+# this is a set of sanity checks that should be run after upgrade to make sure
+# the environment actually looks like we expect, if not, die horribly
+
+echo "*********************************************************************"
+echo "Begin $0"
+echo "*********************************************************************"
+
+# Keep track of the devstack directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# We need the OS_ credentials
+source $TARGET_DEVSTACK_DIR/openrc
+
+# all the services should actually be running that we expect
+NOT_RUNNING=""
+for name in ${GRIZZLY_SERVICES}; do
+    if ! is_running ${name}; then
+        NOT_RUNNING="$NOT_RUNNING $name"
+    fi
+done
+
+if [[ -n "$NOT_RUNNING" ]]; then
+    echo "The following services are not running after upgrade: $NOT_RUNNING"
+    # do a process dump at the end, just to see how bad things really are
+    ps auxw
+    exit 1
+fi
+
+# ensure that the peltast vm survived the upgrade
+OS_USERNAME=admin nova list --all-tenants | grep peltast > /dev/null
+RC=$?
+if [[ $RC -ne 0 ]]; then
+    echo "peltast vm did not survice the upgrade, something is wrong"
+    OS_USERNAME=admin nova list --all-tenants
+    exit 1
+fi

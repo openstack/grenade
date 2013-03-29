@@ -72,3 +72,14 @@ RECLONE=${RECLONE:-no}
 # Set these after localrc so user can pick-n-choose
 BASE_RUN_EXERCISES=${RUN_EXERCISES:=True}
 TARGET_RUN_EXERCISES=${RUN_EXERCISES:=True}
+
+# TODO(sdague): make these complete afterwards
+# The services we'd expect at each release
+FOLSOM_SERVICES="nova-api nova-compute keystone glance-api cinder-api"
+
+# The services we'd expect at each release
+GRIZZLY_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
+
+# Local variables:
+# mode: shell-script
+# End:

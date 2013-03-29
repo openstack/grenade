@@ -272,6 +272,10 @@ if [[ "$RUN_TARGET" == "True" ]]; then
         stop $STOP upgrade-tempest 290
     fi
 
+    # Upgrade Checks
+    echo_summary "Running upgrade sanity check"
+    $GRENADE_DIR/check-sanity || die $LINENO "Failure in check-sanity"
+    stop $STOP check-sanity 310
 
     # Upgrade Tests
     # =============
@@ -281,7 +285,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
         $TARGET_DEVSTACK_DIR/exercise.sh
     fi
-    stop $STOP target-exercise 310
+    stop $STOP target-exercise 320
 
 
     # Save databases
