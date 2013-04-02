@@ -74,7 +74,6 @@ install_keystoneclient
 install_keystone
 
 # configure_keystone()
-configure_keystoneclient
 configure_keystone
 
 # Simulate init_keystone()

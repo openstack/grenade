@@ -81,7 +81,6 @@ install_glanceclient
 install_glance
 
 # configure_glance()
-configure_glanceclient
 configure_glance
 
 # Simulate init_glance()

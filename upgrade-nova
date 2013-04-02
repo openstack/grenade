@@ -101,7 +101,6 @@ install_novaclient
 install_nova
 
 # configure_nova()
-configure_novaclient
 configure_nova
 
 # Create nova.conf
