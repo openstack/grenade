@@ -89,7 +89,6 @@ source $TARGET_DEVSTACK_DIR/lib/quantum
 
 # install_quantumclient()
 install_quantumclient
-setup_quantumclient
 
 NOVNC_DIR=$DEST/noVNC
 

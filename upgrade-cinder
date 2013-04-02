@@ -76,6 +76,7 @@ source $TARGET_DEVSTACK_DIR/lib/cinder
 [[ -d $SAVE_DIR/etc.cinder ]] || cp -pr $CINDER_CONF_DIR $SAVE_DIR/etc.cinder
 
 # install_cinder()
+install_cinderclient
 install_cinder
 
 # configure_cinder()
