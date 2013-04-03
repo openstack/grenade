@@ -103,7 +103,7 @@ install_nova
 configure_nova
 
 # Create nova.conf
-create_nova_conf
+# create_nova_conf
 
 # Simulate init_nova()
 create_nova_cache_dir
@@ -113,10 +113,10 @@ create_nova_keys_dir
 nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
 # Get stuff from stack.sh
-create_nova_conf_nova_network
+# create_nova_conf_nova_network
 
 iniset $NOVA_CONF DEFAULT ec2_dmz_host "$SERVICE_HOST"
-iniset_rpc_backend nova $NOVA_CONF DEFAULT
+# iniset_rpc_backend nova $NOVA_CONF DEFAULT
 iniset $NOVA_CONF DEFAULT glance_api_servers "$GLANCE_HOSTPORT"
 
 # Need to set the default compute driver
