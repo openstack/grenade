@@ -29,6 +29,10 @@ SKIP_EXERCISES=boot_from_volume
 STACK_LOG=stack.sh.log
 VOLUME_BACKING_FILE_SIZE=10000M
 
+# floating IP ports
+DEFAULT_FLOATING_POOL=nova
+PUBLIC_NETWORK_NAME=nova
+
 enable_service swift
 SWIFT_HASH=8213897fads879789asdf789
 SWIFT_REPLICAS=1
