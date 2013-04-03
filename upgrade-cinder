@@ -78,9 +78,7 @@ source $TARGET_DEVSTACK_DIR/lib/cinder
 # install_cinder()
 install_cinderclient
 install_cinder
-
-# configure_cinder()
-configure_cinder
+install_cinderclient
 
 # Simulate init_cinder()
 create_cinder_volume_group
@@ -91,6 +89,17 @@ cinder-manage db sync || die $LINENO "DB migration error"
 
 # Let grizzly devstack re-create the include file
 sudo rm -f /etc/tgt/conf.d/cinder.conf
+
+iniset $CINDER_CONF DEFAULT osapi_volume_extension cinder.api.contrib.standard_extensions
+
+cp $CINDER_DIR/etc/cinder/api-paste.ini $CINDER_API_PASTE_INI
+iniset $CINDER_API_PASTE_INI filter:authtoken auth_host $KEYSTONE_AUTH_HOST
+iniset $CINDER_API_PASTE_INI filter:authtoken auth_port $KEYSTONE_AUTH_PORT
+iniset $CINDER_API_PASTE_INI filter:authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+iniset $CINDER_API_PASTE_INI filter:authtoken admin_tenant_name $SERVICE_TENANT_NAME
+iniset $CINDER_API_PASTE_INI filter:authtoken admin_user cinder
+iniset $CINDER_API_PASTE_INI filter:authtoken admin_password $SERVICE_PASSWORD
+iniset $CINDER_API_PASTE_INI filter:authtoken signing_dir $CINDER_AUTH_CACHE_DIR
 
 start_cinder
 
