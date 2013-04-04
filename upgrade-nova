@@ -100,7 +100,7 @@ install_novaclient
 install_nova
 
 # configure_nova()
-configure_nova
+# configure_nova
 
 # Create nova.conf
 # create_nova_conf
@@ -111,26 +111,6 @@ create_nova_keys_dir
 
 # Migrate the database
 nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
-
-# Get stuff from stack.sh
-# create_nova_conf_nova_network
-
-iniset $NOVA_CONF DEFAULT ec2_dmz_host "$SERVICE_HOST"
-# iniset_rpc_backend nova $NOVA_CONF DEFAULT
-iniset $NOVA_CONF DEFAULT glance_api_servers "$GLANCE_HOSTPORT"
-
-# Need to set the default compute driver
-iniset $NOVA_CONF DEFAULT compute_driver libvirt.LibvirtDriver
-LIBVIRT_FIREWALL_DRIVER=${LIBVIRT_FIREWALL_DRIVER:-"nova.virt.libvirt.firewall.IptablesFirewallDriver"}
-iniset $NOVA_CONF DEFAULT firewall_driver "$LIBVIRT_FIREWALL_DRIVER"
-
-
-# Upgrade Stuff
-
-# Workaround for https://bugs.launchpad.net/grenade/+bug/1160072
-# Fix default node names
-# iniset $NOVA_CONF DEFAULT dhcp_domain '""'
-
 
 # Start Nova
 start_nova_api
