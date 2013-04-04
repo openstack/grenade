@@ -80,10 +80,6 @@ configure_keystone
 # Migrate the database
 keystone-manage db_sync || die $LINENO "DB sync error"
 
-# Set up certificates
-keystone-manage pki_setup || die $LINENO "PKI setup error"
-
-
 ### Fix a missed upgrade bit
 ### Reported in bug 1119789
 
