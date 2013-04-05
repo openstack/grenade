@@ -40,14 +40,28 @@ if [[ -d $BASE_RELEASE_DIR/images ]]; then
 fi
 
 # Set up target localrc
-if [[ ! -r $TARGET_DEVSTACK_DIR/localrc ]]; then
-    sed -e "
-        s|\@TARGET_RELEASE_DIR\@|$TARGET_RELEASE_DIR|
-        s|\@DATA_DIR@|$DATA_DIR|
-    " $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
-    if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
-    fi
+
+# if localrc exists and localrc.orig does not exist, save localrc  to localrc.orig
+if [[ -r $TARGET_DEVSTACK_DIR/localrc && ! -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
+    mv $TARGET_DEVSTACK_DIR/localrc $TARGET_DEVSTACK_DIR/localrc.orig
+fi
+
+# put devstack.localrc.target in place as localrc
+sed -e "
+    s|\@TARGET_RELEASE_DIR\@|$TARGET_RELEASE_DIR|
+    s|\@DATA_DIR@|$DATA_DIR|
+" $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
+
+# if localrc.orig exists, append it to localrc
+if [[ -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
+    echo "#vvvvvvvvvv devstack-vm-gate.sh localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/localrc
+    cat $TARGET_DEVSTACK_DIR/localrc.orig >>$TARGET_DEVSTACK_DIR/localrc
+fi
+
+# if devstack.localrc exists append it to locarc
+if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
+    echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/localrc
+    cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
 fi
 
 
