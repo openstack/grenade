@@ -7,8 +7,8 @@ install and as a reference for the final configuration.  Currently
 Grenade upgrades Keystone, Glance, Nova, Cinder and Swift in
 their default DevStack configurations.
 
-The master branch tests the upgrade path from the previous release 
-(aka 'base') to the current trunk (aka 'target').  Stable branches 
+The master branch tests the upgrade path from the previous release
+(aka 'base') to the current trunk (aka 'target').  Stable branches
 of grenade will be created soon after an OpenStack release and after
 a corresponding DevStack stable branch is available.
 
@@ -84,7 +84,7 @@ Install Grenade
 
 Get Grenade from GitHub in the usual way::
 
-    git clone https://github.com/nebula/grenade.git
+    git clone https://github.com/openstack-dev/grenade.git
 
 Grenade knows how to install the current master branch using the included
 ``setup-grenade`` script.  The only argument is the hostname of the target
