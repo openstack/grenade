@@ -13,10 +13,10 @@ STACK_ROOT=/opt/stack
 DATA_DIR=${STACK_ROOT}/data
 
 # Release info
-BASE_RELEASE=folsom
+BASE_RELEASE=grizzly
 BASE_RELEASE_DIR=${STACK_ROOT}/$BASE_RELEASE
 
-TARGET_RELEASE=grizzly
+TARGET_RELEASE=havana
 TARGET_RELEASE_DIR=${STACK_ROOT}/$TARGET_RELEASE
 
 # DevStack sources
@@ -64,7 +64,7 @@ fi
 
 # Defaults that use values from localrc go here
 
-#Enable tempest on grizzly and folsom
+# Enable tempest
 ENABLE_TEMPEST=${ENABLE_TEMPEST:=True}
 
 # We need RECLONE to get the updated branches; not everyone wants it though
@@ -76,10 +76,8 @@ TARGET_RUN_EXERCISES=${RUN_EXERCISES:=True}
 
 # TODO(sdague): make these complete afterwards
 # The services we'd expect at each release
-FOLSOM_SERVICES="nova-api nova-compute keystone glance-api cinder-api"
-
-# The services we'd expect at each release
-GRIZZLY_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
+BASE_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
+TARGET_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
 
 # Local variables:
 # mode: shell-script

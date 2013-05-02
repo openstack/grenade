@@ -73,8 +73,8 @@ source $TARGET_DEVSTACK_DIR/lib/keystone
 install_keystoneclient
 install_keystone
 
-# configure_keystone()
-configure_keystone
+# configure_keystone
+# nothing to see here yet
 
 # Simulate init_keystone()
 # Migrate the database

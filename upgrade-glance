@@ -81,15 +81,7 @@ install_glanceclient
 install_glance
 
 # configure_glance
-
-# These keys are needed in Grizzly, didn't exist in Folsom
-iniset $GLANCE_REGISTRY_CONF keystone_authtoken signing_dir $GLANCE_AUTH_CACHE_DIR/registry
-iniset $GLANCE_API_CONF keystone_authtoken signing_dir $GLANCE_AUTH_CACHE_DIR/api
-
-# Paste shouldn't be touched by users, just copy them over
-sudo cp -p $GLANCE_DIR/etc/glance-registry-paste.ini $GLANCE_REGISTRY_PASTE_INI
-sudo cp -p $GLANCE_DIR/etc/glance-api-paste.ini $GLANCE_API_PASTE_INI
-sudo cp -p $GLANCE_DIR/etc/policy.json $GLANCE_POLICY_JSON
+# nothing to see here yet
 
 # Simulate init_glance()
 create_glance_cache_dir

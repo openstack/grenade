@@ -67,7 +67,7 @@ sudo umount ${DATA_DIR}/swift/drives/images/swift.img || /bin/true
 
 # ensure everything is shut down
 STILL_RUNNING=""
-for name in ${FOLSOM_SERVICES}; do
+for name in ${BASE_SERVICES}; do
     if is_running ${name}; then
         STILL_RUNNING="$STILL_RUNNING $name"
     fi

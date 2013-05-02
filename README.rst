@@ -9,7 +9,7 @@ their default DevStack configurations.
 
 The master branch tests the upgrade path from the previous release
 (aka 'base') to the current trunk (aka 'target').  Stable branches
-of grenade will be created soon after an OpenStack release and after
+of Grenade will be created soon after an OpenStack release and after
 a corresponding DevStack stable branch is available.
 
 For example, following the release of Grizzly and the creation of
@@ -140,10 +140,10 @@ some non-default configuration.
 This is roughly the equivalent to::
 
     grenade/prep-base
-    (cd /opt/stack/folsom/devstack
+    (cd /opt/stack/grizzly/devstack
      ./stack.sh)
     grenade/setup-javelin
-    (cd /opt/stack/folsom/devstack
+    (cd /opt/stack/grizzly/devstack
      ./unstack.sh)
     # dump databases to $STACK_ROOT/save
     grenade/prep-target

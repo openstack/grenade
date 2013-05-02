@@ -67,8 +67,8 @@ export OS_PASSWORD=$JPASSWORD
 # ----------------
 
 # It's really cirros with our own name
-# Assumes DevStack.$START has already set this up
-CIRROS_IMAGE=${DEFAULT_IMAGE_NAME:-cirros-0.3.0-x86_64-uec}
+# Assumes DevStack.$BASE has already set this up
+CIRROS_IMAGE=${DEFAULT_IMAGE_NAME:-cirros-0.3.1-x86_64-uec}
 CIRROS_DIR=$BASE_DEVSTACK_DIR/files/images/$CIRROS_IMAGE
 KERNEL=$CIRROS_DIR/${CIRROS_IMAGE/uec/}vmlinuz
 RAMDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}initrd
@@ -85,7 +85,7 @@ if [[ -z "$IMAGE" ]]; then
     glance add name=$JAVELIN_IMAGE.img is_public=True container_format=ami disk_format=ami ${KERNEL_ID:+kernel_id=$KERNEL_ID} ${RAMDISK_ID:+ramdisk_id=$RAMDISK_ID}  < "${ROOTDISK}"
 
     IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
-    die_if_not_set IMAGE "Failure getting image"
+    die_if_not_set $LINENO IMAGE "Failure getting image"
 fi
 
 
@@ -147,6 +147,6 @@ fi
 # -----------------------
 
 swift upload javelin /etc/hosts
-if ! swift list javelin | grep -q README; then
+if ! swift list javelin | grep -q hosts; then
     die $LINENO "Swift upload failed"
 fi

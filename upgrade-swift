@@ -78,8 +78,8 @@ cp -pr /etc/rsyncd.conf $SAVE_DIR
 install_swift
 install_swiftclient
 
-# configure_swift()
-configure_swift
+# configure_swift
+# nothing to see here yet
 
 # Simulate swift_init()
 

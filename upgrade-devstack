@@ -23,8 +23,8 @@ set -o xtrace
 # Upgrade DevStack
 # ================
 
-# Reconfigure DevStack for Folsom.  Changes include new handling
-# for ``ENABLED_SERVICES``
+# noop
+
 
 # Translate Services
 # ------------------
