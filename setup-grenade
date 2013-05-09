@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup-grenade hostname [username]
+# setup-grenade [hostname [username]]
 #
 # Assumes ssh keys set up to an account with root privs
 
@@ -28,13 +28,13 @@ fi
 
 HOST=${1:-localhost}
 
-DEST_USER=${USER:-${LOGNAME:-stack}}
+DEST_USER=${2:-${USER:-stack}}
 
 set -o xtrace
 
 ssh -t $DEST_USER@$HOST " \
     sudo mkdir -p ${STACK_ROOT}; \
-    [[ -w ${STACK_ROOT} ]] || sudo chown `whoami` ${STACK_ROOT}; \
+    [[ -w ${STACK_ROOT} ]] || sudo chown $DEST_USER ${STACK_ROOT}; \
     [[ -d $GRENADE_DIR ]] || (cd ${STACK_ROOT}; git clone $GRENADE_REPO $GRENADE_DIR); \
     [[ -d $GRENADE_DIR ]] && (cd $GRENADE_DIR; git checkout $GRENADE_BRANCH); \
 "
