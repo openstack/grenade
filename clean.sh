@@ -69,11 +69,12 @@ sudo rm /etc/tgt/conf.d/*
 
 # Get ruthless with #$%%&^^#$%#@$%ing rabbit
 sudo killall epmd
-sudo aptitude purge -y rabbitmq-server ~nerlang
+sudo service rabbitmq-server stop
+sudo apt-get purge -y rabbitmq-server .*erlang
 
 # Get ruthless with mysql
 service mysqld stop
-sudo aptitude purge -y ~nmysql-server
+sudo apt-get  purge -y .*mysql-server
 sudo rm -rf /var/lib/mysql
 
 # kill off swift, which doesn't live in screen, so doesn't die in screen
