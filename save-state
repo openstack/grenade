@@ -41,7 +41,7 @@ set -o xtrace
 
 source $BASE_DEVSTACK_DIR/stackrc
 mkdir -p $SAVE_DIR
-for db in keystone glance nova cinder swift; do
+for db in keystone glance nova cinder; do
     mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$BASE_RELEASE
 done
 
