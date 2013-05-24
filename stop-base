@@ -26,6 +26,7 @@ source $BASE_DEVSTACK_DIR/stackrc
 DATA_DIR=${STACK_ROOT}/data
 
 source $BASE_DEVSTACK_DIR/lib/cinder
+source $BASE_DEVSTACK_DIR/lib/swift
 
 # For debugging
 set -o xtrace
@@ -44,7 +45,7 @@ fi
 
 # Swift runs daemons
 if is_service_enabled swift; then
-    swift-init all stop 2>/dev/null || true
+    stop_swift
 fi
 
 # Handle iSCSI targets here...don't delete, just stop
