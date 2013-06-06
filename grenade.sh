@@ -156,6 +156,8 @@ set -o xtrace
 BASE_RUN_EXERCISES=${BASE_RUN_EXERCISES:-RUN_EXERCISES}
 TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-RUN_EXERCISES}
 
+# Set up for smoke tests
+TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:=True}
 
 # Install 'Base' Build of OpenStack
 # =================================
@@ -284,6 +286,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     fi
     stop $STOP target-exercise 320
 
+    if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
+        echo_summary "Running tempest smoke tests"
+        $TARGET_RELEASE_DIR/tempest/run_tests.sh -N -s
+        stop $STOP run-smoke 330
+    fi
 
     # Save databases
     # --------------

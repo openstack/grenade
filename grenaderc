@@ -31,6 +31,9 @@ TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 # Allow skipping the exercises
 RUN_EXERCISES=True
 
+# Allow skipping smoke tests
+TARGET_RUN_SMOKE=True
+
 # Saved stuff
 SAVE_DIR=${STACK_ROOT}/save
 
