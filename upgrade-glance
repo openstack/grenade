@@ -81,7 +81,8 @@ install_glanceclient
 install_glance
 
 # configure_glance
-# nothing to see here yet
+# guarantee we have all rules set in the new release
+cp -p $GLANCE_DIR/etc/policy.json $GLANCE_POLICY_JSON
 
 # Simulate init_glance()
 create_glance_cache_dir
