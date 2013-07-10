@@ -156,8 +156,8 @@ set -o xtrace
 BASE_RUN_EXERCISES=${BASE_RUN_EXERCISES:-RUN_EXERCISES}
 TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-RUN_EXERCISES}
 
-# Set up for smoke tests
-TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:=True}
+# Set up for smoke tests (default to False)
+TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:=False}
 
 # Install 'Base' Build of OpenStack
 # =================================
@@ -189,7 +189,6 @@ if [[ "$RUN_BASE" == "True" ]]; then
     done
     rsync -av $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
     stop $STOP image-cache 20
-
 
     # Operation
     # ---------

@@ -32,7 +32,7 @@ TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 RUN_EXERCISES=True
 
 # Allow skipping smoke tests
-TARGET_RUN_SMOKE=True
+TARGET_RUN_SMOKE=False
 
 # Saved stuff
 SAVE_DIR=${STACK_ROOT}/save
@@ -74,8 +74,9 @@ ENABLE_TEMPEST=${ENABLE_TEMPEST:=True}
 RECLONE=${RECLONE:-no}
 
 # Set these after localrc so user can pick-n-choose
+# Allow setting target exercises independently
 BASE_RUN_EXERCISES=${RUN_EXERCISES:=True}
-TARGET_RUN_EXERCISES=${RUN_EXERCISES:=True}
+TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-$BASE_RUN_EXERCISES}
 
 # TODO(sdague): make these complete afterwards
 # The services we'd expect at each release
