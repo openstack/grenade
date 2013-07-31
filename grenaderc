@@ -83,6 +83,9 @@ TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-$BASE_RUN_EXERCISES}
 BASE_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
 TARGET_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
 
+# Need this for global requirements
+REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements
+
 # Local variables:
 # mode: shell-script
 # End:

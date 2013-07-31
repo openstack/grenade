@@ -18,15 +18,38 @@ XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 
-# Exit 0 if address is in network or 1 if address is not in
-# network or netaddr library is not installed.
+# Convert CIDR notation to a IPv4 netmask
+# cidr2netmask cidr-bits
+function cidr2netmask() {
+    local maskpat="255 255 255 255"
+    local maskdgt="254 252 248 240 224 192 128"
+    set -- ${maskpat:0:$(( ($1 / 8) * 4 ))}${maskdgt:$(( (7 - ($1 % 8)) * 4 )):3}
+    echo ${1-0}.${2-0}.${3-0}.${4-0}
+}
+
+
+# Return the network portion of the given IP address using netmask
+# netmask is in the traditional dotted-quad format
+# maskip ip-address netmask
+function maskip() {
+    local ip=$1
+    local mask=$2
+    local l="${ip%.*}"; local r="${ip#*.}"; local n="${mask%.*}"; local m="${mask#*.}"
+    local subnet=$((${ip%%.*}&${mask%%.*})).$((${r%%.*}&${m%%.*})).$((${l##*.}&${n##*.})).$((${ip##*.}&${mask##*.}))
+    echo $subnet
+}
+
+
+# Exit 0 if address is in network or 1 if address is not in network
+# ip-range is in CIDR notation: 1.2.3.4/20
 # address_in_net ip-address ip-range
 function address_in_net() {
-    python -c "
-import netaddr
-import sys
-sys.exit(netaddr.IPAddress('$1') not in netaddr.IPNetwork('$2'))
-"
+    local ip=$1
+    local range=$2
+    local masklen=${range#*/}
+    local network=$(maskip ${range%/*} $(cidr2netmask $masklen))
+    local subnet=$(maskip $ip $(cidr2netmask $masklen))
+    [[ $network == $subnet ]]
 }
 
 
@@ -200,6 +223,7 @@ function _get_package_dir() {
     echo "$pkg_dir"
 }
 
+
 # get_packages() collects a list of package names of any type from the
 # prerequisite files in ``files/{apts|rpms}``.  The list is intended
 # to be passed to a package installer such as apt or yum.
@@ -261,8 +285,8 @@ function get_packages() {
                 file_to_parse="${file_to_parse} keystone"
             fi
         elif [[ $service == q-* ]]; then
-            if [[ ! $file_to_parse =~ quantum ]]; then
-                file_to_parse="${file_to_parse} quantum"
+            if [[ ! $file_to_parse =~ neutron ]]; then
+                file_to_parse="${file_to_parse} neutron"
             fi
         fi
     done
@@ -331,7 +355,7 @@ GetOSVersion() {
         os_RELEASE=$(lsb_release -r -s)
         os_UPDATE=""
         os_PACKAGE="rpm"
-        if [[ "Debian,Ubuntu" =~ $os_VENDOR ]]; then
+        if [[ "Debian,Ubuntu,LinuxMint" =~ $os_VENDOR ]]; then
             os_PACKAGE="deb"
         elif [[ "SUSE LINUX" =~ $os_VENDOR ]]; then
             lsb_release -d -s | grep -q openSUSE
@@ -380,44 +404,14 @@ GetOSVersion() {
             os_VENDOR=""
         done
         os_PACKAGE="rpm"
+    # If lsb_release is not installed, we should be able to detect Debian OS
+    elif [[ -f /etc/debian_version ]] && [[ $(cat /proc/version) =~ "Debian" ]]; then
+        os_VENDOR="Debian"
+        os_PACKAGE="deb"
+        os_CODENAME=$(awk '/VERSION=/' /etc/os-release | sed 's/VERSION=//' | sed -r 's/\"|\(|\)//g' | awk '{print $2}')
+        os_RELEASE=$(awk '/VERSION_ID=/' /etc/os-release | sed 's/VERSION_ID=//' | sed 's/\"//g')
     fi
     export os_VENDOR os_RELEASE os_UPDATE os_PACKAGE os_CODENAME
-}
-
-# git update using reference as a branch.
-# git_update_branch ref
-function git_update_branch() {
-
-    GIT_BRANCH=$1
-
-    git checkout -f origin/$GIT_BRANCH
-    # a local branch might not exist
-    git branch -D $GIT_BRANCH || true
-    git checkout -b $GIT_BRANCH
-}
-
-
-# git update using reference as a tag. Be careful editing source at that repo
-# as working copy will be in a detached mode
-# git_update_tag ref
-function git_update_tag() {
-
-    GIT_TAG=$1
-
-    git tag -d $GIT_TAG
-    # fetching given tag only
-    git fetch origin tag $GIT_TAG
-    git checkout -f $GIT_TAG
-}
-
-
-# git update using reference as a branch.
-# git_update_remote_branch ref
-function git_update_remote_branch() {
-
-    GIT_BRANCH=$1
-
-    git checkout -b $GIT_BRANCH -t origin/$GIT_BRANCH
 }
 
 
@@ -425,8 +419,8 @@ function git_update_remote_branch() {
 # Sets ``DISTRO`` from the ``os_*`` values
 function GetDistro() {
     GetOSVersion
-    if [[ "$os_VENDOR" =~ (Ubuntu) ]]; then
-        # 'Everyone' refers to Ubuntu releases by the code name adjective
+    if [[ "$os_VENDOR" =~ (Ubuntu) || "$os_VENDOR" =~ (Debian) ]]; then
+        # 'Everyone' refers to Ubuntu / Debian releases by the code name adjective
         DISTRO=$os_CODENAME
     elif [[ "$os_VENDOR" =~ (Fedora) ]]; then
         # For Fedora, just use 'f' and the release
@@ -451,21 +445,8 @@ function GetDistro() {
 }
 
 
-# Determine if current distribution is an Ubuntu-based distribution.
-# It will also detect non-Ubuntu but Debian-based distros; this is not an issue
-# since Debian and Ubuntu should be compatible.
-# is_ubuntu
-function is_ubuntu {
-    if [[ -z "$os_PACKAGE" ]]; then
-        GetOSVersion
-    fi
-
-    [ "$os_PACKAGE" = "deb" ]
-}
-
-
 # Determine if current distribution is a Fedora-based distribution
-# (Fedora, RHEL, CentOS).
+# (Fedora, RHEL, CentOS, etc).
 # is_fedora
 function is_fedora {
     if [[ -z "$os_VENDOR" ]]; then
@@ -474,6 +455,7 @@ function is_fedora {
 
     [ "$os_VENDOR" = "Fedora" ] || [ "$os_VENDOR" = "Red Hat" ] || [ "$os_VENDOR" = "CentOS" ]
 }
+
 
 # Determine if current distribution is a SUSE-based distribution
 # (openSUSE, SLE).
@@ -484,6 +466,17 @@ function is_suse {
     fi
 
     [ "$os_VENDOR" = "openSUSE" ] || [ "$os_VENDOR" = "SUSE LINUX" ]
+}
+
+
+# Determine if current distribution is an Ubuntu-based distribution
+# It will also detect non-Ubuntu but Debian-based distros
+# is_ubuntu
+function is_ubuntu {
+    if [[ -z "$os_PACKAGE" ]]; then
+        GetOSVersion
+    fi
+    [ "$os_PACKAGE" = "deb" ]
 }
 
 
@@ -501,6 +494,13 @@ function exit_distro_not_supported {
     fi
 }
 
+# Utility function for checking machine architecture
+# is_arch arch-type
+function is_arch {
+    ARCH_TYPE=$1
+
+    [ "($uname -m)" = "$ARCH_TYPE" ]
+}
 
 # git clone only if directory doesn't exist already.  Since ``DEST`` might not
 # be owned by the installation user, we create the directory and change the
@@ -558,6 +558,43 @@ function git_clone {
 
         fi
     fi
+}
+
+
+# git update using reference as a branch.
+# git_update_branch ref
+function git_update_branch() {
+
+    GIT_BRANCH=$1
+
+    git checkout -f origin/$GIT_BRANCH
+    # a local branch might not exist
+    git branch -D $GIT_BRANCH || true
+    git checkout -b $GIT_BRANCH
+}
+
+
+# git update using reference as a branch.
+# git_update_remote_branch ref
+function git_update_remote_branch() {
+
+    GIT_BRANCH=$1
+
+    git checkout -b $GIT_BRANCH -t origin/$GIT_BRANCH
+}
+
+
+# git update using reference as a tag. Be careful editing source at that repo
+# as working copy will be in a detached mode
+# git_update_tag ref
+function git_update_tag() {
+
+    GIT_TAG=$1
+
+    git tag -d $GIT_TAG
+    # fetching given tag only
+    git fetch origin tag $GIT_TAG
+    git checkout -f $GIT_TAG
 }
 
 
@@ -703,10 +740,14 @@ function is_running() {
 #   **cinder** returns true if any service enabled start with **c-**
 #   **ceilometer** returns true if any service enabled start with **ceilometer**
 #   **glance** returns true if any service enabled start with **g-**
-#   **quantum** returns true if any service enabled start with **q-**
+#   **neutron** returns true if any service enabled start with **q-**
 #   **swift** returns true if any service enabled start with **s-**
 #   For backward compatibility if we have **swift** in ENABLED_SERVICES all the
 #   **s-** services will be enabled. This will be deprecated in the future.
+#
+# Cells within nova is enabled if **n-cell** is in ``ENABLED_SERVICES``.
+# We also need to make sure to treat **n-cell-region** and **n-cell-child**
+# as enabled in this case.
 #
 # Uses global ``ENABLED_SERVICES``
 # is_service_enabled service [service ...]
@@ -714,11 +755,12 @@ function is_service_enabled() {
     services=$@
     for service in ${services}; do
         [[ ,${ENABLED_SERVICES}, =~ ,${service}, ]] && return 0
+        [[ ${service} == n-cell-* && ${ENABLED_SERVICES} =~ "n-cell" ]] && return 0
         [[ ${service} == "nova" && ${ENABLED_SERVICES} =~ "n-" ]] && return 0
         [[ ${service} == "cinder" && ${ENABLED_SERVICES} =~ "c-" ]] && return 0
         [[ ${service} == "ceilometer" && ${ENABLED_SERVICES} =~ "ceilometer-" ]] && return 0
         [[ ${service} == "glance" && ${ENABLED_SERVICES} =~ "g-" ]] && return 0
-        [[ ${service} == "quantum" && ${ENABLED_SERVICES} =~ "q-" ]] && return 0
+        [[ ${service} == "neutron" && ${ENABLED_SERVICES} =~ "q-" ]] && return 0
         [[ ${service} == "swift" && ${ENABLED_SERVICES} =~ "s-" ]] && return 0
         [[ ${service} == s-* && ${ENABLED_SERVICES} =~ "swift" ]] && return 0
     done
@@ -744,7 +786,7 @@ function _cleanup_service_list () {
 #   enable_service qpid
 #
 # This function does not know about the special cases
-# for nova, glance, and quantum built into is_service_enabled().
+# for nova, glance, and neutron built into is_service_enabled().
 # Uses global ``ENABLED_SERVICES``
 # enable_service service [service ...]
 function enable_service() {
@@ -766,7 +808,7 @@ function enable_service() {
 #   disable_service rabbit
 #
 # This function does not know about the special cases
-# for nova, glance, and quantum built into is_service_enabled().
+# for nova, glance, and neutron built into is_service_enabled().
 # Uses global ``ENABLED_SERVICES``
 # disable_service service [service ...]
 function disable_service() {
@@ -879,7 +921,7 @@ function pip_install {
     if [[ -z "$os_PACKAGE" ]]; then
         GetOSVersion
     fi
-    if [[ $TRACK_DEPENDS = True ]] ; then
+    if [[ $TRACK_DEPENDS = True ]]; then
         source $DEST/.venv/bin/activate
         CMD_PIP=$DEST/.venv/bin/pip
         SUDO_PIP="env"
@@ -887,16 +929,46 @@ function pip_install {
         SUDO_PIP="sudo"
         CMD_PIP=$(get_pip_command)
     fi
+
+    if [[ is_fedora && $DISTRO =~ (rhel6) ]]; then
+        # RHEL6 pip by default doesn't have this (was introduced
+        # around 0.8.1 or so)
+        PIP_USE_MIRRORS=${PIP_USE_MIRRORS:-False}
+    else
+        PIP_USE_MIRRORS=${PIP_USE_MIRRORS:-True}
+    fi
     if [[ "$PIP_USE_MIRRORS" != "False" ]]; then
         PIP_MIRROR_OPT="--use-mirrors"
     fi
+
+    # pip < 1.4 has a bug where it will use an already existing build
+    # directory unconditionally.  Say an earlier component installs
+    # foo v1.1; pip will have built foo's source in
+    # /tmp/$USER-pip-build.  Even if a later component specifies foo <
+    # 1.1, the existing extracted build will be used and cause
+    # confusing errors.  By creating unique build directories we avoid
+    # this problem. See
+    #  https://github.com/pypa/pip/issues/709
+    local pip_build_tmp=$(mktemp --tmpdir -d pip-build.XXXXX)
+
     $SUDO_PIP PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE:-/var/cache/pip} \
         HTTP_PROXY=$http_proxy \
         HTTPS_PROXY=$https_proxy \
         NO_PROXY=$no_proxy \
-        $CMD_PIP install $PIP_MIRROR_OPT $@
+        $CMD_PIP install --build=${pip_build_tmp} \
+        $PIP_MIRROR_OPT $@ \
+        && $SUDO_PIP rm -rf ${pip_build_tmp}
 }
 
+
+# Cleanup anything from /tmp on unstack
+# clean_tmp
+function cleanup_tmp {
+    local tmp_dir=${TMPDIR:-/tmp}
+
+    # see comments in pip_install
+    sudo rm -rf ${tmp_dir}/pip-build.*
+}
 
 # Service wrapper to restart services
 # restart_service service-name
@@ -997,6 +1069,8 @@ function screen_rc {
         echo "sessionname $SCREEN_NAME" > $SCREENRC
         # Set a reasonable statusbar
         echo "hardstatus alwayslastline '$SCREEN_HARDSTATUS'" >> $SCREENRC
+        # Some distributions override PROMPT_COMMAND for the screen terminal type - turn that off
+        echo "setenv PROMPT_COMMAND /bin/true" >> $SCREENRC
         echo "screen -t shell bash" >> $SCREENRC
     fi
     # If this service doesn't already exist in the screenrc file
@@ -1006,6 +1080,7 @@ function screen_rc {
         echo "stuff \"$2$NL\"" >> $SCREENRC
     fi
 }
+
 
 # Helper to remove the *.failure files under $SERVICE_DIR/$SCREEN_NAME
 # This is used for service_check when all the screen_it are called finished
@@ -1020,6 +1095,7 @@ function init_service_check() {
 
     rm -f "$SERVICE_DIR/$SCREEN_NAME"/*.failure
 }
+
 
 # Helper to get the status of each running service
 # service_check
@@ -1054,16 +1130,22 @@ function service_check() {
 # Uses globals ``STACK_USER``, ``TRACK_DEPENDS``, ``*_proxy`
 # setup_develop directory
 function setup_develop() {
-    if [[ $TRACK_DEPENDS = True ]] ; then
+    local project_dir=$1
+    if [[ $TRACK_DEPENDS = True ]]; then
         SUDO_CMD="env"
     else
         SUDO_CMD="sudo"
     fi
+    echo "cd $REQUIREMENTS_DIR; $SUDO_CMD python update.py $project_dir"
+
+    (cd $REQUIREMENTS_DIR; \
+        $SUDO_CMD python update.py $project_dir)
+
     $SUDO_CMD \
         HTTP_PROXY=$http_proxy \
         HTTPS_PROXY=$https_proxy \
         NO_PROXY=$no_proxy \
-        pip install -e $1
+        pip install -e $project_dir
     # ensure that further actions can do things like setup.py sdist
     $SUDO_CMD chown -R $STACK_USER $1/*.egg-info
 }
@@ -1136,6 +1218,14 @@ function upload_image() {
         return
     fi
 
+    # vmdk format images
+    if [[ "$image_url" =~ '.vmdk' ]]; then
+        IMAGE="$FILES/${IMAGE_FNAME}"
+        IMAGE_NAME="${IMAGE_FNAME%.vmdk}"
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public=True --container-format bare --disk-format vmdk --property vmware-disktype="preallocated" < "${IMAGE}"
+        return
+    fi
+
     # XenServer-ovf-format images are provided as .vhd.tgz as well
     # and should not be decompressed prior to loading
     if [[ "$image_url" =~ '.vhd.tgz' ]]; then
@@ -1205,9 +1295,9 @@ function upload_image() {
 
     if [ "$CONTAINER_FORMAT" = "bare" ]; then
         if [ "$UNPACK" = "zcat" ]; then
-            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --public --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < <(zcat --force "${IMAGE}")
+            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public True --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < <(zcat --force "${IMAGE}")
         else
-            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --public --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < "${IMAGE}"
+            glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public True --container-format=$CONTAINER_FORMAT --disk-format $DISK_FORMAT < "${IMAGE}"
         fi
     else
         # Use glance client to add the kernel the root filesystem.
@@ -1215,14 +1305,15 @@ function upload_image() {
         # kernel for use when uploading the root filesystem.
         KERNEL_ID=""; RAMDISK_ID="";
         if [ -n "$KERNEL" ]; then
-            KERNEL_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-kernel" --public --container-format aki --disk-format aki < "$KERNEL" | grep ' id ' | get_field 2)
+            KERNEL_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-kernel" --is-public True --container-format aki --disk-format aki < "$KERNEL" | grep ' id ' | get_field 2)
         fi
         if [ -n "$RAMDISK" ]; then
-            RAMDISK_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-ramdisk" --public --container-format ari --disk-format ari < "$RAMDISK" | grep ' id ' | get_field 2)
+            RAMDISK_ID=$(glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME-ramdisk" --is-public True --container-format ari --disk-format ari < "$RAMDISK" | grep ' id ' | get_field 2)
         fi
-        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "${IMAGE_NAME%.img}" --public --container-format ami --disk-format ami ${KERNEL_ID:+--property kernel_id=$KERNEL_ID} ${RAMDISK_ID:+--property ramdisk_id=$RAMDISK_ID} < "${IMAGE}"
+        glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "${IMAGE_NAME%.img}" --is-public True --container-format ami --disk-format ami ${KERNEL_ID:+--property kernel_id=$KERNEL_ID} ${RAMDISK_ID:+--property ramdisk_id=$RAMDISK_ID} < "${IMAGE}"
     fi
 }
+
 
 # Set the database backend to use
 # When called from stackrc/localrc DATABASE_BACKENDS has not been
@@ -1241,6 +1332,7 @@ function use_database {
     fi
 }
 
+
 # Toggle enable/disable_service for services that must run exclusive of each other
 #  $1 The name of a variable containing a space-separated list of services
 #  $2 The name of a variable in which to store the enabled service's name
@@ -1257,6 +1349,7 @@ function use_exclusive_service {
     return 0
 }
 
+
 # Wait for an HTTP server to start answering requests
 # wait_for_service timeout url
 function wait_for_service() {
@@ -1264,6 +1357,7 @@ function wait_for_service() {
     local url=$2
     timeout $timeout sh -c "while ! http_proxy= https_proxy= curl -s $url >/dev/null; do sleep 1; done"
 }
+
 
 # Wrapper for ``yum`` to set proxy environment variables
 # Uses globals ``OFFLINE``, ``*_proxy`
@@ -1277,11 +1371,24 @@ function yum_install() {
         yum install -y "$@"
 }
 
+
+# zypper wrapper to set arguments correctly
+# zypper_install package [package ...]
+function zypper_install() {
+    [[ "$OFFLINE" = "True" ]] && return
+    local sudo="sudo"
+    [[ "$(id -u)" = "0" ]] && sudo="env"
+    $sudo http_proxy=$http_proxy https_proxy=$https_proxy \
+        zypper --non-interactive install --auto-agree-with-licenses "$@"
+}
+
+
 # ping check
 # Uses globals ``ENABLED_SERVICES``
+# ping_check from-net ip boot-timeout expected
 function ping_check() {
-    if is_service_enabled quantum; then
-        _ping_check_quantum  "$1" $2 $3 $4
+    if is_service_enabled neutron; then
+        _ping_check_neutron  "$1" $2 $3 $4
         return
     fi
     _ping_check_novanet "$1" $2 $3 $4
@@ -1315,11 +1422,13 @@ function _ping_check_novanet() {
     fi
 }
 
+
 # ssh check
 
+# ssh_check net-name key-file floating-ip default-user active-timeout
 function ssh_check() {
-    if is_service_enabled quantum; then
-        _ssh_check_quantum  "$1" $2 $3 $4 $5
+    if is_service_enabled neutron; then
+        _ssh_check_neutron  "$1" $2 $3 $4 $5
         return
     fi
     _ssh_check_novanet "$1" $2 $3 $4 $5
@@ -1332,20 +1441,9 @@ function _ssh_check_novanet() {
     local DEFAULT_INSTANCE_USER=$4
     local ACTIVE_TIMEOUT=$5
     local probe_cmd=""
-    if ! timeout $ACTIVE_TIMEOUT sh -c "while ! ssh -o StrictHostKeyChecking=no -i $KEY_FILE ${DEFAULT_INSTANCE_USER}@$FLOATING_IP echo success ; do sleep 1; done"; then
+    if ! timeout $ACTIVE_TIMEOUT sh -c "while ! ssh -o StrictHostKeyChecking=no -i $KEY_FILE ${DEFAULT_INSTANCE_USER}@$FLOATING_IP echo success; do sleep 1; done"; then
         die $LINENO "server didn't become ssh-able!"
     fi
-}
-
-
-# zypper wrapper to set arguments correctly
-# zypper_install package [package ...]
-function zypper_install() {
-    [[ "$OFFLINE" = "True" ]] && return
-    local sudo="sudo"
-    [[ "$(id -u)" = "0" ]] && sudo="env"
-    $sudo http_proxy=$http_proxy https_proxy=$https_proxy \
-        zypper --non-interactive install --auto-agree-with-licenses "$@"
 }
 
 
@@ -1371,12 +1469,13 @@ function add_user_to_group() {
 # Get the path to the direcotry where python executables are installed.
 # get_python_exec_prefix
 function get_python_exec_prefix() {
-    if is_fedora; then
+    if is_fedora || is_suse; then
         echo "/usr/bin"
     else
         echo "/usr/local/bin"
     fi
 }
+
 
 # Get the location of the $module-rootwrap executables, where module is cinder
 # or nova.
@@ -1387,15 +1486,101 @@ function get_rootwrap_location() {
     echo "$(get_python_exec_prefix)/$module-rootwrap"
 }
 
+
 # Get the path to the pip command.
 # get_pip_command
 function get_pip_command() {
-    if is_fedora; then
-        which pip-python
-    else
-        which pip
+    which pip || which pip-python
+
+    if [ $? -ne 0 ]; then
+        die $LINENO "Unable to find pip; cannot continue"
     fi
 }
+
+
+# Path permissions sanity check
+# check_path_perm_sanity path
+function check_path_perm_sanity() {
+    # Ensure no element of the path has 0700 permissions, which is very
+    # likely to cause issues for daemons.  Inspired by default 0700
+    # homedir permissions on RHEL and common practice of making DEST in
+    # the stack user's homedir.
+
+    local real_path=$(readlink -f $1)
+    local rebuilt_path=""
+    for i in $(echo ${real_path} | tr "/" " "); do
+        rebuilt_path=$rebuilt_path"/"$i
+
+        if [[ $(stat -c '%a' ${rebuilt_path}) = 700 ]]; then
+            echo "*** DEST path element"
+            echo "***    ${rebuilt_path}"
+            echo "*** appears to have 0700 permissions."
+            echo "*** This is very likely to cause fatal issues for devstack daemons."
+
+            if [[ -n "$SKIP_PATH_SANITY" ]]; then
+                return
+            else
+                echo "*** Set SKIP_PATH_SANITY to skip this check"
+                die $LINENO "Invalid path permissions"
+            fi
+        fi
+    done
+}
+
+
+# This function recursively compares versions, and is not meant to be
+# called by anything other than vercmp_numbers below. This function does
+# not work with alphabetic versions.
+#
+# _vercmp_r sep ver1 ver2
+function _vercmp_r {
+  typeset sep
+  typeset -a ver1=() ver2=()
+  sep=$1; shift
+  ver1=("${@:1:sep}")
+  ver2=("${@:sep+1}")
+
+  if ((ver1 > ver2)); then
+    echo 1; return 0
+  elif ((ver2 > ver1)); then
+    echo -1; return 0
+  fi
+
+  if ((sep <= 1)); then
+    echo 0; return 0
+  fi
+
+  _vercmp_r $((sep-1)) "${ver1[@]:1}" "${ver2[@]:1}"
+}
+
+
+# This function compares two versions and is meant to be called by
+# external callers. Please note the function assumes non-alphabetic
+# versions. For example, this will work:
+#
+#   vercmp_numbers 1.10 1.4
+#
+# The above will return "1", as 1.10 is greater than 1.4.
+#
+#   vercmp_numbers 5.2 6.4
+#
+# The above will return "-1", as 5.2 is less than 6.4.
+#
+#   vercmp_numbers 4.0 4.0
+#
+# The above will return "0", as the versions are equal.
+#
+# vercmp_numbers ver1 ver2
+vercmp_numbers() {
+  typeset v1=$1 v2=$2 sep
+  typeset -a ver1 ver2
+
+  IFS=. read -ra ver1 <<< "$v1"
+  IFS=. read -ra ver2 <<< "$v2"
+
+  _vercmp_r "${#ver1[@]}" "${ver1[@]}" "${ver2[@]}"
+}
+
 
 # Restore xtrace
 $XTRACE

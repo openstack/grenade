@@ -238,6 +238,16 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     #$GRENADE_DIR/upgrade-devstack
     stop $STOP upgrade-devstack 230
 
+    # Upgrade Infra
+    echo_summary "Running upgrade-infra"
+    $GRENADE_DIR/upgrade-infra || die $LINENO "Failure in upgrade-infra"
+    stop $STOP upgrade-infra 232
+
+    # Upgrade Oslo
+    echo_summary "Running upgrade-oslo"
+    $GRENADE_DIR/upgrade-oslo || die $LINENO "Failure in upgrade-oslo"
+    stop $STOP upgrade-oslo 235
+
     # Upgrade Keystone
     echo_summary "Running upgrade-keystone"
     $GRENADE_DIR/upgrade-keystone || die $LINENO "Failure in upgrade-keystone"
