@@ -102,6 +102,10 @@ install_nova
 # configure_nova()
 # configure_nova
 
+
+# upgrade rootwrap configs
+configure_nova_rootwrap
+
 # Create nova.conf
 # create_nova_conf
 
