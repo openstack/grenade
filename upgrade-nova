@@ -109,6 +109,55 @@ configure_nova_rootwrap
 # Create nova.conf
 # create_nova_conf
 
+#add nova v3 endpoint for blue-print:nova-v3-api-tests
+source $TARGET_DEVSTACK_DIR/openrc admin admin
+
+if [[ "$ENABLED_SERVICES" =~ "n-api" && "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+    NOVA_V3_SERVICE=$(keystone service-create \
+        --name=nova \
+        --type=computev3 \
+        --description="Nova Compute Service V3" \
+        | grep " id " | get_field 2)
+    keystone endpoint-create \
+        --region RegionOne \
+        --service_id $NOVA_V3_SERVICE \
+        --publicurl "$SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3" \
+        --adminurl "$SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3" \
+        --internalurl "$SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v3"
+fi
+
+if [[ "$KEYSTONE_CATALOG_BACKEND" != 'sql' &&  -f "$KEYSTONE_CATALOG" ]]; then
+    stop_keystone
+    echo -e "
+catalog.RegionOne.computev3.publicURL = http://%SERVICE_HOST%:8774/v3
+catalog.RegionOne.computev3.adminURL = http://%SERVICE_HOST%:8774/v3
+catalog.RegionOne.computev3.internalURL = http://%SERVICE_HOST%:8774/v3
+catalog.RegionOne.computev3.name = Compute Service V3
+" >> $KEYSTONE_CATALOG
+    start_keystone
+fi
+
+#enable nova_v3_api
+if ! grep -q "^\[composite:osapi_compute\]" $NOVA_API_PASTE_INI; then
+    # Add section at the end
+    echo -e "\n[composite:osapi_compute]\nuse = call:nova.api.openstack.urlmap:urlmap_factory" >> $NOVA_API_PASTE_INI
+fi
+sed -i -e "/^\[composite:osapi_compute\]/ a\\
+/v3: openstack_compute_api_v3
+" "$NOVA_API_PASTE_INI"
+
+iniset $NOVA_API_PASTE_INI composite:openstack_compute_api_v3 use  call:nova.api.auth:pipeline_factory
+iniset $NOVA_API_PASTE_INI composite:openstack_compute_api_v3 noauth  "faultwrap sizelimit noauth ratelimit osapi_compute_app_v3"
+iniset $NOVA_API_PASTE_INI composite:openstack_compute_api_v3 keystone  "faultwrap sizelimit authtoken keystonecontext ratelimit osapi_compute_app_v3"
+iniset $NOVA_API_PASTE_INI composite:openstack_compute_api_v3 keystone_nolimit  "faultwrap sizelimit authtoken keystonecontext osapi_compute_app_v3"
+iniset $NOVA_API_PASTE_INI app:osapi_compute_app_v3 paste.app_factory  nova.api.openstack.compute:APIRouterV3.factory
+iniset $NOVA_CONF osapi_v3 enabled  True
+
+#add policy for v3 api
+sed -i -e "1 a\\
+`grep "v3:" $NOVA_DIR/etc/nova/policy.json | sed 's#,#,\\\#g'`
+" $NOVA_CONF_DIR/policy.json
+
 # Simulate init_nova()
 create_nova_cache_dir
 create_nova_keys_dir
