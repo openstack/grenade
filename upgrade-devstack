@@ -23,7 +23,8 @@ set -o xtrace
 # Upgrade DevStack
 # ================
 
-# noop
+# Preserve accrc files for future usage
+cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc
 
 
 # Translate Services
