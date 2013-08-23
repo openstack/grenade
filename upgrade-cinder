@@ -81,7 +81,11 @@ install_cinder
 install_cinderclient
 
 # configure_cinder
-# nothing to see here yet
+CINDER_POLICY_JSON=$CINDER_CONF_DIR/policy.json
+
+# add rules needed for live volume migration
+policy_add ${CINDER_POLICY_JSON} 'volume_extension:volume_admin_actions:migrate_volume_completion' '[["rule:admin_api"]]'
+policy_add ${CINDER_POLICY_JSON} 'volume_extension:volume_mig_status_attribute' '[["rule:admin_api"]]'
 
 # Simulate init_cinder()
 create_cinder_volume_group
