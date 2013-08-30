@@ -76,6 +76,19 @@ function cp_it {
 }
 
 
+# Prints backtrace info
+# filename:lineno:function
+function backtrace {
+    local level=$1
+    local deep=$((${#BASH_SOURCE[@]} - 1))
+    echo "[Call Trace]"
+    while [ $level -le $deep ]; do
+        echo "${BASH_SOURCE[$deep]}:${BASH_LINENO[$deep-1]}:${FUNCNAME[$deep-1]}"
+        deep=$((deep - 1))
+    done
+}
+
+
 # Prints line number and "message" then exits
 # die $LINENO "message"
 function die() {
@@ -85,6 +98,7 @@ function die() {
     if [ $exitcode == 0 ]; then
         exitcode=1
     fi
+    backtrace 2
     err $line "$*"
     exit $exitcode
 }
@@ -113,7 +127,7 @@ function err() {
     local exitcode=$?
     errXTRACE=$(set +o | grep xtrace)
     set +o xtrace
-    local msg="[ERROR] $0:$1 $2"
+    local msg="[ERROR] ${BASH_SOURCE[2]}:$1 $2"
     echo $msg 1>&2;
     if [[ -n ${SCREEN_LOGDIR} ]]; then
         echo $msg >> "${SCREEN_LOGDIR}/error.log"
@@ -303,16 +317,36 @@ function get_packages() {
                 continue
             fi
 
+            # Assume we want this package
+            package=${line%#*}
+            inst_pkg=1
+
+            # Look for # dist:xxx in comment
             if [[ $line =~ (.*)#.*dist:([^ ]*) ]]; then
                 # We are using BASH regexp matching feature.
                 package=${BASH_REMATCH[1]}
                 distros=${BASH_REMATCH[2]}
                 # In bash ${VAR,,} will lowecase VAR
-                [[ ${distros,,} =~ ${DISTRO,,} ]] && echo $package
-                continue
+                # Look for a match in the distro list
+                if [[ ! ${distros,,} =~ ${DISTRO,,} ]]; then
+                    # If no match then skip this package
+                    inst_pkg=0
+                fi
             fi
 
-            echo ${line%#*}
+            # Look for # testonly in comment
+            if [[ $line =~ (.*)#.*testonly.* ]]; then
+                package=${BASH_REMATCH[1]}
+                # Are we installing test packages? (test for the default value)
+                if [[ $INSTALL_TESTONLY_PACKAGES = "False" ]]; then
+                    # If not installing test packages the skip this package
+                    inst_pkg=0
+                fi
+            fi
+
+            if [[ $inst_pkg = 1 ]]; then
+                echo $package
+            fi
         done
         IFS=$OIFS
     done
@@ -373,8 +407,9 @@ GetOSVersion() {
         # CentOS release 5.5 (Final)
         # CentOS Linux release 6.0 (Final)
         # Fedora release 16 (Verne)
+        # XenServer release 6.2.0-70446c (xenenterprise)
         os_CODENAME=""
-        for r in "Red Hat" CentOS Fedora; do
+        for r in "Red Hat" CentOS Fedora XenServer; do
             os_VENDOR=$r
             if [[ -n "`grep \"$r\" /etc/redhat-release`" ]]; then
                 ver=`sed -e 's/^.* \(.*\) (\(.*\)).*$/\1\|\2/' /etc/redhat-release`
@@ -437,6 +472,8 @@ function GetDistro() {
     elif [[ "$os_VENDOR" =~ (Red Hat) || "$os_VENDOR" =~ (CentOS) ]]; then
         # Drop the . release as we assume it's compatible
         DISTRO="rhel${os_RELEASE::1}"
+    elif [[ "$os_VENDOR" =~ (XenServer) ]]; then
+        DISTRO="xs$os_RELEASE"
     else
         # Catch-all for now is Vendor + Release + Update
         DISTRO="$os_VENDOR-$os_RELEASE.$os_UPDATE"
@@ -895,7 +932,7 @@ function is_package_installed() {
     fi
 
     if [[ "$os_PACKAGE" = "deb" ]]; then
-        dpkg -l "$@" > /dev/null
+        dpkg -s "$@" > /dev/null 2> /dev/null
     elif [[ "$os_PACKAGE" = "rpm" ]]; then
         rpm --quiet -q "$@"
     else
@@ -930,13 +967,9 @@ function pip_install {
         CMD_PIP=$(get_pip_command)
     fi
 
-    if [[ is_fedora && $DISTRO =~ (rhel6) ]]; then
-        # RHEL6 pip by default doesn't have this (was introduced
-        # around 0.8.1 or so)
-        PIP_USE_MIRRORS=${PIP_USE_MIRRORS:-False}
-    else
-        PIP_USE_MIRRORS=${PIP_USE_MIRRORS:-True}
-    fi
+    # Mirror option not needed anymore because pypi has CDN available,
+    # but it's useful in certain circumstances
+    PIP_USE_MIRRORS=${PIP_USE_MIRRORS:-False}
     if [[ "$PIP_USE_MIRRORS" != "False" ]]; then
         PIP_MIRROR_OPT="--use-mirrors"
     fi
@@ -1050,7 +1083,7 @@ function screen_it {
             sleep 1.5
 
             NL=`echo -ne '\015'`
-            screen -S $SCREEN_NAME -p $1 -X stuff "$2 || touch \"$SERVICE_DIR/$SCREEN_NAME/$1.failure\"$NL"
+            screen -S $SCREEN_NAME -p $1 -X stuff "$2 || echo \"$1 failed to start\" | tee \"$SERVICE_DIR/$SCREEN_NAME/$1.failure\"$NL"
         else
             # Spawn directly without screen
             run_process "$1" "$2" >$SERVICE_DIR/$SCREEN_NAME/$service.pid
@@ -1116,7 +1149,7 @@ function service_check() {
 
     for service in $failures; do
         service=`basename $service`
-        service=${service::-8}
+        service=${service%.failure}
         echo "Error: Service $service is not running"
     done
 
@@ -1125,9 +1158,10 @@ function service_check() {
     fi
 }
 
+
 # ``pip install -e`` the package, which processes the dependencies
 # using pip before running `setup.py develop`
-# Uses globals ``STACK_USER``, ``TRACK_DEPENDS``, ``*_proxy`
+# Uses globals ``STACK_USER``, ``TRACK_DEPENDS``, ``REQUIREMENTS_DIR``
 # setup_develop directory
 function setup_develop() {
     local project_dir=$1
@@ -1136,16 +1170,16 @@ function setup_develop() {
     else
         SUDO_CMD="sudo"
     fi
+
     echo "cd $REQUIREMENTS_DIR; $SUDO_CMD python update.py $project_dir"
 
-    (cd $REQUIREMENTS_DIR; \
-        $SUDO_CMD python update.py $project_dir)
+    # Don't update repo if local changes exist
+    if (cd $project_dir && git diff --quiet); then
+        (cd $REQUIREMENTS_DIR; \
+            $SUDO_CMD python update.py $project_dir)
+    fi
 
-    $SUDO_CMD \
-        HTTP_PROXY=$http_proxy \
-        HTTPS_PROXY=$https_proxy \
-        NO_PROXY=$no_proxy \
-        pip install -e $project_dir
+    pip_install -e $project_dir
     # ensure that further actions can do things like setup.py sdist
     $SUDO_CMD chown -R $STACK_USER $1/*.egg-info
 }
@@ -1226,12 +1260,28 @@ function upload_image() {
         return
     fi
 
-    # XenServer-ovf-format images are provided as .vhd.tgz as well
+    # XenServer-vhd-ovf-format images are provided as .vhd.tgz
     # and should not be decompressed prior to loading
     if [[ "$image_url" =~ '.vhd.tgz' ]]; then
         IMAGE="$FILES/${IMAGE_FNAME}"
         IMAGE_NAME="${IMAGE_FNAME%.vhd.tgz}"
         glance --os-auth-token $token --os-image-url http://$GLANCE_HOSTPORT image-create --name "$IMAGE_NAME" --is-public=True --container-format=ovf --disk-format=vhd < "${IMAGE}"
+        return
+    fi
+
+    # .xen-raw.tgz suggests a Xen capable raw image inside a tgz.
+    # and should not be decompressed prior to loading.
+    # Setting metadata, so PV mode is used.
+    if [[ "$image_url" =~ '.xen-raw.tgz' ]]; then
+        IMAGE="$FILES/${IMAGE_FNAME}"
+        IMAGE_NAME="${IMAGE_FNAME%.xen-raw.tgz}"
+        glance \
+          --os-auth-token $token \
+          --os-image-url http://$GLANCE_HOSTPORT \
+          image-create \
+            --name "$IMAGE_NAME" --is-public=True \
+            --container-format=tgz --disk-format=raw \
+            --property vm_mode=xen < "${IMAGE}"
         return
     fi
 
@@ -1422,6 +1472,19 @@ function _ping_check_novanet() {
     fi
 }
 
+# Get ip of instance
+function get_instance_ip(){
+    local vm_id=$1
+    local network_name=$2
+    local nova_result="$(nova show $vm_id)"
+    local ip=$(echo "$nova_result" | grep "$network_name" | get_field 2)
+    if [[ $ip = "" ]];then
+        echo "$nova_result"
+        die $LINENO "[Fail] Coudn't get ipaddress of VM"
+        exit 1
+    fi
+    echo $ip
+}
 
 # ssh check
 
@@ -1582,8 +1645,8 @@ vercmp_numbers() {
 }
 
 
-# This function adds a specified policy to a policy.json file.
-# Does not fail if the policy already exists.
+# Add a policy to a policy.json file
+# Do nothing if the policy already exists
 #
 # policy_add policy_file policy_name policy_permissions
 function policy_add() {
@@ -1591,24 +1654,24 @@ function policy_add() {
     local policy_name=$2
     local policy_perm=$3
 
-    if [ `grep -c ${policy_name} ${policy_file}` == '1' ] ; then
+    if grep -q ${policy_name} ${policy_file}; then
         echo "Policy ${policy_name} already exists in ${policy_file}"
         return
     fi
 
-    # Remove blank lines and closing brace from end of file, add comma to last
-    # entry if necessary
+    # Add a terminating comma to policy lines without one
+    # Remove the closing '}' and all lines following to the end-of-file
     local tmpfile=$(mktemp)
-    uniq ${policy_file} | \
-    sed '$d' | \
-    sed '$ s/]$/],/' | \
-    sed '${/^$/d}' | \
-    sed '$ s/]$/],/' > ${tmpfile}
-    mv ${tmpfile} ${policy_file}
+    uniq ${policy_file} | sed -e '
+        s/]$/],/
+        /^[}]/,$d
+    ' > ${tmpfile}
 
     # Append policy and closing brace
-    echo "    \"${policy_name}\": ${policy_perm}" >> ${policy_file}
-    echo "}" >> ${policy_file}
+    echo "    \"${policy_name}\": ${policy_perm}" >>${tmpfile}
+    echo "}" >>${tmpfile}
+
+    mv ${tmpfile} ${policy_file}
 }
 
 
