@@ -63,3 +63,7 @@ if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
     echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/localrc
     cat $GRENADE_DIR/devstack.localrc >>$BASE_DEVSTACK_DIR/localrc
 fi
+
+# NOTE(sdague): remove as soon as we can get cliff to work with older python
+# toolchains for setuputils
+pip_install 'cliff>=1.4.3,<1.4.5'
