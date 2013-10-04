@@ -62,6 +62,7 @@ source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/tls
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/keystone
