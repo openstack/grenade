@@ -34,8 +34,6 @@ GetDistro
 # Source params
 source $GRENADE_DIR/grenaderc
 
-DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
-
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occured.
 set -o errexit
