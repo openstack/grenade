@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# ``upgrade-nova``
+
+function configure_nova_upgrade(){
+    set -o xtrace
+    # upgrade rootwrap configs
+    configure_nova_rootwrap
+    set +o xtrace
+}

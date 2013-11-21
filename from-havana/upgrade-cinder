@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# ``upgrade-cinder``
+
+function configure_cinder_upgrade(){
+    set -o xtrace
+    # nothing to see here
+    set +o xtrace
+}
