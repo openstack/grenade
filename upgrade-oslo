@@ -33,4 +33,8 @@ source $TARGET_DEVSTACK_DIR/lib/oslo
 # will actually use the wrong one.
 sudo pip uninstall -y oslo.config
 
+upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
+source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
+configure_oslo_upgrade
+
 install_oslo

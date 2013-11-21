@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# ``upgrade-keystone``
+
+configure_keystone_upgrade(){
+    # configure_keystone
+    set -o xtrace
+    # nothing to see here yet
+    set +o xtrace
+}
+

@@ -19,21 +19,9 @@ source $GRENADE_DIR/grenaderc
 # For debugging
 set -o xtrace
 
-
-# Upgrade Dependencies
-# ====================
-
-# Glance
-GLANCE_PIPS=""
-
-# Nova
-NOVA_PIPS=""
-
-# Horizon
-HORIZON_PIPS=""
-
-# Quantum
-QUANTUM_PIPS=""
+# Get packages to be updated
+upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
+source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
 
 # SQLAlchemy is 0.7.8 ((cinder, nova)
 PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS"

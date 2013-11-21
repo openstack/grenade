@@ -22,6 +22,9 @@ set -o xtrace
 
 # Upgrade DevStack
 # ================
+upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
+source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
+configure_devstack_upgrade
 
 # Preserve accrc files for future usage
 cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc

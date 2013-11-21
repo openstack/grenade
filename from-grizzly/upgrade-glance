@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# ``upgrade-glance``
+
+# configure_glance
+function configure_glance_upgrade(){
+    set -o xtrace
+
+    # guarantee we have all rules set in the new release
+    cp -p $GLANCE_DIR/etc/policy.json $GLANCE_POLICY_JSON
+    if [ -n "$GLANCE_SCHEMA_JSON" ]; then
+        cp -p $GLANCE_DIR/etc/schema-image.json $GLANCE_SCHEMA_JSON
+    fi
+
+    set +o xtrace
+}

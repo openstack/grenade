@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# ``upgrade_packages``
+
+# Upgrade Dependencies
+# ====================
+
+# Glance
+GLANCE_PIPS=""
+
+# Nova
+NOVA_PIPS=""
+
+# Horizon
+HORIZON_PIPS=""
+
+# Quantum
+QUANTUM_PIPS=""
