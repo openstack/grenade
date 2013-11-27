@@ -62,7 +62,7 @@ if [[ -d $TARGET_DEVSTACK_DIR ]]; then
 fi
 
 # Clean out /etc
-sudo rm -rf /etc/keystone /etc/glance /etc/nova /etc/cinder /etc/swift
+sudo rm -rf /etc/keystone /etc/glance /etc/nova /etc/cinder /etc/swift /etc/neutron
 
 # Clean out tgt
 sudo rm /etc/tgt/conf.d/*

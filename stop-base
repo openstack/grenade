@@ -32,6 +32,8 @@ source $BASE_DEVSTACK_DIR/lib/glance
 source $BASE_DEVSTACK_DIR/lib/nova
 source $BASE_DEVSTACK_DIR/lib/cinder
 source $BASE_DEVSTACK_DIR/lib/swift
+source $BASE_DEVSTACK_DIR/lib/apache
+source $BASE_DEVSTACK_DIR/lib/neutron
 
 # For debugging
 set -o xtrace
@@ -44,6 +46,10 @@ if is_service_enabled nova; then
         # IF n-cpu is on do not upgrade list, then do no stop it
         stop_nova_compute
     fi
+fi
+
+if is_service_enabled neutron; then
+    stop_neutron
 fi
 
 if is_service_enabled glance; then

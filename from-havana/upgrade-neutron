@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# ``upgrade-neutron``
+
+configure_neutron_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
+    set -o xtrace
+
+    # In havana wasn't defined service_provider for VPN
+    vpn_service_provider=$(grep "^service_provider=VPN:" $TARGET_RELEASE_DIR/neutron/etc/neutron.conf | sed 's/service_provider=//')
+    iniadd $NEUTRON_CONF service_providers service_provider $vpn_service_provider
+
+    # In Icehouse was added metering service
+    local METERING_PLUGIN="neutron.services.metering.metering_plugin.MeteringPlugin"
+    local plugins="$(iniget $NEUTRON_CONF DEFAULT service_plugins),$METERING_PLUGIN"
+    iniset $NEUTRON_CONF DEFAULT service_plugins $plugins
+    neutron_agent_metering_configure_agent
+
+    source $TOP_DIR/openrc admin
+
+    # Setting for nova notifications, taken from devstack
+    iniset $NEUTRON_CONF DEFAULT notify_nova_on_port_status_change $Q_NOTIFY_NOVA_PORT_STATUS_CHANGE
+    iniset $NEUTRON_CONF DEFAULT notify_nova_on_port_data_changes $Q_NOTIFY_NOVA_ON_PORT_DATA_CHANGES
+    iniset $NEUTRON_CONF DEFAULT nova_url "$NOVA_SERVICE_PROTOCOL://$NOVA_SERVICE_HOST:$NOVA_SERVICE_PORT/v2"
+    iniset $NEUTRON_CONF DEFAULT nova_admin_username nova
+    iniset $NEUTRON_CONF DEFAULT nova_admin_password $SERVICE_PASSWORD
+    ADMIN_TENANT_ID=$(openstack project list | awk "/ service / { print \$2 }")
+    iniset $NEUTRON_CONF DEFAULT nova_admin_tenant_id $ADMIN_TENANT_ID
+    iniset $NEUTRON_CONF DEFAULT nova_admin_auth_url  "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_AUTH_PORT/v2.0"
+
+    # Use new filter for ovs plugin due to ovsdb monitoring
+    cp $TARGET_RELEASE_DIR/neutron/etc/neutron/rootwrap.d/openvswitch-plugin.filters /etc/neutron/openvswitch-plugin.filters
+
+    # Don't use firewall on Nova, let Neutron do according security groups
+    iniset $NOVA_CONF DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+    # LibvirtHybridOVSBridgeDriver was removed in Icehouse
+    iniset $NOVA_CONF DEFAULT libvirt_vif_driver nova.virt.libvirt.vif.LibvirtGenericVIFDriver
+
+    $XTRACE
+}

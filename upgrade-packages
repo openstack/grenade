@@ -35,7 +35,7 @@ else
 fi
 
 # SQLAlchemy is 0.7.8 ((cinder, nova)
-PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS"
+PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $NEUTRON_PIPS"
 
 #pip_install $PIPS
 

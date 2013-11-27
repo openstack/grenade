@@ -259,6 +259,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glance"
     stop $STOP upgrade-glance 250
 
+    # Upgrade Neutron
+    echo_summary "Running upgrade-neutron"
+    $GRENADE_DIR/upgrade-neutron || die $LINENO "Failure in upgrade-neutron"
+    stop $STOP upgrade-neutron 255
+
     # Upgrade Nova
     echo_summary "Running upgrade-nova"
     $GRENADE_DIR/upgrade-nova || die $LINENO "Failure in upgrade-nova"
@@ -308,6 +313,10 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     for db in keystone glance nova cinder; do
         mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$TARGET_RELEASE
     done
+    neutron_db_name=$(mysql -uroot -p$MYSQL_PASSWORD -e "show databases;" | grep neutron || :)
+    if [ -n "$neutron_db_name" ]; then
+        mysqldump -uroot -p$MYSQL_PASSWORD $neutron_db_name >$SAVE_DIR/neutron.sql.$BASE_RELEASE
+    fi
 fi
 
 

@@ -67,10 +67,10 @@ install_tempest
 upgrade_project tempest $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 OS_USERNAME=admin
-# NOTE(maurosr): Set enabled only the projects that we have the upgrade file
-# This avoid tempest to run heat tests in a moment that we don't activate it
-# during upgrade.
-ENABLED_SERVICES=n-api,nova,glance,cinder,keystone,swift
+if $(source $BASE_DEVSTACK_DIR/stackrc; is_service_enabled neutron); then
+    Q_L3_ENABLED="True"
+fi
+
 configure_tempest
 
 DEST=$DEST_BACKUP

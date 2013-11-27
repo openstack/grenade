@@ -4,7 +4,7 @@ Grenade
 Grenade is an OpenStack test harness to exercise the upgrade process
 between releases.  It uses DevStack to perform an initial OpenStack
 install and as a reference for the final configuration.  Currently
-Grenade upgrades Keystone, Glance, Nova, Cinder and Swift in
+Grenade upgrades Keystone, Glance, Nova, Neutron, Cinder and Swift in
 their default DevStack configurations.
 
 The master branch tests the upgrade path from the previous release
@@ -159,6 +159,7 @@ This is roughly the equivalent to::
     grenade/upgrade-keystone
     grenade/upgrade-glance
     grenade/upgrade-nova
+    grenade/upgrade-neutron
     grenade/upgrade-cinder
     grenade/upgrade-swift
 

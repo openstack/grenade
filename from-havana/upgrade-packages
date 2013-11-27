@@ -14,5 +14,5 @@ NOVA_PIPS=""
 # Horizon
 HORIZON_PIPS=""
 
-# Quantum
-QUANTUM_PIPS=""
+# Neutron
+NEUTRON_PIPS=""
