@@ -76,9 +76,8 @@ source $TARGET_DEVSTACK_DIR/lib/keystone
 install_keystoneclient
 install_keystone
 
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_keystone_upgrade
+# calls upgrade-keystone for specific release
+upgrade_project keystone $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate init_keystone()
 # Migrate the database

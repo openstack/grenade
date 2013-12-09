@@ -78,10 +78,8 @@ cp -pr /etc/rsyncd.conf $SAVE_DIR
 install_swift
 install_swiftclient
 
-# configure_swift
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_swift_upgrade
+# calls upgrade-swift for specific release
+upgrade_project swift $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate swift_init()
 

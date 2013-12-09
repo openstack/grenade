@@ -80,10 +80,8 @@ install_cinderclient
 install_cinder
 install_cinderclient
 
-# configure_cinder
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_cinder_upgrade
+# calls upgrade-cinder for specific release
+upgrade_project cinder $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate init_cinder()
 create_cinder_volume_group

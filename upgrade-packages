@@ -19,9 +19,20 @@ source $GRENADE_DIR/grenaderc
 # For debugging
 set -o xtrace
 
+# NOTE(maurosr): Ideally in a new upgrade test right after a release no new
+# configuration is need, so we can go on without the from-<release> directory.
+# This is also useful due to cross dependencie between d-g and grenade when
+# enabling grenade to run a an upgrade between a new pair of releases.
 # Get packages to be updated
+
 upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
+upgrade_file=$GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
+if [ -e $upgrade_file ]; then
+    source $upgrade_file
+else
+    echo "Warning: No new configurations were found for new necessary" \
+"packages. If your patch fails during the upgrade this may be the cause."
+fi
 
 # SQLAlchemy is 0.7.8 ((cinder, nova)
 PIPS="$GLANCE_PIPS $HORIZON_PIPS $NOVA_PIPS $QUANTUM_PIPS"

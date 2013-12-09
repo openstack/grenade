@@ -99,10 +99,8 @@ NOVNC_DIR=$DEST/noVNC
 install_novaclient
 install_nova
 
-# configure_nova()
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_nova_upgrade
+# calls upgrade-nova for specific release
+upgrade_project nova $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate init_nova()
 create_nova_cache_dir

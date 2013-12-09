@@ -80,10 +80,8 @@ source $TARGET_DEVSTACK_DIR/lib/glance
 install_glanceclient
 install_glance
 
-# configure_glance()
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_glance_upgrade
+# calls upgrade-glance for specific release
+upgrade_project glance $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate init_glance()
 create_glance_cache_dir

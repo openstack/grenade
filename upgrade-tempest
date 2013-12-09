@@ -61,10 +61,8 @@ source $TARGET_DEVSTACK_DIR/lib/tempest
 # install_tempest()
 install_tempest
 
-# configure_tempest()
-upgrade_dir=$(get_release_name_from_branch $BASE_DEVSTACK_BRANCH)
-source $GRENADE_DIR/"from-"$upgrade_dir/${0##*/}
-configure_tempest_upgrade
+# calls upgrade-tempest for specific release
+upgrade_project tempest $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 OS_USERNAME=admin
 configure_tempest
