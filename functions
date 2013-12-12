@@ -636,11 +636,10 @@ function git_update_tag() {
 
 
 # Returns openstack release name for a given branch name
-# At first it return master for a not released version
 function get_release_name_from_branch(){
     local branch=$1
-    if [ $branch == "stable/grizzly" ]; then
-        echo "grizzly"
+    if [[ $branch =~ "stable/" ]]; then
+        echo ${branch#*/}
     else
         echo "master"
     fi

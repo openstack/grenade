@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# ``upgrade-glance``
+
+function configure_glance_upgrade(){
+    set -o xtrace
+    # nothing to see here
+    set +o xtrace
+}
