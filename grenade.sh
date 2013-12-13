@@ -260,7 +260,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 
     # Upgrade Glance
     echo_summary "Running upgrade-glance"
-    $GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glancwe"
+    $GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glance"
     stop $STOP upgrade-glance 250
 
     # Upgrade Nova
