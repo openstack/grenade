@@ -71,9 +71,6 @@ fi
 # Get target config
 source $TARGET_DEVSTACK_DIR/stackrc
 
-# Create a new named screen to run processes in
-screen -d -m -S $SCREEN_NAME -t shell -s /bin/bash
-sleep 1
 # Set a reasonable statusbar
 SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
 screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"

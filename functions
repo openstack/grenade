@@ -1104,6 +1104,29 @@ function screen_it {
     fi
 }
 
+# Stop a service in screen
+# If a PID is available use it, kill the whole process group via TERM
+# If screen is being used kill the screen window; this will catch processes
+# that did not leave a PID behind
+# screen_stop service
+function screen_stop() {
+    SCREEN_NAME=${SCREEN_NAME:-stack}
+    SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
+    USE_SCREEN=$(trueorfalse True $USE_SCREEN)
+
+    if is_service_enabled $1; then
+        # Kill via pid if we have one available
+        if [[ -r $SERVICE_DIR/$SCREEN_NAME/$1.pid ]]; then
+            pkill -TERM -P -$(cat $SERVICE_DIR/$SCREEN_NAME/$1.pid)
+            rm $SERVICE_DIR/$SCREEN_NAME/$1.pid
+        fi
+        if [[ "$USE_SCREEN" = "True" ]]; then
+            # Clean up the screen window
+            screen -S $SCREEN_NAME -p $1 -X kill
+        fi
+    fi
+}
+
 
 # Screen rc file builder
 # screen_rc service "command-line"

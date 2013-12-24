@@ -49,11 +49,6 @@ TOP_DIR=$TARGET_DEVSTACK_DIR
 # Upgrade Nova
 # ============
 
-# Kill running Nova processes
-for serv in n-api n-cond n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
-    screen -S $SCREEN_NAME -p $serv -X kill
-done
-
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
