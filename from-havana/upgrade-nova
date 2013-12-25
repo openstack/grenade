@@ -8,6 +8,11 @@ function configure_nova_upgrade(){
     # upgrade rootwrap configs
     configure_nova_rootwrap
 
+    # rolling nova-compute support
+    if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+        iniset $NOVA_CONF upgrade_levels compute havana
+    fi
+
    # reset to previous state
     $XTRACE
 }

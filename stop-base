@@ -39,7 +39,9 @@ if [[ -n "$SCREEN" ]]; then
     OIFS=$IFS
     IFS=,
     for serv in $ENABLED_SERVICES; do
-        screen_stop $serv
+        if [[ ! "$DO_NOT_UPGRADE_SERVICES" =~ "$serv" ]]; then
+            screen_stop $serv
+        fi
     done
     IFS=$OIFS
 fi

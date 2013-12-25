@@ -106,7 +106,10 @@ nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
 # Start Nova
 start_nova_api
-start_nova
+if [[ ! "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+    start_nova_compute
+fi
+start_nova_rest
 
 set +o xtrace
 echo "*********************************************************************"

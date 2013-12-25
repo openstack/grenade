@@ -76,7 +76,11 @@ TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$BASE_RUN_SMOKE}
 
 # TODO(sdague): make these complete afterwards
 # The services we'd expect at each release
-BASE_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
+if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+    BASE_SERVICES="nova-api nova-conductor keystone glance-api cinder-api"
+else
+    BASE_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
+fi
 TARGET_SERVICES="nova-api nova-conductor nova-compute keystone glance-api cinder-api"
 
 # Need this for global requirements
