@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# ``upgrade-horizon``
+
+configure_horizon_upgrade(){
+    set -o xtrace
+    # nothing to see here yet
+    set +o xtrace
+}
+
