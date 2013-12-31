@@ -5,8 +5,8 @@ RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
-# Another option is https://git.openstack.org
-GIT_BASE=https://github.com
+# Another option is https://github.com
+GIT_BASE=git://git.openstack.org
 #GIT_BASE=/opt/git
 
 # Destination path for installation ``STACK_ROOT``
