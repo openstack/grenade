@@ -84,7 +84,7 @@ Install Grenade
 
 Get Grenade from GitHub in the usual way::
 
-    git clone https://github.com/openstack-dev/grenade.git
+    git clone git://git.openstack.org/openstack-dev/grenade
 
 Grenade knows how to install the current master branch using the included
 ``setup-grenade`` script.  The only argument is the hostname of the target
@@ -174,4 +174,4 @@ DevStack/Grenade upgrade process.  They typically stop any running
 processes, checkout updated sources, migrate the database, any other
 tasks that need to be done then start the processes in ``screen``.
 
-These scripts are written to be idmpotent.
+These scripts are written to be idempotent.
