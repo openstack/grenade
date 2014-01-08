@@ -280,6 +280,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
         stop $STOP upgrade-tempest 290
     fi
 
+    # Upgrade Horizon
+    echo_summary "Running upgrade-horizon"
+    $GRENADE_DIR/upgrade-horizon || die $LINENO "Failure in upgrade-horizon"
+    stop $STOP upgrade-horizon 240
+
     # Upgrade Checks
     echo_summary "Running upgrade sanity check"
     $GRENADE_DIR/check-sanity || die $LINENO "Failure in check-sanity"
