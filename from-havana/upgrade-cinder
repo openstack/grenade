@@ -4,6 +4,7 @@
 
 function configure_cinder_upgrade(){
     set -o xtrace
-    # nothing to see here
+    # upgrade rootwrap configs
+    configure_cinder_rootwrap
     set +o xtrace
 }
