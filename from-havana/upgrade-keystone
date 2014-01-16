@@ -3,8 +3,11 @@
 # ``upgrade-keystone``
 
 configure_keystone_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
-    # nothing to see here yet
-    set +o xtrace
-}
 
+    # nothing to see here yet
+
+    # reset to previous state
+    $XTRACE
+}

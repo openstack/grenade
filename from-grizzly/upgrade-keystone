@@ -3,9 +3,9 @@
 # ``upgrade-keystone``
 
 configure_keystone_upgrade(){
-    # configure_keystone
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
     # nothing to see here yet
-    set +o xtrace
+    # reset to previous state
+    $XTRACE
 }
-

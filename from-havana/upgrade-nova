@@ -3,8 +3,11 @@
 # ``upgrade-nova``
 
 function configure_nova_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
     # upgrade rootwrap configs
     configure_nova_rootwrap
-    set +o xtrace
+
+   # reset to previous state
+    $XTRACE
 }

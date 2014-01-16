@@ -3,8 +3,10 @@
 # ``upgrade-horizon``
 
 configure_horizon_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
     # nothing to see here yet
-    set +o xtrace
-}
 
+    # reset to previous state
+    $XTRACE
+}

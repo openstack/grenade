@@ -3,7 +3,8 @@
 # ``upgrade-devstack``
 
 function configure_devstack_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
     # nothing to see here yet
-    set +o xtrace
+    $XTRACE
 }

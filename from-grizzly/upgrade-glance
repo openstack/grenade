@@ -4,6 +4,7 @@
 
 # configure_glance
 function configure_glance_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
     set -o xtrace
 
     # guarantee we have all rules set in the new release
@@ -12,5 +13,6 @@ function configure_glance_upgrade(){
         cp -p $GLANCE_DIR/etc/schema-image.json $GLANCE_SCHEMA_JSON
     fi
 
-    set +o xtrace
+    # reset to previous state
+    $XTRACE
 }
