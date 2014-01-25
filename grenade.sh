@@ -172,7 +172,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
 
     echo_summary "Running base stack.sh"
     cd $BASE_DEVSTACK_DIR
-    ./stack.sh
+    GIT_BASE=$GIT_BASE ./stack.sh
     stop $STOP stack.sh 10
 
     # Cache downloaded instances
