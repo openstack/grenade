@@ -50,7 +50,7 @@ TOP_DIR=$TARGET_DEVSTACK_DIR
 # ============
 
 # Kill running Nova processes
-for serv in n-api n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
+for serv in n-api n-cond n-cauth n-cpu n-crt n-net n-novnc n-obj n-sch n-vol n-xvnc; do
     screen -S $SCREEN_NAME -p $serv -X kill
 done
 
