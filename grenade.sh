@@ -161,9 +161,6 @@ TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 # =================================
 
 if [[ "$RUN_BASE" == "True" ]]; then
-    #echo_summary "Sourcing base DevStack config"
-    #source $BASE_DEVSTACK_DIR/stackrc
-
     echo_summary "Running prep-base"
     $GRENADE_DIR/prep-base
     stop $STOP prep-base 01
@@ -304,6 +301,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # --------------
 
     echo_summary "Sourcing target DevStack config"
+    source $TARGET_DEVSTACK_DIR/functions
     source $TARGET_DEVSTACK_DIR/stackrc
     echo_summary "Dumping target databases"
     mkdir -p $SAVE_DIR
