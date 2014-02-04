@@ -37,7 +37,7 @@ Process
 -------
 
 * Install base OpenStack using current stable/<base-release> DevStack
-* Perform basic testing (exercise.sh)
+* Perform basic testing (tempest's smoke and scenarios tests)
 * Create some artifacts in a new project ('javelin') for comparison
   after the upgrade process.
 * Install current target DevStack to support the upgrades

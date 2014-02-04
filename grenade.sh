@@ -152,12 +152,10 @@ set -o xtrace
 # More Setup
 # ==========
 
-# Set up for exercises
-BASE_RUN_EXERCISES=${BASE_RUN_EXERCISES:-RUN_EXERCISES}
-TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-RUN_EXERCISES}
-
-# Set up for smoke tests (default to False)
-TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:=False}
+# Set up for smoke tests (default to True)
+RUN_SMOKE=${RUN_SMOKE:=True}
+BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
+TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
 # Install 'Base' Build of OpenStack
 # =================================
@@ -194,11 +192,12 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # ---------
 
     # Validate the install
-    echo_summary "Running base exercises"
-    if [[ "$BASE_RUN_EXERCISES" == "True" ]]; then
-        $BASE_DEVSTACK_DIR/exercise.sh
+    echo_summary "Running base smoke test"
+    if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
+        cd $BASE_RELEASE_DIR/tempest
+        tox -esmoke
     fi
-    stop $STOP base-exercise 110
+    stop $STOP base-smoke 110
 
     # Create a project, users and instances
     echo_summary "Creating Javelin project"
@@ -294,15 +293,10 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # =============
 
     # Validate the upgrade
-    echo_summary "Running target exercises"
-    if [[ "$TARGET_RUN_EXERCISES" == "True" ]]; then
-        $TARGET_DEVSTACK_DIR/exercise.sh
-    fi
-    stop $STOP target-exercise 320
-
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
-        echo_summary "Running tempest smoke tests"
-        $TARGET_RELEASE_DIR/tempest/run_tests.sh -N -s
+        echo_summary "Running tempest scenario and smoke tests"
+        cd $TARGET_RELEASE_DIR/tempest
+        tox -esmoke
         stop $STOP run-smoke 330
     fi
 

@@ -11,8 +11,3 @@ Upgrade Scripts Needed
 
 Known Upgrade Failures
 ======================
-
-Known Exercise Failures
-=======================
-
-* Instance deletion not working (both OSAPI and EC2)

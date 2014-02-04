@@ -29,11 +29,8 @@ TARGET_DEVSTACK_REPO=$BASE_DEVSTACK_REPO
 TARGET_DEVSTACK_BRANCH=stable/$TARGET_RELEASE
 TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 
-# Allow skipping the exercises
-RUN_EXERCISES=True
-
 # Allow skipping smoke tests
-TARGET_RUN_SMOKE=False
+RUN_SMOKE=True
 
 # Saved stuff
 SAVE_DIR=${STACK_ROOT}/save
@@ -74,10 +71,8 @@ ENABLE_TEMPEST=${ENABLE_TEMPEST:=True}
 # We need RECLONE to get the updated branches; not everyone wants it though
 RECLONE=${RECLONE:-no}
 
-# Set these after localrc so user can pick-n-choose
-# Allow setting target exercises independently
-BASE_RUN_EXERCISES=${RUN_EXERCISES:=True}
-TARGET_RUN_EXERCISES=${TARGET_RUN_EXERCISES:-$BASE_RUN_EXERCISES}
+BASE_RUN_SMOKE=${RUN_SMOKE:=True}
+TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$BASE_RUN_SMOKE}
 
 # TODO(sdague): make these complete afterwards
 # The services we'd expect at each release
