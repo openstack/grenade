@@ -143,10 +143,3 @@ if ! timeout $ACTIVE_TIMEOUT sh -c "while ! nova show $id | grep status | grep -
     die $LINENO "server didn't become active!"
 fi
 
-# Put some stuff in Swift
-# -----------------------
-
-swift upload javelin /etc/hosts
-if ! swift list javelin | grep -q hosts; then
-    die $LINENO "Swift upload failed"
-fi
