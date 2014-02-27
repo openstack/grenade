@@ -25,6 +25,15 @@ source $GRENADE_DIR/grenaderc
 
 # We need the OS_ credentials
 source $TARGET_DEVSTACK_DIR/openrc
+source $TARGET_DEVSTACK_DIR/functions
+
+SERVICE_CHECK=`service_check`
+
+if [[ -n $SERVICE_CHECK ]]; then
+    echo "Failure to start some services"
+    echo $SERVICE_CHECK
+    exit 1
+fi
 
 # all the services should actually be running that we expect
 NOT_RUNNING=""
