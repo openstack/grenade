@@ -82,7 +82,7 @@ if ! [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
     # only check for compute in base if we aren't supposed to shut it down
     BASE_SERVICES+=" nova-compute"
 else
-    TARGET_SERVICES="nova-compute"
+    TARGET_SERVICES="nova-compute "
 fi
 TARGET_SERVICES+=$BASE_SERVICES
 
