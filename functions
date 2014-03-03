@@ -1016,6 +1016,17 @@ function cleanup_tmp {
     sudo rm -rf ${tmp_dir}/pip-build.*
 }
 
+
+# Prepare secure cache directory
+function prep_cache_dir() {
+    local dir=$1
+    sudo mkdir -p "$dir"
+    sudo chown $STACK_USER "$dir"
+    sudo chmod 700 "$dir"
+    rm -f "$dir"/*
+}
+
+
 # Service wrapper to restart services
 # restart_service service-name
 function restart_service() {
