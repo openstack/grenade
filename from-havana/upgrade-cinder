@@ -5,8 +5,7 @@
 function configure_cinder_upgrade(){
     XTRACE=$(set +o | grep xtrace)
     set -o xtrace
-    # upgrade rootwrap configs
-    configure_cinder_rootwrap
+
     # reset to previous state
     $XTRACE
 }
