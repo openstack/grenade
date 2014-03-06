@@ -25,6 +25,11 @@ source $GRENADE_DIR/grenaderc
 source $BASE_DEVSTACK_DIR/stackrc
 DATA_DIR=${STACK_ROOT}/data
 
+# We need base DevStack functions for this
+source $BASE_DEVSTACK_DIR/functions
+source $BASE_DEVSTACK_DIR/lib/keystone
+source $BASE_DEVSTACK_DIR/lib/glance
+source $BASE_DEVSTACK_DIR/lib/nova
 source $BASE_DEVSTACK_DIR/lib/cinder
 source $BASE_DEVSTACK_DIR/lib/swift
 
@@ -32,6 +37,31 @@ source $BASE_DEVSTACK_DIR/lib/swift
 set -o xtrace
 
 echo "Shutting down devstack in screen"
+
+if is_service_enabled nova; then
+    stop_nova
+fi
+
+if is_service_enabled glance; then
+    stop_glance
+fi
+
+if is_service_enabled key; then
+    stop_keystone
+fi
+
+# Swift runs daemons
+if is_service_enabled s-proxy; then
+    stop_swift
+fi
+
+SCSI_PERSIST_DIR=$CINDER_STATE_PATH/volumes/*
+
+# Get the iSCSI volumes
+if is_service_enabled cinder; then
+    stop_cinder
+fi
+
 
 # Kill running processes
 SCREEN=$(which screen)
@@ -44,18 +74,6 @@ if [[ -n "$SCREEN" ]]; then
         fi
     done
     IFS=$OIFS
-fi
-
-# Swift runs daemons
-if is_service_enabled swift; then
-    stop_swift
-fi
-
-# Handle iSCSI targets here...don't delete, just stop
-if [[ "$os_PACKAGE" = "deb" ]]; then
-    stop_service tgt
-else
-    stop_service tgtd
 fi
 
 # Unplumb the LVM backing file
