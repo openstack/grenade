@@ -78,6 +78,13 @@ $STACK_ROOT
  |   |- ...
  |   |- swift
 
+Dependencies
+------------
+
+This is a non-exhaustive list of dependencies:
+
+* git
+* tox<1.7
 
 Install Grenade
 ---------------
