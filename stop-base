@@ -39,7 +39,11 @@ set -o xtrace
 echo "Shutting down devstack in screen"
 
 if is_service_enabled nova; then
-    stop_nova
+    stop_nova_rest
+    if ! [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+        # IF n-cpu is on do not upgrade list, then do no stop it
+        stop_nova_compute
+    fi
 fi
 
 if is_service_enabled glance; then
