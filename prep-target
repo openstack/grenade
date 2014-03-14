@@ -69,6 +69,7 @@ fi
 # =============
 
 # Get target config
+source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 
 # Set a reasonable statusbar

@@ -46,12 +46,14 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/openrc
 FILES=$TARGET_DEVSTACK_DIR/files
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/baremetal

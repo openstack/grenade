@@ -58,6 +58,7 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 
 # Duplicate some setup bits from target DevStack
 cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
