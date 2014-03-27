@@ -70,7 +70,7 @@ OS_USERNAME=admin
 # NOTE(maurosr): Set enabled only the projects that we have the upgrade file
 # This avoid tempest to run heat tests in a moment that we don't activate it
 # during upgrade.
-ENABLED_SERVICES=nova,glance,cinder,keystone,swift
+ENABLED_SERVICES=n-api,nova,glance,cinder,keystone,swift
 configure_tempest
 
 DEST=$DEST_BACKUP
