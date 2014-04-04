@@ -50,12 +50,6 @@ if $(source $BASE_DEVSTACK_DIR/stackrc; ! is_service_enabled neutron); then
     exit 0
 fi
 
-# FIXME(jlibosva): Devstack doesn't kill following Neutron processes.
-# Should be removed once fixed in devstack
-for serv in q-svc q-l3 q-meta; do
-    screen -S $SCREEN_NAME -p $serv -X kill
-done
-
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
@@ -89,12 +83,6 @@ source $BASE_DEVSTACK_DIR/lib/neutron
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.neutron ]] || cp -pr $NEUTRON_CONF_DIR $SAVE_DIR/etc.neutron
-
-# Stop neutron programs
-stop_neutron
-
-# Stop third party programs
-stop_neutron_third_party
 
 # Set for DevStack compatibility
 TOP_DIR=$TARGET_DEVSTACK_DIR
