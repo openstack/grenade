@@ -140,6 +140,20 @@ if [[ -n "$SCREEN_LOGDIR" ]]; then
     fi
 fi
 
+# Setup Exit Traps for debug purposes
+trap exit_trap EXIT
+function exit_trap {
+    local r=$?
+    # print out all the processes running
+    echo "Running Processes:"
+    ps auxw
+    echo "Disk Status:"
+    df -h
+    # and just let everything flush
+    sleep 1
+    exit $r
+}
+
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
