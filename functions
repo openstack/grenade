@@ -638,7 +638,7 @@ function git_update_tag() {
 # Returns openstack release name for a given branch name
 function get_release_name_from_branch(){
     local branch=$1
-    if [[ $branch =~ "stable/" ]]; then
+    if [[ $branch =~ "stable/" || $branch =~ "proposed/" ]]; then
         echo ${branch#*/}
     else
         echo "master"
