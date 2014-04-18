@@ -1738,8 +1738,8 @@ function upgrade_project(){
     if [[ -e ${upgrade_file} ]]; then
         source ${upgrade_file} && configure_${project}_upgrade
     else
-        echo "Warning: No new configurations were found for Openstack Cinder. If"\
-             "your patch fails in during the upgrade this may be the cause."
+        echo "Warning: No new configurations were found for OpenStack $project."
+        echo "If your patch fails during the upgrade this may be the cause."
     fi
 }
 
