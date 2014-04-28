@@ -103,6 +103,9 @@ install_neutronclient
 install_neutron_agent_packages
 install_neutron_third_party
 
+Q_L3_CONF_FILE=${Q_L3_CONF_FILE:-"$NEUTRON_CONF_DIR/l3_agent.ini"}
+Q_FWAAS_CONF_FILE=${Q_FWAAS_CONF_FILE:-"$NEUTRON_CONF_DIR/fwaas_driver.ini"}
+
 upgrade_project neutron $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Get plugin config paths
@@ -130,8 +133,6 @@ METERING_AGENT_CONF_FILENAME=${METERING_AGENT_CONF_FILENAME:-"/etc/neutron/servi
 
 AGENT_L3_BINARY=${AGENT_L3_BINARY:-"$NEUTRON_BIN_DIR/neutron-l3-agent"}
 AGENT_VPN_BINARY=${AGENT_VPN_BINARY:-"$NEUTRON_BIN_DIR/neutron-vpn-agent"}
-Q_L3_CONF_FILE=${Q_L3_CONF_FILE:-"$NEUTRON_CONF_DIR/l3_agent.ini"}
-Q_FWAAS_CONF_FILE=${Q_FWAAS_CONF_FILE:-"$NEUTRON_CONF_DIR/fwaas_driver.ini"}
 
 # Start neutron and agents
 start_neutron_third_party
