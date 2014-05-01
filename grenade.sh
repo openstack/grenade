@@ -143,14 +143,21 @@ fi
 # Setup Exit Traps for debug purposes
 trap exit_trap EXIT
 function exit_trap {
+    # we don't need tracing during this
+    set +o xtrace
     local r=$?
-    # print out all the processes running
-    echo "Running Processes:"
-    ps auxw
-    echo "Disk Status:"
-    df -h
-    # and just let everything flush
-    sleep 1
+    if [[ $r -ne 0 ]]; then
+        echo "Exit code: $r"
+        # print out all the processes running
+        echo
+        echo "Running Processes:"
+        ps auxw
+        echo
+        echo "Disk Status:"
+        df -h
+        # and just let everything flush
+        sleep 1
+    fi
     exit $r
 }
 
