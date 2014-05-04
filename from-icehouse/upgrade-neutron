@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# ``upgrade-neutron``
+
+configure_neutron_upgrade(){
+    XTRACE=$(set +o | grep xtrace)
+    set -o xtrace
+
+    if is_service_enabled q-vpn; then
+        Q_VPN_CONF_FILE=$NEUTRON_CONF_DIR/vpn_agent.ini
+        cp $NEUTRON_DIR/etc/vpn_agent.ini $Q_VPN_CONF_FILE
+        VPN_CONF_FILES="--config-file $NEUTRON_CONF --config-file=$Q_L3_CONF_FILE --config-file=$Q_VPN_CONF_FILE"
+        for cfg_file in ${Q_VPN_EXTRA_CONF_FILES[@]}; do
+            VPN_CONF_FILES+=" --config-file $cfg_file"
+        done
+    fi
+
+    $XTRACE
+}
