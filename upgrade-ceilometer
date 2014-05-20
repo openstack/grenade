@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``save-state``
+# ``upgrade-ceilometer``
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -18,6 +18,8 @@ cleanup() {
     trap 2; kill -2 $$
 }
 
+trap cleanup SIGHUP SIGINT SIGTERM
+
 # Keep track of the grenade directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
@@ -32,37 +34,34 @@ GetDistro
 # Source params
 source $GRENADE_DIR/grenaderc
 
-# For debugging
+# This script exits on an error so that errors don't compound and you see
+# only the first error that occurred.
+set -o errexit
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
 
-# Save databases
-# --------------
 
-source $BASE_DEVSTACK_DIR/stackrc
-mkdir -p $SAVE_DIR
-MYSQL_SERVICES="keystone glance nova cinder"
-if grep -q 'connection *= *mysql' /etc/ceilometer/ceilometer.conf; then
-  MYSQL_SERVICES+=" ceilometer"
-elif grep -q 'connection *= *mongo' /etc/ceilometer/ceilometer.conf; then
-  mongodump --db ceilometer --out $SAVE_DIR/ceilometer-dump.$BASE_RELEASE
-fi
-for db in $MYSQL_SERVICES ; do
-    mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$BASE_RELEASE
-done
-neutron_db_name=$(mysql -uroot -p$MYSQL_PASSWORD -e "show databases;" | grep neutron || :)
-if [ -n "$neutron_db_name" ]; then
-    mysqldump -uroot -p$MYSQL_PASSWORD $neutron_db_name >$SAVE_DIR/neutron.sql.$BASE_RELEASE
-fi
+# Upgrade Ceilometer
+# ==================
 
-# Save ebtables/iptables
-# ----------------------
+# Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/functions
+source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/ceilometer
 
-sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
-sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
-sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
-sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
+# install_ceilometer()
+install_ceilometer
 
+# calls upgrade-ceilometer for specific release
+upgrade_project ceilometer $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+
+# Start Ceilometer
+start_ceilometer
 
 set +o xtrace
 echo "*********************************************************************"
