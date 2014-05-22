@@ -178,6 +178,11 @@ RUN_SMOKE=${RUN_SMOKE:=True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
+# Ensure that we can run this on a fresh system
+sudo mkdir -p $(dirname $BASE_DEVSTACK_DIR)
+sudo mkdir -p $(dirname $TARGET_DEVSTACK_DIR)
+sudo chown -R `whoami` $(dirname $(dirname $BASE_DEVSTACK_DIR))
+
 # Install 'Base' Build of OpenStack
 # =================================
 
