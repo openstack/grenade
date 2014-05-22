@@ -48,6 +48,8 @@ if [[ -n "$NOT_RUNNING" ]]; then
     # do a process dump at the end, just to see how bad things really are
     ps auxw
     exit 1
+else
+    echo "the following services are running: $TARGET_SERVICES"
 fi
 
 echo "*********************************************************************"
