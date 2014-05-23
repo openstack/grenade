@@ -77,14 +77,11 @@ fi
 # Kill running processes
 SCREEN=$(which screen)
 if [[ -n "$SCREEN" ]]; then
-    OIFS=$IFS
-    IFS=,
-    for serv in $ENABLED_SERVICES; do
+    for serv in ${ENABLED_SERVICES//,/ }; do
         if [[ ! "$DO_NOT_UPGRADE_SERVICES" =~ "$serv" ]]; then
             screen_stop $serv
         fi
     done
-    IFS=$OIFS
 fi
 
 # Unplumb the LVM backing file
