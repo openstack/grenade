@@ -20,6 +20,8 @@ GetDistro
 # Source params
 source $GRENADE_DIR/grenaderc
 
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
 
 # Duplicate some setup bits from base DevStack
 source $BASE_DEVSTACK_DIR/stackrc
@@ -27,6 +29,7 @@ DATA_DIR=${STACK_ROOT}/data
 
 # We need base DevStack functions for this
 source $BASE_DEVSTACK_DIR/functions
+source $BASE_DEVSTACK_DIR/lib/tls
 source $BASE_DEVSTACK_DIR/lib/apache
 source $BASE_DEVSTACK_DIR/lib/keystone
 source $BASE_DEVSTACK_DIR/lib/glance
