@@ -143,9 +143,11 @@ fi
 # Setup Exit Traps for debug purposes
 trap exit_trap EXIT
 function exit_trap {
+    # really important that this is the *first* line in this
+    # function, otherwise we corrupt the exit code
+    local r=$?
     # we don't need tracing during this
     set +o xtrace
-    local r=$?
     if [[ $r -ne 0 ]]; then
         echo "Exit code: $r"
         # print out all the processes running
