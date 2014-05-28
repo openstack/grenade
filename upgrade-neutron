@@ -88,6 +88,7 @@ source $BASE_DEVSTACK_DIR/lib/neutron
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 # Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/neutron
 source $TARGET_DEVSTACK_DIR/lib/database
