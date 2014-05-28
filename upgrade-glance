@@ -67,6 +67,7 @@ SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/keystone
 

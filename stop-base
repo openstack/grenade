@@ -27,12 +27,12 @@ DATA_DIR=${STACK_ROOT}/data
 
 # We need base DevStack functions for this
 source $BASE_DEVSTACK_DIR/functions
+source $BASE_DEVSTACK_DIR/lib/apache
 source $BASE_DEVSTACK_DIR/lib/keystone
 source $BASE_DEVSTACK_DIR/lib/glance
 source $BASE_DEVSTACK_DIR/lib/nova
 source $BASE_DEVSTACK_DIR/lib/cinder
 source $BASE_DEVSTACK_DIR/lib/swift
-source $BASE_DEVSTACK_DIR/lib/apache
 source $BASE_DEVSTACK_DIR/lib/neutron
 
 # For debugging
