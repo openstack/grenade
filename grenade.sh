@@ -253,10 +253,11 @@ if [[ "$RUN_BASE" == "True" ]]; then
     fi
     stop $STOP base-smoke 110
 
+    cd $GRENADE_DIR
     # Create a project, users and instances
     echo_summary "Creating Javelin project"
-    $GRENADE_DIR/setup-javelin
-    stop $STOP setup-javelin 120
+    (source $BASE_DEVSTACK_DIR/openrc admin admin;
+        javelin2 -m create -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR)
 
     # Save some stuff before we shut that whole thing down
     echo_summary "Saving current state information"
@@ -347,6 +348,12 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 
     # Upgrade Tests
     # =============
+
+    # Validate the created resources
+    cd $GRENADE_DIR
+    echo_summary "Validating Javelin resources"
+    (source $BASE_DEVSTACK_DIR/openrc admin admin;
+        javelin2 -m check -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR)
 
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
