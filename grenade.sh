@@ -220,7 +220,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
     echo_summary "Running base smoke test"
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
         cd $BASE_RELEASE_DIR/tempest
-        tox -esmoke
+        tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
     fi
     stop $STOP base-smoke 110
 
@@ -326,7 +326,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running tempest scenario and smoke tests"
         cd $TARGET_RELEASE_DIR/tempest
-        tox -esmoke
+        tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         stop $STOP run-smoke 330
     fi
 

@@ -31,6 +31,7 @@ TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 
 # Allow skipping smoke tests
 RUN_SMOKE=True
+TEMPEST_CONCURRENCY=${TEMPEST_CONCURRENCY:-$(nproc --all)}
 
 # Saved stuff
 SAVE_DIR=${STACK_ROOT}/save
