@@ -314,6 +314,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/upgrade-horizon || die $LINENO "Failure in upgrade-horizon"
     stop $STOP upgrade-horizon 240
 
+    # Upgrade Ceilometer
+    echo_summary "Running upgrade-ceilometer"
+    $GRENADE_DIR/upgrade-ceilometer || die $LINENO "Failure in upgrade-ceilometer"
+    stop $STOP upgrade-ceilometer 280
+
     # Upgrade Checks
     echo_summary "Running upgrade sanity check"
     $GRENADE_DIR/check-sanity || die $LINENO "Failure in check-sanity"
