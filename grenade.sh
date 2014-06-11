@@ -96,15 +96,21 @@ if [[ -n "$LOGFILE" ]]; then
     # Copy stdout to fd 3
     exec 3>&1
     if [[ "$VERBOSE" == "True" ]]; then
+        echo "Running in verbose mode:"
+        echo "  Full logs found at => ${LOGFILE}"
+        echo "  Summary logs at => ${SUMFILE}"
         # Redirect stdout/stderr to tee to write the log file
-        exec 1> >( tee "${LOGFILE}" ) 2>&1
+        exec 1> >( ./tools/outfilter.py -v -o "${LOGFILE}" ) 2>&1
         # Set up a second fd for output
-        exec 6> >( tee "${SUMFILE}" )
+        exec 6> >( ./tools/outfilter.py -o "${SUMFILE}" )
     else
+        echo "Running in summary mode:"
+        echo "  Full logs found at => ${LOGFILE}"
+        echo "  Summary logs at => ${SUMFILE}"
         # Set fd 1 and 2 to primary logfile
-        exec 1> "${LOGFILE}" 2>&1
+        exec 1> >( ./tools/outfilter.py -o "${LOGFILE}") 2>&1
         # Set fd 6 to summary logfile and stdout
-        exec 6> >( tee "${SUMFILE}" /dev/fd/3 )
+        exec 6> >( ./tools/outfilter.py -v -o "${SUMFILE}" >&3)
     fi
 
     echo_summary "grenade.sh log $LOGFILE"
@@ -120,7 +126,7 @@ else
         exec 1>/dev/null 2>&1
     fi
     # Always send summary fd to original stdout
-    exec 6>&3
+    exec 6> >( ./tools/outfilter.py -v -o "${SUMFILE}" >&3)
 fi
 
 # Set up logging of screen windows
