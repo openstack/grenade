@@ -27,13 +27,51 @@ source $GRENADE_DIR/grenaderc
 source $TARGET_DEVSTACK_DIR/openrc
 source $TARGET_DEVSTACK_DIR/functions
 
-SERVICE_CHECK=`service_check`
+function is_a_service {
+    local name=$1
+    if [[ ! $name =~ '-' ]]; then
+        echo "$name does not look like a valid service, skipping log check"
+        return 1
+    fi
+    if [[ $name =~ ^ceilometer ]]; then
+        echo "Ceilometer not yet supported, skipping check for $name"
+        return 1
+    fi
+    if [[ $name =~ ^h- ]]; then
+        echo "Heat not yet supported, skipping check for $name"
+        return 1
+    fi
+    if [[ "${DO_NOT_UPGRADE_SERVICES}" =~ "${service}" ]]; then
+        echo "$service not upgraded, skipping check"
+        return 1
+    fi
+    return 0
+}
 
-if [[ -n $SERVICE_CHECK ]]; then
-    echo "Failure to start some services"
-    echo $SERVICE_CHECK
-    exit 1
-fi
+function test_all_enabled_services {
+    local tmpsvcs="${ENABLED_SERVICES}"
+    local service
+    local log
+    local failed=0
+    local not_running=""
+    for service in ${tmpsvcs//,/ }; do
+        if is_a_service $service; then
+            log=${SCREEN_LOGDIR}/screen-$service.log
+            if [[ ! -e $log ]]; then
+                echo "Couldn't find log for $service at $log"
+                not_running="$not_running,$service"
+                failed=1
+            fi
+        fi
+    done
+
+    if [[ $failed -eq 1 ]]; then
+        echo "Expected running services not running: $not_running"
+        exit 1
+    fi
+}
+
+test_all_enabled_services
 
 # all the services should actually be running that we expect
 NOT_RUNNING=""
