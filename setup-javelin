@@ -68,7 +68,7 @@ export OS_PASSWORD=$JPASSWORD
 
 # It's really cirros with our own name
 # Assumes DevStack.$BASE has already set this up
-CIRROS_IMAGE=${DEFAULT_IMAGE_NAME:-cirros-0.3.1-x86_64-uec}
+CIRROS_IMAGE=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
 CIRROS_DIR=$BASE_DEVSTACK_DIR/files/images/$CIRROS_IMAGE
 KERNEL=$CIRROS_DIR/${CIRROS_IMAGE/uec/}vmlinuz
 RAMDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}initrd
