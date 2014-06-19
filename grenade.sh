@@ -51,15 +51,15 @@ while getopts bqs:t c; do
 done
 shift `expr $OPTIND - 1`
 
-function echo_summary() {
+function echo_summary {
     echo $@ >&6
 }
 
-function echo_nolog() {
+function echo_nolog {
     echo $@ >&3
 }
 
-function stop() {
+function stop {
     stop=$1
     shift
     if [[ "$@" =~ "$stop" ]]; then

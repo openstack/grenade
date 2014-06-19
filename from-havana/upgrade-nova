@@ -2,7 +2,7 @@
 
 # ``upgrade-nova``
 
-function configure_nova_upgrade(){
+function configure_nova_upgrade {
     XTRACE=$(set +o | grep xtrace)
     set -o xtrace
     # upgrade rootwrap configs
@@ -13,6 +13,6 @@ function configure_nova_upgrade(){
         iniset $NOVA_CONF upgrade_levels compute havana
     fi
 
-   # reset to previous state
+    # reset to previous state
     $XTRACE
 }

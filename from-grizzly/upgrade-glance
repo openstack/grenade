@@ -3,7 +3,7 @@
 # ``upgrade-glance``
 
 # configure_glance
-function configure_glance_upgrade(){
+function configure_glance_upgrade {
     XTRACE=$(set +o | grep xtrace)
     set -o xtrace
 

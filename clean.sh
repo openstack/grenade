@@ -28,36 +28,36 @@ set -o xtrace
 # First attempt a pair of unstack calls
 if [[ -d $BASE_DEVSTACK_DIR ]]; then
     bash -c "
-      cd $BASE_DEVSTACK_DIR; \
-      source functions; \
-      source stackrc; \
-      source lib/cinder; \
-      DATA_DIR=\${STACK_ROOT}/data; \
-      ./unstack.sh --all; \
-      cd -; \
-      sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
-      if mount | grep \$DATA_DIR/swift/drives; then \
-          umount \$DATA_DIR/swift/drives/sdb1; \
-      fi; \
-      sudo rm -rf \$DATA_DIR \$DATA_DIR.hide; \
+        cd $BASE_DEVSTACK_DIR; \
+        source functions; \
+        source stackrc; \
+        source lib/cinder; \
+        DATA_DIR=\${STACK_ROOT}/data; \
+        ./unstack.sh --all; \
+        cd -; \
+        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
+        if mount | grep \$DATA_DIR/swift/drives; then \
+            umount \$DATA_DIR/swift/drives/sdb1; \
+        fi; \
+        sudo rm -rf \$DATA_DIR \$DATA_DIR.hide; \
     "
     # get rid of the hard-coded filename above!!!
 fi
 if [[ -d $TARGET_DEVSTACK_DIR ]]; then
     bash -x -c "
-      cd $TARGET_DEVSTACK_DIR; \
-      source functions; \
-      source stackrc; \
-      source lib/cinder; \
-      DATA_DIR=\${STACK_ROOT}/data; \
-      ./unstack.sh --all; \
-      cd -; \
-      # need to test if volume is present
-      sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
-      if mount | grep \$DATA_DIR/swift/drives; then \
-          sudo umount \$DATA_DIR/swift/drives/sdb1; \
-      fi; \
-      sudo rm -rf \$DATA_DIR; \
+        cd $TARGET_DEVSTACK_DIR; \
+        source functions; \
+        source stackrc; \
+        source lib/cinder; \
+        DATA_DIR=\${STACK_ROOT}/data; \
+        ./unstack.sh --all; \
+        cd -; \
+        # need to test if volume is present
+        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
+        if mount | grep \$DATA_DIR/swift/drives; then \
+            sudo umount \$DATA_DIR/swift/drives/sdb1; \
+        fi; \
+        sudo rm -rf \$DATA_DIR; \
     "
 fi
 

@@ -2,7 +2,7 @@
 
 # ``upgrade-nova``
 
-function configure_nova_upgrade(){
+function configure_nova_upgrade {
     # upgrade rootwrap configs
     configure_nova_rootwrap
     add_v3_api_to_catalog
@@ -32,7 +32,7 @@ function configure_nova_upgrade(){
 }
 
 #add nova v3 endpoint for blue-print:nova-v3-api-tests
-function add_v3_api_to_catalog(){
+function add_v3_api_to_catalog {
     source $TARGET_DEVSTACK_DIR/openrc admin admin
 
     if [[ "$ENABLED_SERVICES" =~ "n-api" && "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then

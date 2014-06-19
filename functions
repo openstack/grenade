@@ -20,7 +20,7 @@ set +o xtrace
 
 # Convert CIDR notation to a IPv4 netmask
 # cidr2netmask cidr-bits
-function cidr2netmask() {
+function cidr2netmask {
     local maskpat="255 255 255 255"
     local maskdgt="254 252 248 240 224 192 128"
     set -- ${maskpat:0:$(( ($1 / 8) * 4 ))}${maskdgt:$(( (7 - ($1 % 8)) * 4 )):3}
@@ -31,7 +31,7 @@ function cidr2netmask() {
 # Return the network portion of the given IP address using netmask
 # netmask is in the traditional dotted-quad format
 # maskip ip-address netmask
-function maskip() {
+function maskip {
     local ip=$1
     local mask=$2
     local l="${ip%.*}"; local r="${ip#*.}"; local n="${mask%.*}"; local m="${mask#*.}"
@@ -43,7 +43,7 @@ function maskip() {
 # Exit 0 if address is in network or 1 if address is not in network
 # ip-range is in CIDR notation: 1.2.3.4/20
 # address_in_net ip-address ip-range
-function address_in_net() {
+function address_in_net {
     local ip=$1
     local range=$2
     local masklen=${range#*/}
@@ -56,7 +56,7 @@ function address_in_net() {
 # Wrapper for ``apt-get`` to set cache and proxy environment variables
 # Uses globals ``OFFLINE``, ``*_proxy`
 # apt_get operation package [package ...]
-function apt_get() {
+function apt_get {
     [[ "$OFFLINE" = "True" || -z "$@" ]] && return
     local sudo="sudo"
     [[ "$(id -u)" = "0" ]] && sudo="env"
@@ -91,7 +91,7 @@ function backtrace {
 
 # Prints line number and "message" then exits
 # die $LINENO "message"
-function die() {
+function die {
     local exitcode=$?
     set +o xtrace
     local line=$1; shift
@@ -108,7 +108,7 @@ function die() {
 # exit code is non-zero and prints "message" and exits
 # NOTE: env-var is the variable name without a '$'
 # die_if_not_set $LINENO env-var "message"
-function die_if_not_set() {
+function die_if_not_set {
     local exitcode=$?
     FXTRACE=$(set +o | grep xtrace)
     set +o xtrace
@@ -123,7 +123,7 @@ function die_if_not_set() {
 
 # Prints line number and "message" in error format
 # err $LINENO "message"
-function err() {
+function err {
     local exitcode=$?
     errXTRACE=$(set +o | grep xtrace)
     set +o xtrace
@@ -141,7 +141,7 @@ function err() {
 # exit code is non-zero and prints "message"
 # NOTE: env-var is the variable name without a '$'
 # err_if_not_set $LINENO env-var "message"
-function err_if_not_set() {
+function err_if_not_set {
     local exitcode=$?
     errinsXTRACE=$(set +o | grep xtrace)
     set +o xtrace
@@ -163,7 +163,7 @@ function err_if_not_set() {
 #
 #     http_proxy=http://proxy.example.com:3128/ no_proxy=repo.example.net ./stack.sh
 
-function export_proxy_variables() {
+function export_proxy_variables {
     if [[ -n "$http_proxy" ]]; then
         export http_proxy=$http_proxy
     fi
@@ -180,7 +180,7 @@ function export_proxy_variables() {
 # Fields are numbered starting with 1
 # Reverse syntax is supported: -1 is the last field, -2 is second to last, etc.
 # get_field field-number
-function get_field() {
+function get_field {
     while read data; do
         if [ "$1" -lt 0 ]; then
             field="(\$(NF$1))"
@@ -194,7 +194,7 @@ function get_field() {
 
 # Get the default value for HOST_IP
 # get_default_host_ip fixed_range floating_range host_ip_iface host_ip
-function get_default_host_ip() {
+function get_default_host_ip {
     local fixed_range=$1
     local floating_range=$2
     local host_ip_iface=$3
@@ -223,7 +223,7 @@ function get_default_host_ip() {
 }
 
 
-function _get_package_dir() {
+function _get_package_dir {
     local pkg_dir
     if is_ubuntu; then
         pkg_dir=$FILES/apts
@@ -238,7 +238,7 @@ function _get_package_dir() {
 }
 
 
-# get_packages() collects a list of package names of any type from the
+# get_packages collects a list of package names of any type from the
 # prerequisite files in ``files/{apts|rpms}``.  The list is intended
 # to be passed to a package installer such as apt or yum.
 #
@@ -247,7 +247,7 @@ function _get_package_dir() {
 # - ``# NOPRIME`` defers installation to be performed later in stack.sh
 # - ``# dist:DISTRO`` or ``dist:DISTRO1,DISTRO2`` limits the selection
 #   of the package to the distros listed.  The distro names are case insensitive.
-function get_packages() {
+function get_packages {
     local services=$1
     local package_dir=$(_get_package_dir)
     local file_to_parse
@@ -362,7 +362,7 @@ function get_packages() {
 # os_PACKAGE - package type
 # os_CODENAME - vendor's codename for release
 # GetOSVersion
-GetOSVersion() {
+function GetOSVersion {
     # Figure out which vendor we are
     if [[ -n "`which sw_vers 2>/dev/null`" ]]; then
         # OS/X
@@ -452,7 +452,7 @@ GetOSVersion() {
 
 # Translate the OS version values into common nomenclature
 # Sets ``DISTRO`` from the ``os_*`` values
-function GetDistro() {
+function GetDistro {
     GetOSVersion
     if [[ "$os_VENDOR" =~ (Ubuntu) || "$os_VENDOR" =~ (Debian) ]]; then
         # 'Everyone' refers to Ubuntu / Debian releases by the code name adjective
@@ -600,7 +600,7 @@ function git_clone {
 
 # git update using reference as a branch.
 # git_update_branch ref
-function git_update_branch() {
+function git_update_branch {
 
     GIT_BRANCH=$1
 
@@ -613,7 +613,7 @@ function git_update_branch() {
 
 # git update using reference as a branch.
 # git_update_remote_branch ref
-function git_update_remote_branch() {
+function git_update_remote_branch {
 
     GIT_BRANCH=$1
 
@@ -624,7 +624,7 @@ function git_update_remote_branch() {
 # git update using reference as a tag. Be careful editing source at that repo
 # as working copy will be in a detached mode
 # git_update_tag ref
-function git_update_tag() {
+function git_update_tag {
 
     GIT_TAG=$1
 
@@ -636,7 +636,7 @@ function git_update_tag() {
 
 
 # Returns openstack release name for a given branch name
-function get_release_name_from_branch(){
+function get_release_name_from_branch {
     local branch=$1
     if [[ $branch =~ "stable/" || $branch =~ "proposed/" ]]; then
         echo ${branch#*/}
@@ -648,7 +648,7 @@ function get_release_name_from_branch(){
 
 # Comment an option in an INI file
 # inicomment config-file section option
-function inicomment() {
+function inicomment {
     local file=$1
     local section=$2
     local option=$3
@@ -658,7 +658,7 @@ function inicomment() {
 
 # Uncomment an option in an INI file
 # iniuncomment config-file section option
-function iniuncomment() {
+function iniuncomment {
     local file=$1
     local section=$2
     local option=$3
@@ -668,7 +668,7 @@ function iniuncomment() {
 
 # Get an option from an INI file
 # iniget config-file section option
-function iniget() {
+function iniget {
     local file=$1
     local section=$2
     local option=$3
@@ -680,7 +680,7 @@ function iniget() {
 
 # Determinate is the given option present in the INI file
 # ini_has_option config-file section option
-function ini_has_option() {
+function ini_has_option {
     local file=$1
     local section=$2
     local option=$3
@@ -692,7 +692,7 @@ function ini_has_option() {
 
 # Set an option in an INI file
 # iniset config-file section option value
-function iniset() {
+function iniset {
     local file=$1
     local section=$2
     local option=$3
@@ -715,7 +715,7 @@ $option = $value
 
 # Get a multiple line option from an INI file
 # iniget_multiline config-file section option
-function iniget_multiline() {
+function iniget_multiline {
     local file=$1
     local section=$2
     local option=$3
@@ -727,7 +727,7 @@ function iniget_multiline() {
 
 # Set a multiple line option in an INI file
 # iniset_multiline config-file section option value1 value2 valu3 ...
-function iniset_multiline() {
+function iniset_multiline {
     local file=$1
     local section=$2
     local option=$3
@@ -757,7 +757,7 @@ $option = $v
 
 # Append a new option in an ini file without replacing the old value
 # iniadd config-file section option value1 value2 value3 ...
-function iniadd() {
+function iniadd {
     local file=$1
     local section=$2
     local option=$3
@@ -768,7 +768,7 @@ function iniadd() {
 
 # Find out if a process exists by partial name.
 # is_running name
-function is_running() {
+function is_running {
     local name=$1
     ps auxw | grep -v grep | grep ${name} > /dev/null
     RC=$?
@@ -799,7 +799,7 @@ function is_running() {
 #
 # Uses global ``ENABLED_SERVICES``
 # is_service_enabled service [service ...]
-function is_service_enabled() {
+function is_service_enabled {
     services=$@
     for service in ${services}; do
         [[ ,${ENABLED_SERVICES}, =~ ,${service}, ]] && return 0
@@ -818,7 +818,7 @@ function is_service_enabled() {
 
 # remove extra commas from the input string (i.e. ``ENABLED_SERVICES``)
 # _cleanup_service_list service-list
-function _cleanup_service_list () {
+function _cleanup_service_list {
     echo "$1" | sed -e '
         s/,,/,/g;
         s/^,//;
@@ -837,7 +837,7 @@ function _cleanup_service_list () {
 # for nova, glance, and neutron built into is_service_enabled().
 # Uses global ``ENABLED_SERVICES``
 # enable_service service [service ...]
-function enable_service() {
+function enable_service {
     local tmpsvcs="${ENABLED_SERVICES}"
     for service in $@; do
         if ! is_service_enabled $service; then
@@ -859,7 +859,7 @@ function enable_service() {
 # for nova, glance, and neutron built into is_service_enabled().
 # Uses global ``ENABLED_SERVICES``
 # disable_service service [service ...]
-function disable_service() {
+function disable_service {
     local tmpsvcs=",${ENABLED_SERVICES},"
     local service
     for service in $@; do
@@ -876,7 +876,7 @@ function disable_service() {
 # before a minimal installation
 # Uses global ``ENABLED_SERVICES``
 # disable_all_services
-function disable_all_services() {
+function disable_all_services {
     ENABLED_SERVICES=""
 }
 
@@ -886,7 +886,7 @@ function disable_all_services() {
 # ENABLED_SERVICES+=",-rabbit"
 # Uses global ``ENABLED_SERVICES``
 # disable_negated_services
-function disable_negated_services() {
+function disable_negated_services {
     local tmpsvcs="${ENABLED_SERVICES}"
     local service
     for service in ${tmpsvcs//,/ }; do
@@ -900,7 +900,7 @@ function disable_negated_services() {
 
 # Distro-agnostic package installer
 # install_package package [package ...]
-function install_package() {
+function install_package {
     if is_ubuntu; then
         # if there are transient errors pulling the updates, that's fine. It may
         # be secondary repositories that we don't really care about.
@@ -920,7 +920,7 @@ function install_package() {
 
 # Distro-agnostic package uninstaller
 # uninstall_package package [package ...]
-function uninstall_package() {
+function uninstall_package {
     if is_ubuntu; then
         apt_get purge "$@"
     elif is_fedora; then
@@ -935,7 +935,7 @@ function uninstall_package() {
 
 # Distro-agnostic function to tell if a package is installed
 # is_package_installed package [package ...]
-function is_package_installed() {
+function is_package_installed {
     if [[ -z "$@" ]]; then
         return 1
     fi
@@ -956,7 +956,7 @@ function is_package_installed() {
 
 # Test if the named environment variable is set and not zero length
 # is_set env-var
-function is_set() {
+function is_set {
     local var=\$"$1"
     eval "[ -n \"$var\" ]" # For ex.: sh -c "[ -n \"$var\" ]" would be better, but several exercises depends on this
 }
@@ -1018,7 +1018,7 @@ function cleanup_tmp {
 
 
 # Prepare secure cache directory
-function prep_cache_dir() {
+function prep_cache_dir {
     local dir=$1
     sudo mkdir -p "$dir"
     sudo chown $STACK_USER "$dir"
@@ -1029,7 +1029,7 @@ function prep_cache_dir() {
 
 # Service wrapper to restart services
 # restart_service service-name
-function restart_service() {
+function restart_service {
     if is_ubuntu; then
         sudo /usr/sbin/service $1 restart
     else
@@ -1043,7 +1043,7 @@ function restart_service() {
 # files to produce the same logs as screen_it().  The log filename is derived
 # from the service name and global-and-now-misnamed SCREEN_LOGDIR
 # _run_process service "command-line"
-function _run_process() {
+function _run_process {
     local service=$1
     local command="$2"
 
@@ -1071,7 +1071,7 @@ function _run_process() {
 # of screen_it() without screen.  PIDs are written to
 # $SERVICE_DIR/$SCREEN_NAME/$service.pid
 # run_process service "command-line"
-function run_process() {
+function run_process {
     local service=$1
     local command="$2"
 
@@ -1120,7 +1120,7 @@ function screen_it {
 # If screen is being used kill the screen window; this will catch processes
 # that did not leave a PID behind
 # screen_stop service
-function screen_stop() {
+function screen_stop {
     SCREEN_NAME=${SCREEN_NAME:-stack}
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
     USE_SCREEN=$(trueorfalse True $USE_SCREEN)
@@ -1165,7 +1165,7 @@ function screen_rc {
 # Helper to remove the *.failure files under $SERVICE_DIR/$SCREEN_NAME
 # This is used for service_check when all the screen_it are called finished
 # init_service_check
-function init_service_check() {
+function init_service_check {
     SCREEN_NAME=${SCREEN_NAME:-stack}
     SERVICE_DIR=${SERVICE_DIR:-${DEST}/status}
 
@@ -1179,7 +1179,7 @@ function init_service_check() {
 
 # Helper to get the status of each running service
 # service_check
-function service_check() {
+function service_check {
     local service
     local failures
     SCREEN_NAME=${SCREEN_NAME:-stack}
@@ -1210,7 +1210,7 @@ function service_check() {
 # using pip before running `setup.py develop`
 # Uses globals ``STACK_USER``, ``TRACK_DEPENDS``, ``REQUIREMENTS_DIR``
 # setup_develop directory
-function setup_develop() {
+function setup_develop {
     local project_dir=$1
     if [[ $TRACK_DEPENDS = True ]]; then
         SUDO_CMD="env"
@@ -1234,7 +1234,7 @@ function setup_develop() {
 
 # Service wrapper to start services
 # start_service service-name
-function start_service() {
+function start_service {
     if is_ubuntu; then
         sudo /usr/sbin/service $1 start
     else
@@ -1245,7 +1245,7 @@ function start_service() {
 
 # Service wrapper to stop services
 # stop_service service-name
-function stop_service() {
+function stop_service {
     if is_ubuntu; then
         sudo /usr/sbin/service $1 stop
     else
@@ -1258,7 +1258,7 @@ function stop_service() {
 # Accepts as False: 0 no false False FALSE
 # Accepts as True: 1 yes true True TRUE
 # VAR=$(trueorfalse default-value test-value)
-function trueorfalse() {
+function trueorfalse {
     local default=$1
     local testval=$2
 
@@ -1274,7 +1274,7 @@ function trueorfalse() {
 #   ``FILES`` must be set to the cache dir
 #   ``GLANCE_HOSTPORT``
 # upload_image image-url glance-token
-function upload_image() {
+function upload_image {
     local image_url=$1
     local token=$2
 
@@ -1323,9 +1323,9 @@ function upload_image() {
         IMAGE="$FILES/${IMAGE_FNAME}"
         IMAGE_NAME="${IMAGE_FNAME%.xen-raw.tgz}"
         glance \
-          --os-auth-token $token \
-          --os-image-url http://$GLANCE_HOSTPORT \
-          image-create \
+            --os-auth-token $token \
+            --os-image-url http://$GLANCE_HOSTPORT \
+            image-create \
             --name "$IMAGE_NAME" --is-public=True \
             --container-format=tgz --disk-format=raw \
             --property vm_mode=xen < "${IMAGE}"
@@ -1348,11 +1348,11 @@ function upload_image() {
             mkdir "$xdir"
             tar -zxf $FILES/$IMAGE_FNAME -C "$xdir"
             KERNEL=$(for f in "$xdir/"*-vmlinuz* "$xdir/"aki-*/image; do
-                     [ -f "$f" ] && echo "$f" && break; done; true)
+                    [ -f "$f" ] && echo "$f" && break; done; true)
             RAMDISK=$(for f in "$xdir/"*-initrd* "$xdir/"ari-*/image; do
-                     [ -f "$f" ] && echo "$f" && break; done; true)
+                    [ -f "$f" ] && echo "$f" && break; done; true)
             IMAGE=$(for f in "$xdir/"*.img "$xdir/"ami-*/image; do
-                     [ -f "$f" ] && echo "$f" && break; done; true)
+                    [ -f "$f" ] && echo "$f" && break; done; true)
             if [[ -z "$IMAGE_NAME" ]]; then
                 IMAGE_NAME=$(basename "$IMAGE" ".img")
             fi
@@ -1449,7 +1449,7 @@ function use_exclusive_service {
 
 # Wait for an HTTP server to start answering requests
 # wait_for_service timeout url
-function wait_for_service() {
+function wait_for_service {
     local timeout=$1
     local url=$2
     timeout $timeout sh -c "while ! http_proxy= https_proxy= curl -s $url >/dev/null; do sleep 1; done"
@@ -1459,7 +1459,7 @@ function wait_for_service() {
 # Wrapper for ``yum`` to set proxy environment variables
 # Uses globals ``OFFLINE``, ``*_proxy`
 # yum_install package [package ...]
-function yum_install() {
+function yum_install {
     [[ "$OFFLINE" = "True" ]] && return
     local sudo="sudo"
     [[ "$(id -u)" = "0" ]] && sudo="env"
@@ -1471,7 +1471,7 @@ function yum_install() {
 
 # zypper wrapper to set arguments correctly
 # zypper_install package [package ...]
-function zypper_install() {
+function zypper_install {
     [[ "$OFFLINE" = "True" ]] && return
     local sudo="sudo"
     [[ "$(id -u)" = "0" ]] && sudo="env"
@@ -1483,7 +1483,7 @@ function zypper_install() {
 # ping check
 # Uses globals ``ENABLED_SERVICES``
 # ping_check from-net ip boot-timeout expected
-function ping_check() {
+function ping_check {
     if is_service_enabled neutron; then
         _ping_check_neutron  "$1" $2 $3 $4
         return
@@ -1493,7 +1493,7 @@ function ping_check() {
 
 # ping check for nova
 # Uses globals ``MULTI_HOST``, ``PRIVATE_NETWORK``
-function _ping_check_novanet() {
+function _ping_check_novanet {
     local from_net=$1
     local ip=$2
     local boot_timeout=$3
@@ -1520,7 +1520,7 @@ function _ping_check_novanet() {
 }
 
 # Get ip of instance
-function get_instance_ip(){
+function get_instance_ip {
     local vm_id=$1
     local network_name=$2
     local nova_result="$(nova show $vm_id)"
@@ -1536,7 +1536,7 @@ function get_instance_ip(){
 # ssh check
 
 # ssh_check net-name key-file floating-ip default-user active-timeout
-function ssh_check() {
+function ssh_check {
     if is_service_enabled neutron; then
         _ssh_check_neutron  "$1" $2 $3 $4 $5
         return
@@ -1544,7 +1544,7 @@ function ssh_check() {
     _ssh_check_novanet "$1" $2 $3 $4 $5
 }
 
-function _ssh_check_novanet() {
+function _ssh_check_novanet {
     local NET_NAME=$1
     local KEY_FILE=$2
     local FLOATING_IP=$3
@@ -1559,7 +1559,7 @@ function _ssh_check_novanet() {
 
 # Add a user to a group.
 # add_user_to_group user group
-function add_user_to_group() {
+function add_user_to_group {
     local user=$1
     local group=$2
 
@@ -1578,7 +1578,7 @@ function add_user_to_group() {
 
 # Get the path to the direcotry where python executables are installed.
 # get_python_exec_prefix
-function get_python_exec_prefix() {
+function get_python_exec_prefix {
     if is_fedora || is_suse; then
         echo "/usr/bin"
     else
@@ -1590,7 +1590,7 @@ function get_python_exec_prefix() {
 # Get the location of the $module-rootwrap executables, where module is cinder
 # or nova.
 # get_rootwrap_location module
-function get_rootwrap_location() {
+function get_rootwrap_location {
     local module=$1
 
     echo "$(get_python_exec_prefix)/$module-rootwrap"
@@ -1599,7 +1599,7 @@ function get_rootwrap_location() {
 
 # Get the path to the pip command.
 # get_pip_command
-function get_pip_command() {
+function get_pip_command {
     which pip || which pip-python
 
     if [ $? -ne 0 ]; then
@@ -1610,7 +1610,7 @@ function get_pip_command() {
 
 # Path permissions sanity check
 # check_path_perm_sanity path
-function check_path_perm_sanity() {
+function check_path_perm_sanity {
     # Ensure no element of the path has 0700 permissions, which is very
     # likely to cause issues for daemons.  Inspired by default 0700
     # homedir permissions on RHEL and common practice of making DEST in
@@ -1644,23 +1644,23 @@ function check_path_perm_sanity() {
 #
 # _vercmp_r sep ver1 ver2
 function _vercmp_r {
-  typeset sep
-  typeset -a ver1=() ver2=()
-  sep=$1; shift
-  ver1=("${@:1:sep}")
-  ver2=("${@:sep+1}")
+    typeset sep
+    typeset -a ver1=() ver2=()
+    sep=$1; shift
+    ver1=("${@:1:sep}")
+    ver2=("${@:sep+1}")
 
-  if ((ver1 > ver2)); then
-    echo 1; return 0
-  elif ((ver2 > ver1)); then
-    echo -1; return 0
-  fi
+    if ((ver1 > ver2)); then
+        echo 1; return 0
+    elif ((ver2 > ver1)); then
+        echo -1; return 0
+    fi
 
-  if ((sep <= 1)); then
-    echo 0; return 0
-  fi
+    if ((sep <= 1)); then
+        echo 0; return 0
+    fi
 
-  _vercmp_r $((sep-1)) "${ver1[@]:1}" "${ver2[@]:1}"
+    _vercmp_r $((sep-1)) "${ver1[@]:1}" "${ver2[@]:1}"
 }
 
 
@@ -1681,14 +1681,14 @@ function _vercmp_r {
 # The above will return "0", as the versions are equal.
 #
 # vercmp_numbers ver1 ver2
-vercmp_numbers() {
-  typeset v1=$1 v2=$2 sep
-  typeset -a ver1 ver2
+function vercmp_numbers {
+    typeset v1=$1 v2=$2 sep
+    typeset -a ver1 ver2
 
-  IFS=. read -ra ver1 <<< "$v1"
-  IFS=. read -ra ver2 <<< "$v2"
+    IFS=. read -ra ver1 <<< "$v1"
+    IFS=. read -ra ver2 <<< "$v2"
 
-  _vercmp_r "${#ver1[@]}" "${ver1[@]}" "${ver2[@]}"
+    _vercmp_r "${#ver1[@]}" "${ver1[@]}" "${ver2[@]}"
 }
 
 
@@ -1696,7 +1696,7 @@ vercmp_numbers() {
 # Do nothing if the policy already exists
 #
 # policy_add policy_file policy_name policy_permissions
-function policy_add() {
+function policy_add {
     local policy_file=$1
     local policy_name=$2
     local policy_perm=$3
@@ -1723,7 +1723,7 @@ function policy_add() {
 
 # This function triggers the upgrade process for each project if it exists,
 # otherwise it shows up a warning message about the lack of this file.
-function upgrade_project(){
+function upgrade_project {
     # NOTE(maurosr): Ideally in a new upgrade test right after a release no new
     # configuration is need, so we can go on without the from-<release> directory.
     # This is also useful due to cross dependencie between d-g and grenade when
