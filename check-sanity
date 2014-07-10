@@ -45,6 +45,14 @@ function is_a_service {
         echo "$service not upgraded, skipping check"
         return 1
     fi
+    if [ "$name" == "q-fwaas" ]; then
+        echo "$name is a Neutron service plugin and doesn't run in its own process, skipping check"
+        return 1
+    fi
+    if [ "$name" == "q-l3" ] && [[ "$ENABLED_SERVICES" =~ "q-vpn" ]]; then
+        echo "$name is running as a part of q-vpn service, skipping check"
+        return 1
+    fi
     return 0
 }
 
