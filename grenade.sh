@@ -184,14 +184,7 @@ function exit_trap {
     set +o xtrace
     if [[ $r -ne 0 ]]; then
         echo "Exit code: $r"
-        # print out all the processes running
-        echo
-        echo "Running Processes:"
-        ps auxw
-        echo
-        echo "Disk Status:"
-        df -h
-        # and just let everything flush
+        $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
         sleep 1
     fi
     exit $r
