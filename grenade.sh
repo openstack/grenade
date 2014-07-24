@@ -68,6 +68,11 @@ function stop {
     fi
 }
 
+# Ensure that we can run this on a fresh system
+sudo mkdir -p $(dirname $BASE_DEVSTACK_DIR)
+sudo mkdir -p $(dirname $TARGET_DEVSTACK_DIR)
+sudo chown -R `whoami` $(dirname $(dirname $BASE_DEVSTACK_DIR))
+
 # Logging
 # =======
 
@@ -87,7 +92,7 @@ if [[ -n "$LOGFILE" ]]; then
     LOGNAME=$(basename "$LOGFILE")
     echo "Creating $LOGDIR...."
 
-    mkdir -p $LOGDIR
+    sudo mkdir -p $LOGDIR
     find $LOGDIR -maxdepth 1 -name $LOGNAME.\* -mtime +$LOGDAYS -exec rm {} \;
     LOGFILE=$LOGFILE.${CURRENT_LOG_TIME}
     SUMFILE=$LOGFILE.${CURRENT_LOG_TIME}.summary
@@ -142,7 +147,7 @@ if [[ -n "$SCREEN_LOGDIR" ]]; then
         # We cleanup the old logs
         find $SCREEN_LOGDIR -maxdepth 1 -name screen-\*.log -mtime +$LOGDAYS -exec rm {} \;
     else
-        mkdir -p $SCREEN_LOGDIR
+        sudo mkdir -p $SCREEN_LOGDIR
     fi
 fi
 
@@ -185,11 +190,6 @@ set -o xtrace
 RUN_SMOKE=${RUN_SMOKE:=True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
-
-# Ensure that we can run this on a fresh system
-sudo mkdir -p $(dirname $BASE_DEVSTACK_DIR)
-sudo mkdir -p $(dirname $TARGET_DEVSTACK_DIR)
-sudo chown -R `whoami` $(dirname $(dirname $BASE_DEVSTACK_DIR))
 
 # Install 'Base' Build of OpenStack
 # =================================
