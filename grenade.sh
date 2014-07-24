@@ -68,6 +68,29 @@ function stop {
     fi
 }
 
+function upgrade_service {
+    local local_service=$1
+    # figure out if the service should be upgraded
+    echo "Checking for $local_service is enabled"
+    local enabled=""
+    # TODO(sdague) terrible work around because of missing
+    # devstack functions
+    if [[ $local_service == 'keystone' ]]; then
+        enabled="True"
+    else
+        enabled=$(
+            source $BASE_DEVSTACK_DIR/functions;
+            source $BASE_DEVSTACK_DIR/stackrc;
+            is_service_enabled $local_service || echo "False")
+    fi
+    if [[ "$enabled" == "False" ]]; then
+        echo_summary "Not upgrading $local_service"
+        return
+    fi
+    echo_summary "Upgrading $local_service..."
+    $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
+}
+
 # Ensure that we can run this on a fresh system
 sudo mkdir -p $(dirname $BASE_DEVSTACK_DIR)
 sudo mkdir -p $(dirname $TARGET_DEVSTACK_DIR)
@@ -279,34 +302,36 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     stop $STOP upgrade-oslo 235
 
     # Upgrade Keystone
-    echo_summary "Running upgrade-keystone"
-    $GRENADE_DIR/upgrade-keystone || die $LINENO "Failure in upgrade-keystone"
+    upgrade_service keystone
     stop $STOP upgrade-keystone 240
 
     # Upgrade Swift
-    echo_summary "Running upgrade-swift"
-    $GRENADE_DIR/upgrade-swift || die $LINENO "Failure in upgrade-swift"
+    upgrade_service swift
     stop $STOP upgrade-swift 245
 
     # Upgrade Glance
-    echo_summary "Running upgrade-glance"
-    $GRENADE_DIR/upgrade-glance || die $LINENO "Failure in upgrade-glance"
+    upgrade_service glance
     stop $STOP upgrade-glance 250
 
     # Upgrade Neutron
-    echo_summary "Running upgrade-neutron"
-    $GRENADE_DIR/upgrade-neutron || die $LINENO "Failure in upgrade-neutron"
+    upgrade_service neutron
     stop $STOP upgrade-neutron 255
 
     # Upgrade Nova
-    echo_summary "Running upgrade-nova"
-    $GRENADE_DIR/upgrade-nova || die $LINENO "Failure in upgrade-nova"
+    upgrade_service nova
     stop $STOP upgrade-nova 260
 
     # Upgrade Cinder
-    echo_summary "Running upgrade-cinder"
-    $GRENADE_DIR/upgrade-cinder || die $LINENO "Failure in upgrade-cinder"
+    upgrade_service cinder
     stop $STOP upgrade-cinder 270
+
+    # Upgrade Ceilometer
+    upgrade_service ceilometer
+    stop $STOP upgrade-ceilometer 280
+
+    # Upgrade Horizon
+    upgrade_service horizon
+    stop $STOP upgrade-horizon 285
 
     # Upgrade Tempest
     if [[ "$ENABLE_TEMPEST" == "True" ]]; then
@@ -314,16 +339,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
         $GRENADE_DIR/upgrade-tempest || die $LINENO "Failure in upgrade-tempest"
         stop $STOP upgrade-tempest 290
     fi
-
-    # Upgrade Horizon
-    echo_summary "Running upgrade-horizon"
-    $GRENADE_DIR/upgrade-horizon || die $LINENO "Failure in upgrade-horizon"
-    stop $STOP upgrade-horizon 240
-
-    # Upgrade Ceilometer
-    echo_summary "Running upgrade-ceilometer"
-    $GRENADE_DIR/upgrade-ceilometer || die $LINENO "Failure in upgrade-ceilometer"
-    stop $STOP upgrade-ceilometer 280
 
     # Upgrade Checks
     echo_summary "Running upgrade sanity check"
