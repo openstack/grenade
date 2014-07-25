@@ -74,17 +74,15 @@ KERNEL=$CIRROS_DIR/${CIRROS_IMAGE/uec/}vmlinuz
 RAMDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}initrd
 ROOTDISK=$CIRROS_DIR/${CIRROS_IMAGE/uec/}blank.img
 JAVELIN_IMAGE=${CIRROS_IMAGE/cirros/javelin}
+IMAGE_ID=$(cat /proc/sys/kernel/random/uuid)
 
-# Old glance client cuts off name field, use nova image-list for now
 IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
 if [[ -z "$IMAGE" ]]; then
-    RVAL=$(glance add --silent-upload name=$JAVELIN_IMAGE-kernel is_public=True container_format=aki disk_format=aki <"$KERNEL")
-    KERNEL_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
-    RVAL=$(glance add --silent-upload name=$JAVELIN_IMAGE-ramdisk is_public=True container_format=ari disk_format=ari <"$RAMDISK")
-    RAMDISK_ID=$(echo $RVAL | cut -d":" -f2 | tr -d " ")
-    glance add name=$JAVELIN_IMAGE.img is_public=True container_format=ami disk_format=ami ${KERNEL_ID:+kernel_id=$KERNEL_ID} ${RAMDISK_ID:+ramdisk_id=$RAMDISK_ID}  < "${ROOTDISK}"
+    glance image-create --name $JAVELIN_IMAGE-kernel --is-public True --container-format aki --disk-format aki < "$KERNEL_ID"
+    glance image-create --name $JAVELIN_IMAGE-ramdisk --is-public True --container-format ari --disk-format ari < "$RAMDISK_ID"
+    glance image-create --name $JAVELIN_IMAGE.img --is-public True --id $IMAGE_ID --container-format ami --disk-format ami --property kernel_id=$KERNEL_ID --property ramdisk_id=$RAMDISK_ID < "${ROOTDISK}"
 
-    IMAGE=$(nova image-list | awk "/ $JAVELIN_IMAGE.img / { print \$2 }")
+    IMAGE=$IMAGE_ID
     die_if_not_set $LINENO IMAGE "Failure getting image"
 fi
 
