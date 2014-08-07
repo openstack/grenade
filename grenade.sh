@@ -207,6 +207,9 @@ RUN_SMOKE=${RUN_SMOKE:=True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
+# Set up for Javelin (default to True)
+RUN_JAVELIN=$(trueorfalse True $RUN_JAVELIN)
+
 # Install 'Base' Build of OpenStack
 # =================================
 
@@ -246,20 +249,22 @@ if [[ "$RUN_BASE" == "True" ]]; then
     fi
     stop $STOP base-smoke 110
 
-    cd $GRENADE_DIR
+    if [[ "$RUN_JAVELIN" == "True" ]]; then
+        cd $GRENADE_DIR
 
-    # initialize javalin config
-    TEMPEST_DIR=$BASE_RELEASE_DIR/tempest
-    TEMPEST_CONF=$TEMPEST_DIR/etc/tempest.conf
-    JAVELIN_CONF=$TEMPEST_DIR/etc/javelin.conf
-    cp $TEMPEST_CONF $JAVELIN_CONF
-    # Make javelin write logs to javelin.log
-    iniset $JAVELIN_CONF DEFAULT log_file javelin.log
+        # initialize javalin config
+        TEMPEST_DIR=$BASE_RELEASE_DIR/tempest
+        TEMPEST_CONF=$TEMPEST_DIR/etc/tempest.conf
+        JAVELIN_CONF=$TEMPEST_DIR/etc/javelin.conf
+        cp $TEMPEST_CONF $JAVELIN_CONF
+        # Make javelin write logs to javelin.log
+        iniset $JAVELIN_CONF DEFAULT log_file javelin.log
 
-    # Create a project, users and instances
-    echo_summary "Creating Javelin project"
-    (source $BASE_DEVSTACK_DIR/openrc admin admin;
-        javelin2 -m create -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
+        # Create a project, users and instances
+        echo_summary "Creating Javelin project"
+        (source $BASE_DEVSTACK_DIR/openrc admin admin;
+            javelin2 -m create -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
+    fi
 
     # Save some stuff before we shut that whole thing down
     echo_summary "Saving current state information"
@@ -336,6 +341,10 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     upgrade_service horizon
     stop $STOP upgrade-horizon 285
 
+    # Upgrade Ironic
+    upgrade_service ironic
+    stop $STOP upgrade-ironic 285
+
     # Upgrade Tempest
     if [[ "$ENABLE_TEMPEST" == "True" ]]; then
         echo_summary "Running upgrade-tempest"
@@ -352,10 +361,12 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # =============
 
     # Validate the created resources
-    cd $GRENADE_DIR
-    echo_summary "Validating Javelin resources"
-    (source $BASE_DEVSTACK_DIR/openrc admin admin;
-        javelin2 -m check -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
+    if [[ "$RUN_JAVELIN" == "True" ]]; then
+        cd $GRENADE_DIR
+        echo_summary "Validating Javelin resources"
+        (source $BASE_DEVSTACK_DIR/openrc admin admin;
+            javelin2 -m check -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
+    fi
 
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then

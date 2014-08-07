@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+# ``upgrade-ironic``
+
+###
+# Functions for initializing a mock nova-baremetal environment used for
+# sideways upgrading and migration testing.
+
+# Publish a dummy nova-bm kernel and ramdisk and create the initial baremetal
+# Nova flavor.
+function nova_bm_create_images_and_flavor() {
+    # Reset lib/baremetal defaults to match lib/ironic's
+    BM_FLAVOR_RAM=$IRONIC_VM_SPECS_RAM
+    BM_FLAVOR_CPU=$IRONIC_VM_SPECS_CPU
+
+    # Since we wont actually be booting anything with nova-baremetal, create
+    # dummy glance images for kernel and ramdisk to avoid a DIB build.
+    local ramdisk="$TOP_DIR/files/nova_bm_deploy_ramdisk"
+    local kernel="$TOP_DIR/files/nova_bm_deploy_kernel"
+
+    truncate -s1M $kernel
+    truncate -s1M $ramdisk
+
+    local kernel_id=$(glance \
+        image-create \
+        --name `basename $kernel` \
+        --is-public True --disk-format=aki \
+        < $kernel | grep ' id ' | get_field 2)
+    local ramdisk_id=$(glance \
+        image-create \
+        --name `basename $ramdisk` \
+        --is-public True --disk-format=ari \
+        < $ramdisk | grep ' id ' | get_field 2)
+
+    # We need to duplicate devstack flavor creation to take into account
+    # ephemeral partition and also VM node specs.
+    local adjusted_disk=$(($IRONIC_VM_SPECS_DISK - $IRONIC_VM_EPHEMERAL_DISK))
+
+    nova flavor-create --ephemeral $IRONIC_VM_EPHEMERAL_DISK baremetal 11 \
+                    $IRONIC_VM_SPECS_RAM $adjusted_disk $IRONIC_VM_SPECS_CPU
+    nova flavor-key baremetal set \
+        "cpu_arch"="$BM_FLAVOR_ARCH" \
+        "baremetal:deploy_kernel_id"="$aki" \
+        "baremetal:deploy_ramdisk_id"="$ari"
+}
+
+
+# Create nova-bm nodes and interfaces in the nova_bm database associated with
+# libvirt domains.
+function nova_bm_create_node_and_port() {
+    local macaddr="$1"
+    mysql -c nova_bm -e "
+      INSERT INTO bm_nodes
+      (created_at, cpus, memory_mb, local_gb, pm_address, pm_user,
+       service_host, uuid, ephemeral_mb)
+      VALUES
+      (NOW(), '$IRONIC_VM_SPECS_CPU', '$IRONIC_VM_SPECS_RAM', '$IRONIC_VM_SPECS_DISK',
+       '$IRONIC_VM_SSH_ADDRESS', '$IRONIC_SSH_USERNAME',
+       '`hostname`', '`uuidgen`', '$IRONIC_VM_EPHEMERAL_DISK');
+    "
+    node_id="$(mysql -B --skip-column-names -c nova_bm \
+               -e 'SELECT ID FROM bm_nodes ORDER BY Id DESC LIMIT 1')";
+    mysql -c nova_bm -e "
+      INSERT INTO bm_interfaces
+      (created_at, bm_node_id, address) VALUES (NOW(), '$node_id', '$macaddr');"
+}
+
+
+# Set nova-baremetal config flags in nova.conf required for database usage and
+# VirtualPowerManage (nova-baremetal's pxe_ssh equivalent).
+function nova_bm_configure() {
+    iniset $NOVA_CONF baremetal sql_connection `database_connection_url nova_bm`
+
+    # Configure nova-bm as it would be for virtual pxe + ssh
+    iniset $NOVA_CONF baremetal virtual_power_host_user $IRONIC_SSH_USERNAME
+    iniset $NOVA_CONF baremetal virtual_power_host_key $IRONIC_KEY_FILE
+    iniset $NOVA_CONF baremetal virtual_power_ssh_host $IRONIC_VM_SSH_ADDRESS
+    iniset $NOVA_CONF baremetal virtual_power_ssh_port $IRONIC_VM_SSH_PORT
+    iniset $NOVA_CONF baremetal virtual_power_type $IRONIC_SSH_VIRT_TYPE
+    iniset $NOVA_CONF baremetal power_manager nova.virt.baremetal.virtual_power_driver.VirtualPowerManager
+}
+
+
+# Create and initialize the nova_bm database.
+function nova_bm_init_db() {
+    # Init the nova_bm database and populate it with VM node info
+    recreate_database nova_bm latin1
+    nova-baremetal-manage db sync
+}
+
+
+# Leverage Devstack's Ironic code to create required libvirt domains and OVS
+# tap devices that emulate a baremetal environment.  These nodes and interfaces
+# would typically be enrolled into Ironic via its API, but for purposes of
+# migration testing we are instead inserting them into nova-baremetal's
+# inventory.
+function nova_bm_create_resources() {
+    source $TARGET_DEVSTACK_DIR/openrc admin admin
+    create_bridge_and_vms
+    for mac in `cat $IRONIC_VM_MACS_CSV_FILE` ; do
+        nova_bm_create_node_and_port $mac
+    done
+    nova_bm_create_images_and_flavor
+}
+
+
+# Call Ironic's migration tooling to migrate nova-baremetal nodes directly
+# from the nova-baremetal database into Ironic's.
+function nova_bm_migrate_nodes() {
+    ironic-nova-bm-migrate  --nova-bm-db `database_connection_url nova_bm` \
+      --ironic-db `database_connection_url ironic` \
+      --node-arch x86_64 \
+      --nova-conf $NOVA_CONF
+}
+
+
+# Update the original nova-baremetal flavor to point to the newly created Ironic
+# deployment kernel and ramdisk pair.
+function nova_bm_update_flavor() {
+    # Update the original nova-baremetal flavor to point to the newly created Ironic
+    # deployment kernel and ramdisk pair.
+    local kernel_id="$(glance image-list | grep ir-deploy.kernel | awk '{ print $2 }' | head -n1)"
+    if [ -z "$kernel_id" ] ; then
+      die $LINENO "Could not locate Ironic deploy ramdisk ir-deploy.initramfs."
+    fi
+    local ramdisk_id="$(glance image-list | grep ir-deploy.initramfs | awk '{ print $2 }' | head -n1)"
+    if [ -z "$ramdisk_id" ] ; then
+      die $LINENO "Could not locate Ironic deploy ramdisk ir-deploy.initramfs."
+    fi
+    nova flavor-key $BM_FLAVOR_ID set \
+      "baremetal:deploy_kernel_id"="$kernel_id" \
+      "baremetal:deploy_ramdisk_id"="$ramdisk_id"
+}
+
+##
+
+
+function is_nova_migration {
+    # Deterine whether we're "upgrading" from another compute driver
+    local old_driver=$(source $BASE_DEVSTACK_DIR/functions; source $BASE_DEVSTACK_DIR/localrc; echo $VIRT_DRIVER)
+    [ "$old_driver" != "ironic" ]
+}
+
+
+function configure_ironic_upgrade {
+    XTRACE=$(set +o | grep xtrace)
+
+    if is_nova_migration; then
+        # Perform a 'sideways' migration from nova-baremetal -> ironic.
+        nova_bm_configure
+        nova_bm_init_db
+        nova_bm_create_resources
+        nova_bm_migrate_nodes
+        nova_bm_update_flavor
+    fi
+
+    $XTRACE
+}

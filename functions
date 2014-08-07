@@ -1070,7 +1070,7 @@ function _run_process {
 function save_data {
     local release=$1
     local dir=$2
-    local mysql_services="keystone glance nova cinder"
+    local mysql_services="keystone glance nova cinder ironic"
 
     echo_summary "Sourcing $release DevStack config"
     source $dir/functions

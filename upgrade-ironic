@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+
+# ``upgrade-ironic``
+
+echo "*********************************************************************"
+echo "Begin $0"
+echo "*********************************************************************"
+
+# Clean up any resources that may be in use
+cleanup() {
+    set +o errexit
+
+    echo "*********************************************************************"
+    echo "ERROR: Abort $0"
+    echo "*********************************************************************"
+
+    # Kill ourselves to signal any calling process
+    trap 2; kill -2 $$
+}
+
+trap cleanup SIGHUP SIGINT SIGTERM
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# This script exits on an error so that errors don't compound and you see
+# only the first error that occurred.
+set -o errexit
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
+set -o xtrace
+
+# Set for DevStack compatibility
+TOP_DIR=$TARGET_DEVSTACK_DIR
+
+# Upgrade Ironic
+# ============
+
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/functions
+source $TARGET_DEVSTACK_DIR/stackrc
+
+# From stack.sh
+FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
+FIXED_RANGE=${FIXED_RANGE:-10.0.0.0/24}
+HOST_IP=$(get_default_host_ip $FIXED_RANGE $FLOATING_RANGE "$HOST_IP_IFACE")
+if [ "$HOST_IP" == "" ]; then
+    die $LINENO "Could not determine host ip address. Either localrc specified dhcp on ${HOST_IP_IFACE} or defaulted"
+fi
+
+## Just do this rather than bring in all of glance
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+
+SYSLOG=`trueorfalse False $SYSLOG`
+
+#
+# Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/apache
+source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/keystone
+source $TARGET_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/baremetal
+source $TARGET_DEVSTACK_DIR/lib/neutron
+source $TARGET_DEVSTACK_DIR/lib/infra
+source $TARGET_DEVSTACK_DIR/lib/baremetal
+source $TARGET_DEVSTACK_DIR/lib/ironic
+
+function is_nova_migration {
+    # Deterine whether we're "upgrading" from another compute driver
+    local old_driver=$(source $BASE_DEVSTACK_DIR/functions; source $BASE_DEVSTACK_DIR/localrc; echo $VIRT_DRIVER)
+    [ "$old_driver" != "ironic" ]
+}
+
+# Duplicate all required devstack setup that is needed before starting
+# Ironic during a sideways upgrade, where we are migrating from an
+# devstack environment without Ironic.
+function init_ironic {
+    # We need to source credentials here but doing so in the gate will unset
+    # HOST_IP.
+    local tmp_host_ip=$HOST_IP
+    source $TARGET_DEVSTACK_DIR/openrc admin admin
+    HOST_IP=$tmp_host_ip
+    IRONIC_BAREMETAL_BASIC_OPS="True"
+    $TARGET_DEVSTACK_DIR/tools/install_prereqs.sh
+    initialize_database_backends
+    recreate_database ironic utf8
+    install_nova_hypervisor
+    configure_nova_hypervisor
+    configure_ironic_dirs
+    create_ironic_cache_dir
+    configure_ironic
+    create_ironic_accounts
+    configure_tftpd
+    configure_iptables
+    configure_ironic_auxiliary
+    upload_baremetal_ironic_deploy
+    stop_nova_compute || true
+    start_nova_compute
+}
+
+
+# Save current config files for posterity
+if  [[ -d $IRONIC_CONF_DIR ]] && [[ ! -d $SAVE_DIR/etc.ironic ]] ; then
+    cp -pr $IRONIC_CONF_DIR $SAVE_DIR/etc.ironic
+fi
+
+install_ironicclient
+install_ironic
+
+# If we are sideways upgrading and migrating from a base deployed /w
+# VIRT_DRIVER=fake, we need to run Ironic install, config and init
+# code from devstac.
+if is_nova_migration ; then
+    init_ironic
+fi
+
+ironic-dbsync --config-file=$IRONIC_CONF_FILE
+
+start_ironic
+
+# calls upgrade-ironic for specific release
+upgrade_project ironic $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+
+set +o xtrace
+echo "*********************************************************************"
+echo "SUCCESS: End $0"
+echo "*********************************************************************"
