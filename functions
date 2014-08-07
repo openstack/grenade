@@ -1731,10 +1731,17 @@ function upgrade_project {
 
     project=$1
     base_dir=$2
-    branch=$3
+    base_branch=$3
+    target_branch=$4
 
-    upgrade_dir=$(get_release_name_from_branch $branch)
-    upgrade_file=${base_dir}/"from-"${upgrade_dir}/"upgrade-"${project}
+    if [[ "$base_branch" == "$target_branch" ]]; then
+        direction="within"
+    else
+        direction="from"
+    fi
+
+    upgrade_dir=$(get_release_name_from_branch $base_branch)
+    upgrade_file=${base_dir}/${direction}"-"${upgrade_dir}/"upgrade-"${project}
     if [[ -e ${upgrade_file} ]]; then
         source ${upgrade_file} && configure_${project}_upgrade
     else

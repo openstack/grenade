@@ -35,6 +35,6 @@ source $TARGET_DEVSTACK_DIR/lib/oslo
 sudo pip uninstall -y oslo.config
 
 # calls upgrade-oslo for specific release
-upgrade_project oslo $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project oslo $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 install_oslo

@@ -84,7 +84,7 @@ install_cinder
 install_cinderclient
 
 # calls upgrade-cinder for specific release
-upgrade_project cinder $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project cinder $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Simulate init_cinder()
 create_cinder_volume_group
