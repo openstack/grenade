@@ -26,6 +26,8 @@ source $GRENADE_DIR/grenaderc
 # We need the OS_ credentials
 source $TARGET_DEVSTACK_DIR/openrc
 source $TARGET_DEVSTACK_DIR/functions
+source $TARGET_DEVSTACK_DIR/localrc
+
 
 function is_a_service {
     local name=$1
@@ -79,13 +81,34 @@ function test_all_enabled_services {
     fi
 }
 
+# For a given process name, resolve the corresponding devstack service
+# name as it would appear in ENABLED_SERVICES.
+function process_to_service {
+    case "$1" in
+      "nova-api") echo "n-api" ;;
+      "nova-conductor") echo "n-cond" ;;
+      "nova-compute") echo "n-cpu" ;;
+      "keystone") echo "key" ;;
+      "glance-api") echo "g-api" ;;
+      "cinder-api") echo "c-api" ;;
+      "swift-object-server") echo "s-obj" ;;
+      "swift-proxy-server") echo "s-proxy" ;;
+      *) echo "$1" ;;
+    esac
+}
+
 test_all_enabled_services
 
 # all the services should actually be running that we expect
 NOT_RUNNING=""
-for name in ${TARGET_SERVICES}; do
-    if ! is_running ${name}; then
-        NOT_RUNNING="$NOT_RUNNING $name"
+RUNNING=""
+for proc_name in ${TARGET_SERVICES}; do
+    if is_service_enabled "$(process_to_service $proc_name)" ; then
+        if ! is_running ${proc_name}; then
+            NOT_RUNNING="$NOT_RUNNING $proc_name"
+        else
+            RUNNING="$RUNNING $proc_name"
+        fi
     fi
 done
 
@@ -94,7 +117,7 @@ if [[ -n "$NOT_RUNNING" ]]; then
     $GRENADE_DIR/tools/worlddump.py -d $LOGDIR
     exit 1
 else
-    echo "the following services are running: $TARGET_SERVICES"
+    echo "the following services are running: $RUNNING"
 fi
 
 echo "*********************************************************************"
