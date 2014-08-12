@@ -91,8 +91,7 @@ done
 
 if [[ -n "$NOT_RUNNING" ]]; then
     echo "The following services are not running after upgrade: $NOT_RUNNING"
-    # do a process dump at the end, just to see how bad things really are
-    ps auxw
+    $GRENADE_DIR/tools/worlddump.py -d $LOGDIR
     exit 1
 else
     echo "the following services are running: $TARGET_SERVICES"
