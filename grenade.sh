@@ -79,8 +79,8 @@ function upgrade_service {
         enabled="True"
     else
         enabled=$(
-            source $BASE_DEVSTACK_DIR/functions;
-            source $BASE_DEVSTACK_DIR/stackrc;
+            source $TARGET_DEVSTACK_DIR/functions;
+            source $TARGET_DEVSTACK_DIR/stackrc;
             is_service_enabled $local_service || echo "False")
     fi
     if [[ "$enabled" == "False" ]]; then
