@@ -1,1 +1,1 @@
-bash8
+bashate >= 0.2
