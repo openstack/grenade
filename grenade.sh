@@ -253,8 +253,8 @@ if [[ "$RUN_BASE" == "True" ]]; then
     TEMPEST_CONF=$TEMPEST_DIR/etc/tempest.conf
     JAVELIN_CONF=$TEMPEST_DIR/etc/javelin.conf
     cp $TEMPEST_CONF $JAVELIN_CONF
-    # Make javelin write logs to stderr
-    iniset $JAVELIN_CONF DEFAULT use_stderr True
+    # Make javelin write logs to javelin.log
+    iniset $JAVELIN_CONF DEFAULT log_file javelin.log
 
     # Create a project, users and instances
     echo_summary "Creating Javelin project"
