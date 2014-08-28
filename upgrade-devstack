@@ -24,7 +24,7 @@ set -o xtrace
 # ================
 
 # calls upgrade-devstack for specific release
-upgrade_project devstack $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project devstack $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Preserve accrc files for future usage
 cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc

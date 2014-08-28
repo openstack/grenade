@@ -82,7 +82,7 @@ install_swift
 install_swiftclient
 
 # calls upgrade-swift for specific release
-upgrade_project swift $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project swift $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Simulate swift_init()
 

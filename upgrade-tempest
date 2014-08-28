@@ -65,7 +65,7 @@ source $TARGET_DEVSTACK_DIR/lib/tempest
 install_tempest
 
 # calls upgrade-tempest for specific release
-upgrade_project tempest $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project tempest $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 OS_USERNAME=admin
 if $(source $BASE_DEVSTACK_DIR/stackrc; is_service_enabled neutron); then

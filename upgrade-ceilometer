@@ -58,7 +58,7 @@ source $TARGET_DEVSTACK_DIR/lib/ceilometer
 install_ceilometer
 
 # calls upgrade-ceilometer for specific release
-upgrade_project ceilometer $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project ceilometer $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Migrate the database
 ceilometer-dbsync || die $LINENO "DB sync error"

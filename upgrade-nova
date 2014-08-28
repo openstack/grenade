@@ -98,7 +98,7 @@ install_novaclient
 install_nova
 
 # calls upgrade-nova for specific release
-upgrade_project nova $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project nova $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Simulate init_nova()
 create_nova_cache_dir

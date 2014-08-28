@@ -68,7 +68,7 @@ screen -S $SCREEN_NAME -p horizon -X kill
 install_horizon
 
 # calls upgrade-horizon for specific release
-upgrade_project horizon $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project horizon $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Start Horizon
 start_horizon

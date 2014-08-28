@@ -107,7 +107,7 @@ install_neutron_third_party
 Q_L3_CONF_FILE=${Q_L3_CONF_FILE:-"$NEUTRON_CONF_DIR/l3_agent.ini"}
 Q_FWAAS_CONF_FILE=${Q_FWAAS_CONF_FILE:-"$NEUTRON_CONF_DIR/fwaas_driver.ini"}
 
-upgrade_project neutron $GRENADE_DIR $BASE_DEVSTACK_BRANCH
+upgrade_project neutron $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Get plugin config paths
 neutron_plugin_configure_common
