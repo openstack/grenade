@@ -367,27 +367,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 
     # Save databases
     # --------------
-
-    echo_summary "Sourcing target DevStack config"
-    source $TARGET_DEVSTACK_DIR/functions
-    source $TARGET_DEVSTACK_DIR/stackrc
-    echo_summary "Dumping target databases"
-    mkdir -p $SAVE_DIR
-    MYSQL_SERVICES="keystone glance nova cinder"
-    if grep -q 'connection *= *mysql' /etc/ceilometer/ceilometer.conf; then
-        MYSQL_SERVICES+=" ceilometer"
-    elif grep -q 'connection *= *mongo' /etc/ceilometer/ceilometer.conf; then
-        mongodump --db ceilometer --out $SAVE_DIR/ceilometer-dump.$TARGET_RELEASE
-    fi
-    for db in $MYSQL_SERVICES ; do
-        if mysql -uroot -p$MYSQL_PASSWORD -c $db -e ''; then
-            mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$TARGET_RELEASE
-        fi
-    done
-    neutron_db_names=$(mysql -uroot -p$MYSQL_PASSWORD -e "show databases;" | grep neutron || :)
-    for neutron_db in $neutron_db_names; do
-        mysqldump -uroot -p$MYSQL_PASSWORD $neutron_db >$SAVE_DIR/$neutron_db.sql.$TARGET_RELEASE
-    done
+    save_data $TARGET_RELEASE $TARGET_DEVSTACK_DIR
 fi
 
 
