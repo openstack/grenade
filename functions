@@ -1065,6 +1065,33 @@ function _run_process {
     die "$service exec failure: $command"
 }
 
+# save_data() dumps service datastores into SAVE_DIR for base or
+# target release.
+function save_data {
+    local release=$1
+    local dir=$2
+    local mysql_services="keystone glance nova cinder"
+
+    echo_summary "Sourcing $release DevStack config"
+    source $dir/functions
+    source $dir/stackrc
+    echo_summary "Dumping $release databases"
+    mkdir -p $SAVE_DIR
+    if grep -q 'connection *= *mysql' /etc/ceilometer/ceilometer.conf; then
+        mysql_services+=" ceilometer"
+    elif grep -q 'connection *= *mongo' /etc/ceilometer/ceilometer.conf; then
+        mongodump --db ceilometer --out $SAVE_DIR/ceilometer-dump.$release
+    fi
+    for db in $mysql_services ; do
+        if mysql -uroot -p$MYSQL_PASSWORD -c $db -e ''; then
+            mysqldump -uroot -p$MYSQL_PASSWORD $db >$SAVE_DIR/$db.sql.$release
+        fi
+    done
+    neutron_db_names=$(mysql -uroot -p$MYSQL_PASSWORD -e "show databases;" | grep neutron || :)
+    for neutron_db in $neutron_db_names; do
+        mysqldump -uroot -p$MYSQL_PASSWORD $neutron_db >$SAVE_DIR/$neutron_db.sql.$release
+    done
+}
 
 # run_process() launches a child process that closes all file descriptors and
 # then exec's the passed in command.  This is meant to duplicate the semantics
