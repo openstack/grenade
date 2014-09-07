@@ -228,6 +228,7 @@ function run_javelin() {
         cp $tempest_conf $javelin_conf
         # Make javelin write logs to javelin.log
         iniset $javelin_conf DEFAULT log_file $GRENADE_DIR/javelin.log
+        echo "Logs can be found at javelin.log"
     fi
 
     echo_summary "Running Javelin to $action resources"
