@@ -42,6 +42,11 @@ volumes:
   - name: assegai
     owner: javelin
     gb: 1
+    server: peltast
+  - name: pifpouf
+    owner: javelin
+    gb: 2
+    server: hoplite
 networks:
   - name: world1
     owner: javelin
