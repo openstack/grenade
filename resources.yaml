@@ -43,10 +43,12 @@ volumes:
     owner: javelin
     gb: 1
     server: peltast
+    device: /dev/vdb
   - name: pifpouf
     owner: javelin
     gb: 2
     server: hoplite
+    device: /dev/vdb
 networks:
   - name: world1
     owner: javelin
