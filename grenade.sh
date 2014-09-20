@@ -184,8 +184,10 @@ function exit_trap {
     set +o xtrace
     if [[ $r -ne 0 ]]; then
         echo "Exit code: $r"
-        $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
-        sleep 1
+        if [[ -x $TARGET_DEVSTACK_DIR/tools/worlddump.py ]]; then
+            $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
+            sleep 1
+        fi
     fi
     exit $r
 }
