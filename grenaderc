@@ -29,8 +29,6 @@ TARGET_DEVSTACK_REPO=$BASE_DEVSTACK_REPO
 TARGET_DEVSTACK_BRANCH=master
 TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
 
-# Allow skipping smoke tests
-RUN_SMOKE=True
 TEMPEST_CONCURRENCY=${TEMPEST_CONCURRENCY:-$(nproc --all)}
 
 # Saved stuff
@@ -72,8 +70,10 @@ ENABLE_TEMPEST=${ENABLE_TEMPEST:=True}
 # We need RECLONE to get the updated branches; not everyone wants it though
 RECLONE=${RECLONE:-no}
 
-BASE_RUN_SMOKE=${RUN_SMOKE:=True}
-TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$BASE_RUN_SMOKE}
+# Allow skipping smoke tests
+RUN_SMOKE=${RUN_SMOKE:=True}
+BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
+TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
 # TODO(sdague): we really need to pull these in from devstack so we aren't
 # always listing them.
