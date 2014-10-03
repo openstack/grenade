@@ -58,8 +58,8 @@ source $TARGET_DEVSTACK_DIR/lib/apache
 
 # stop horizon apache server
 stop_horizon
-# Kill horizon screen session
-screen -S $SCREEN_NAME -p horizon -X kill
+# Kill horizon screen session if there one
+screen_stop horizon
 
 # Save current config files for posterity
 #TODO

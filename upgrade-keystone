@@ -49,9 +49,6 @@ TOP_DIR=$TARGET_DEVSTACK_DIR
 # Upgrade Keystone
 # ================
 
-# Kill a running Keystone
-screen -S $SCREEN_NAME -p key -X kill
-
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
 BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
