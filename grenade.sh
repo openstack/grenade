@@ -116,6 +116,7 @@ if [[ -n "$LOGFILE" ]]; then
     echo "Creating $LOGDIR...."
 
     sudo mkdir -p $LOGDIR
+    sudo chown -R `whoami` $LOGDIR
     find $LOGDIR -maxdepth 1 -name $LOGNAME.\* -mtime +$LOGDAYS -exec rm {} \;
     LOGFILE=$LOGFILE.${CURRENT_LOG_TIME}
     SUMFILE=$LOGFILE.${CURRENT_LOG_TIME}.summary
@@ -171,6 +172,7 @@ if [[ -n "$SCREEN_LOGDIR" ]]; then
         find $SCREEN_LOGDIR -maxdepth 1 -name screen-\*.log -mtime +$LOGDAYS -exec rm {} \;
     else
         sudo mkdir -p $SCREEN_LOGDIR
+        sudo chown -R `whoami` $SCREEN_LOGDIR
     fi
 fi
 
