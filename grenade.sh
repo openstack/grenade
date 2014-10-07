@@ -381,6 +381,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # Save databases
     # --------------
     save_data $TARGET_RELEASE $TARGET_DEVSTACK_DIR
+
+    # Cleanup all resources created by javelin
+    echo_summary "Cleanup Javelin project"
+    (source $TARGET_DEVSTACK_DIR/openrc admin admin;
+        javelin2 -m destroy -r $GRENADE_DIR/resources.yaml -d $TARGET_DEVSTACK_DIR -c $JAVELIN_CONF)
 fi
 
 
