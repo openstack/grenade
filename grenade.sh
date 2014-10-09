@@ -221,6 +221,7 @@ function run_javelin() {
     local action=$1
     local tempest_dir=$BASE_RELEASE_DIR/tempest
     local javelin_conf=$tempest_dir/etc/javelin.conf
+    local javelin_resources=$GRENADE_DIR/resources.yaml
 
     if [ ! -e $javelin_conf ]; then
         # initialize javelin config
@@ -229,6 +230,13 @@ function run_javelin() {
         # Make javelin write logs to javelin.log
         iniset $javelin_conf DEFAULT log_file $GRENADE_DIR/javelin.log
         echo "Logs can be found at javelin.log"
+    fi
+
+    if [ ! -e $javelin_resources ]; then
+        # Generate javelin2 resources configuration
+        (source $BASE_DEVSTACK_DIR/functions; source $BASE_DEVSTACK_DIR/stackrc;
+            $GRENADE_DIR/tools/generate_javelin_resources.py -o $GRENADE_DIR/resources.yaml \
+            $ENABLED_SERVICES)
     fi
 
     echo_summary "Running Javelin to $action resources"

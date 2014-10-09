@@ -75,8 +75,6 @@ servers:
     owner: javelin
     flavor: m1.small
     image: javelin_cirros
-    networks:
-      - world1
     secgroups:
       - angon
       - baobab
@@ -84,8 +82,6 @@ servers:
     owner: javelin
     flavor: m1.medium
     image: javelin_cirros
-    networks:
-      - world2
     secgroups:
       - angon
 objects:
