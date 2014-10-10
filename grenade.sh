@@ -214,6 +214,27 @@ TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 # Set up for Javelin (default to True)
 RUN_JAVELIN=$(trueorfalse True $RUN_JAVELIN)
 
+function run_javelin() {
+    if [ "$RUN_JAVELIN" != "True" ]; then
+        return
+    fi
+    local action=$1
+    local tempest_dir=$BASE_RELEASE_DIR/tempest
+    local javelin_conf=$tempest_dir/etc/javelin.conf
+
+    if [ ! -e $javelin_conf ]; then
+        # initialize javelin config
+        local tempest_conf=$tempest_dir/etc/tempest.conf
+        cp $tempest_conf $javelin_conf
+        # Make javelin write logs to javelin.log
+        iniset $javelin_conf DEFAULT log_file $GRENADE_DIR/javelin.log
+    fi
+
+    echo_summary "Running Javelin to $action resources"
+    (source $BASE_DEVSTACK_DIR/openrc admin admin;
+        javelin2 -m $action -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $javelin_conf)
+}
+
 # Install 'Base' Build of OpenStack
 # =================================
 
@@ -253,22 +274,8 @@ if [[ "$RUN_BASE" == "True" ]]; then
     fi
     stop $STOP base-smoke 110
 
-    if [[ "$RUN_JAVELIN" == "True" ]]; then
-        cd $GRENADE_DIR
-
-        # initialize javalin config
-        TEMPEST_DIR=$BASE_RELEASE_DIR/tempest
-        TEMPEST_CONF=$TEMPEST_DIR/etc/tempest.conf
-        JAVELIN_CONF=$TEMPEST_DIR/etc/javelin.conf
-        cp $TEMPEST_CONF $JAVELIN_CONF
-        # Make javelin write logs to javelin.log
-        iniset $JAVELIN_CONF DEFAULT log_file javelin.log
-
-        # Create a project, users and instances
-        echo_summary "Creating Javelin project"
-        (source $BASE_DEVSTACK_DIR/openrc admin admin;
-            javelin2 -m create -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
-    fi
+    # Create the javelin resources
+    run_javelin create
 
     # Save some stuff before we shut that whole thing down
     echo_summary "Saving current state information"
@@ -365,12 +372,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # =============
 
     # Validate the created resources
-    if [[ "$RUN_JAVELIN" == "True" ]]; then
-        cd $GRENADE_DIR
-        echo_summary "Validating Javelin resources"
-        (source $BASE_DEVSTACK_DIR/openrc admin admin;
-            javelin2 -m check -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $JAVELIN_CONF)
-    fi
+    run_javelin check
 
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
@@ -385,9 +387,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     save_data $TARGET_RELEASE $TARGET_DEVSTACK_DIR
 
     # Cleanup all resources created by javelin
-    echo_summary "Cleanup Javelin project"
-    (source $TARGET_DEVSTACK_DIR/openrc admin admin;
-        javelin2 -m destroy -r $GRENADE_DIR/resources.yaml -d $TARGET_DEVSTACK_DIR -c $JAVELIN_CONF)
+    run_javelin destroy
 fi
 
 
