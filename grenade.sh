@@ -309,11 +309,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/prep-target
     stop $STOP prep-target 210
 
-    # Upgrade OS packages and known Python updates
-    echo_summary "Running upgrade-packages"
-    #$GRENADE_DIR/upgrade-packages
-    stop $STOP upgrade-packages 220
-
     # Upgrade DevStack
     echo_summary "Running upgrade-devstack"
     #$GRENADE_DIR/upgrade-devstack

@@ -154,7 +154,6 @@ This is roughly the equivalent to::
      ./unstack.sh)
     # dump databases to $STACK_ROOT/save
     grenade/prep-target
-    grenade/upgrade-packages
     grenade/upgrade-devstack
     grenade/upgrade-keystone
     grenade/upgrade-glance
