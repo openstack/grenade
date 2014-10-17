@@ -320,6 +320,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/upgrade-oslo || die $LINENO "Failure in upgrade-oslo"
     stop $STOP upgrade-oslo 235
 
+    # Start dstat
+    echo_summary "Running start-dstat"
+    $GRENADE_DIR/start-dstat
+    stop $STOP start-dstat 238
+
     # Upgrade Keystone
     upgrade_service keystone
     stop $STOP upgrade-keystone 240

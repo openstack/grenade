@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# ``start-dstat``
+
+# Keep track of the grenade directory
+GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Import common functions
+source $GRENADE_DIR/functions
+
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
+# Source params
+source $GRENADE_DIR/grenaderc
+
+# For debugging
+set -o xtrace
+
+
+# start dstat
+# ============
+cd $TARGET_DEVSTACK_DIR
+source $TARGET_DEVSTACK_DIR/functions
+source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/dstat
+
+start_dstat
