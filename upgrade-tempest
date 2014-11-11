@@ -63,6 +63,7 @@ source $TARGET_DEVSTACK_DIR/lib/horizon
 source $TARGET_DEVSTACK_DIR/lib/ironic
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/neutron
+source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/sahara
 source $TARGET_DEVSTACK_DIR/lib/swift
 source $TARGET_DEVSTACK_DIR/lib/trove
