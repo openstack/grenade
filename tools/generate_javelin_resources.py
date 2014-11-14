@@ -94,11 +94,10 @@ def main():
     # to run tempest.
     if not service_enabled('ironic'):
         enabled_resources['servers'] = base_resources['servers']
-        # assign a server to each created tenant network if neutron is enabled
-        if service_enabled('neutron'):
-            for s, n in zip(enabled_resources['servers'],
-                            enabled_resources['networks']):
-                s['networks'] = n['name']
+        # if neutron is not enabled, remove networks
+        if not service_enabled('neutron'):
+            for server in enabled_resources['servers']:
+                del server['networks']
 
     out = yaml.dump(enabled_resources, default_flow_style=False)
     print '# Grenade generated javelin2 resources yaml:'
