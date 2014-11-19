@@ -121,17 +121,6 @@ Similar steps are performed by ``prep-target`` for ``$TARGET_DEVSTACK_DIR``.
 exists.  ``devstack.localrc`` is not included in Grenade and will not be
 overwritten it if it exists.
 
-To handle differences between the DevStack releases ``GRENADE_PHASE`` will
-be set to ``base`` or ``target`` so appropriate decisions can be made::
-
-    if [[ "$GRENADE_PHASE" == "base" ]]; then
-        # Handle base-specific local
-        :
-    else
-        # Handle target-specific local
-        :
-    fi
-
 
 Prepare For An Upgrade Test
 ---------------------------

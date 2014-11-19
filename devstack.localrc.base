@@ -1,5 +1,4 @@
 # localrc for DevStack base installation
-GRENADE_PHASE=base
 
 # Default to selecting an interface via the default route
 unset HOST_IP
