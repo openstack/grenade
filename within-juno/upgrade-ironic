@@ -142,6 +142,24 @@ function is_nova_migration {
 }
 
 
+# NOTE(adam_g): Eventually defined in devstack when https://review.openstack.org/#/c/138164/
+# has landed.
+function wait_for_nova_resources {
+    # After nodes have been enrolled, we need to wait for n-cpu's periodic
+    # task populate the resource tracker with available nodes.  Wait for 2
+    # minutes before timing out.
+    expected_count=$1
+    echo_summary "Waiting 2 minutes for Nova resource tracker to pick up $expected_count Ironic nodes"
+    for i in `seq 1 120` ; do
+        if [ $(nova hypervisor-stats | grep " count " | get_field 2) -ge $expected_count ]; then
+            return 0
+        fi
+        sleep 1
+    done
+    die $LINENO "Nova hypervisor-stats did not register at least $expected_count nodes"
+}
+
+
 function configure_ironic_upgrade {
     XTRACE=$(set +o | grep xtrace)
 
@@ -152,6 +170,11 @@ function configure_ironic_upgrade {
         nova_bm_create_resources
         nova_bm_migrate_nodes
         nova_bm_update_flavor
+
+        # Wait for migrated nodes to appear in nova via ironic
+        source $TARGET_DEVSTACK_DIR/openrc admin admin
+        expected_nodes=$(cat $IRONIC_VM_MACS_CSV_FILE | wc -l)
+        wait_for_nova_resources $expected_nodes
     fi
 
     $XTRACE
