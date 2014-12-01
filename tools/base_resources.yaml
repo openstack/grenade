@@ -73,7 +73,7 @@ routers:
 servers:
   - name: peltast
     owner: javelin
-    flavor: m1.small
+    flavor: m1.tiny
     image: javelin_cirros
     networks:
       - world1
@@ -82,7 +82,7 @@ servers:
       - baobab
   - name: hoplite
     owner: javelin
-    flavor: m1.medium
+    flavor: m1.micro
     image: javelin_cirros
     networks:
         - world2
