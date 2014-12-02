@@ -114,7 +114,7 @@ done
 
 if [[ -n "$NOT_RUNNING" ]]; then
     echo "The following services are not running after upgrade: $NOT_RUNNING"
-    $GRENADE_DIR/tools/worlddump.py -d $LOGDIR
+    $TARGET_DEVSTACK_DIR/tools/worlddump.py -d ${SCREEN_LOGDIR}
     exit 1
 else
     echo "the following services are running: $RUNNING"
