@@ -27,13 +27,6 @@ source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/oslo
 
-# NOTE(sdague): in transitioning from grizzly to havana devstack we
-# have an issue where we've pip installed an old oslo, but we are actually
-# handing new oslo from the git tree instead. Due to the *fun* that is
-# python library handling, this means if we don't uninstall old oslo, nova-manage
-# will actually use the wrong one.
-sudo pip uninstall -y oslo.config
-
 # calls upgrade-oslo for specific release
 upgrade_project oslo $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
