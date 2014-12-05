@@ -55,7 +55,6 @@ FILES=$TARGET_DEVSTACK_DIR/files
 
 # Ensure all services libraries are sourced early to correctly populate
 # TEMPEST_SERVICES.
-source $TARGET_DEVSTACK_DIR/lib/baremetal
 source $TARGET_DEVSTACK_DIR/lib/ceilometer
 source $TARGET_DEVSTACK_DIR/lib/cinder
 source $TARGET_DEVSTACK_DIR/lib/glance
