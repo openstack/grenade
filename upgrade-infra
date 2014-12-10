@@ -27,6 +27,4 @@ source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/infra
 
-unfubar_setuptools
-
 install_infra
