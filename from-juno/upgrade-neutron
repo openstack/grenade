@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# ``upgrade-neutron``
+
+KILO_LB_SP="LOADBALANCER:Haproxy:neutron_lbaas.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default"
+KILO_VPN_SP="VPN:openswan:neutron_vpnaas.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default"
+
+KILO_FW_DRV="neutron_fwaas.services.firewall.drivers.linux.iptables_fwaas.IptablesFwaasDriver"
+KILO_LB_DRV="neutron_lbaas.services.loadbalancer.drivers.haproxy.namespace_driver.HaproxyNSDriver"
+KILO_VPN_DRV="neutron_vpnaas.services.vpn.device_drivers.ipsec.OpenSwanDriver"
+
+NEUTRON_FWAAS_CONF_FILE=$NEUTRON_CONF_DIR/fwaas_driver.ini
+NEUTRON_LBAAS_CONF_FILE=$NEUTRON_CONF_DIR/services/loadbalancer/haproxy/lbaas_agent.ini
+NEUTRON_VPNAAS_CONF_FILE=$NEUTRON_CONF_DIR/vpn_agent.ini
+
+function configure_neutron_upgrade {
+    XTRACE=$(set +o | grep xtrace)
+    set -o xtrace
+
+    # In Kilo Advanced Services have moved to their own repos, so update their providers and drivers
+    inicomment $NEUTRON_CONF service_providers service_provider
+    iniadd $NEUTRON_CONF service_providers service_provider $KILO_LB_SP
+    iniadd $NEUTRON_CONF service_providers service_provider $KILO_VPN_SP
+
+    iniset $NEUTRON_FWAAS_CONF_FILE fwaas driver $KILO_FW_DRV
+    iniset $NEUTRON_LBAAS_CONF_FILE DEFAULT device_driver $KILO_LB_DRV
+    iniset $NEUTRON_VPNAAS_CONF_FILE vpnagent vpn_device_driver $KILO_VPN_DRV
+
+    $XTRACE
+}
