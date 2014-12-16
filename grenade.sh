@@ -333,6 +333,13 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     upgrade_service keystone
     stop $STOP upgrade-keystone 240
 
+    # Upgrade Ceilometer
+    #
+    # Bug: 1403024 - Ceilometer *must* be upgraded before any
+    # components that it has injected itself into.
+    upgrade_service ceilometer
+    stop $STOP upgrade-ceilometer 244
+
     # Upgrade Swift
     upgrade_service swift
     stop $STOP upgrade-swift 245
@@ -353,9 +360,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     upgrade_service cinder
     stop $STOP upgrade-cinder 270
 
-    # Upgrade Ceilometer
-    upgrade_service ceilometer
-    stop $STOP upgrade-ceilometer 280
 
     # Upgrade Horizon
     upgrade_service horizon
