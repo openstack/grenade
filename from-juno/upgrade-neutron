@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# ``upgrade-neutron``
+
+function configure_neutron_upgrade {
+    XTRACE=$(set +o | grep xtrace)
+    set -o xtrace
+
+    # Apply new rootwrap dhcp.filters because of dnsmasq env variable change
+    sudo cp -f $TARGET_RELEASE_DIR/neutron/etc/neutron/rootwrap.d/dhcp.filters $NEUTRON_CONF_DIR/rootwrap.d/
+
+    $XTRACE
+}
