@@ -43,7 +43,7 @@ function is_a_service {
         echo "Heat not yet supported, skipping check for $name"
         return 1
     fi
-    if [[ "${DO_NOT_UPGRADE_SERVICES}" =~ "${service}" ]]; then
+    if ! should_upgrade "${service}"; then
         echo "$service not upgraded, skipping check"
         return 1
     fi
@@ -93,6 +93,8 @@ function process_to_service {
       "cinder-api") echo "c-api" ;;
       "swift-object-server") echo "s-obj" ;;
       "swift-proxy-server") echo "s-proxy" ;;
+      "ironic-conductor") echo "ir-cond" ;;
+      "ironic-api") echo "ir-api" ;;
       *) echo "$1" ;;
     esac
 }

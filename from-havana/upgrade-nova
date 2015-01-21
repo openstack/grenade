@@ -9,7 +9,7 @@ function configure_nova_upgrade {
     configure_nova_rootwrap
 
     # rolling nova-compute support
-    if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+    if ! should_upgrade "n-cpu"; then
         iniset $NOVA_CONF upgrade_levels compute havana
     fi
 

@@ -107,13 +107,13 @@ create_nova_keys_dir
 nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
 # rolling nova-compute support
-if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+if ! should_upgrade "n-cpu"; then
     iniset $NOVA_CONF upgrade_levels compute $(basename $BASE_DEVSTACK_BRANCH)
 fi
 
 # Start Nova
 start_nova_api
-if [[ ! "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+if should_upgrade "n-cpu"; then
     start_nova_compute
 fi
 start_nova_rest

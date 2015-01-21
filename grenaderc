@@ -3,6 +3,8 @@
 # Find the other rc files
 RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 
+source $RC_DIR/functions
+
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com
@@ -79,12 +81,24 @@ TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 # always listing them.
 BASE_SERVICES="nova-api nova-conductor keystone glance-api cinder-api"
 BASE_SERVICES+=" swift-object-server swift-proxy-server"
-if ! [[ "$DO_NOT_UPGRADE_SERVICES" =~ "n-cpu" ]]; then
+
+# Partial nova upgrades (upgrade all but nova-compute)
+if should_upgrade "n-cpu"; then
     # only check for compute in base if we aren't supposed to shut it down
     BASE_SERVICES+=" nova-compute"
 else
     TARGET_SERVICES="nova-compute "
 fi
+
+# Partial ironic upgrades (upgrade all but ironic)
+if is_service_enabled "ironic"; then
+    if should_upgrade "ir-"; then
+        BASE_SERVICES+=" ironic-conductor ironic-api"
+    else
+        TARGET_SERVICES=" ironic-conductor ironic-api"
+    fi
+fi
+
 TARGET_SERVICES+=$BASE_SERVICES
 
 # Need this for global requirements
