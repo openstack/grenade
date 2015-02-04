@@ -240,8 +240,10 @@ function run_javelin() {
     fi
 
     echo_summary "Running Javelin to $action resources"
+
+    cd  $tempest_dir
     (source $BASE_DEVSTACK_DIR/openrc admin admin;
-        javelin2 -m $action -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $javelin_conf)
+        tox -evenv -- javelin2 -m $action -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $javelin_conf)
 }
 
 # Install 'Base' Build of OpenStack
