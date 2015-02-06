@@ -69,6 +69,10 @@ if is_service_enabled ceilometer; then
     stop_ceilometer
 fi
 
+if is_service_enabled ironic; then
+   stop_ironic
+fi
+
 # Swift runs daemons
 if is_service_enabled s-proxy; then
     stop_swift
@@ -86,7 +90,7 @@ fi
 SCREEN=$(which screen)
 if [[ -n "$SCREEN" ]]; then
     for serv in ${ENABLED_SERVICES//,/ }; do
-        if [[ ! "$DO_NOT_UPGRADE_SERVICES" =~ "$serv" ]]; then
+        if should_upgrade "$serv"; then
             screen_stop $serv
         fi
     done

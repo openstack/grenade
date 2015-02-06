@@ -42,7 +42,6 @@ function save_data {
     done
 }
 
-
 # This function triggers the upgrade process for each project if it exists,
 # otherwise it shows up a warning message about the lack of this file.
 function upgrade_project {
@@ -70,6 +69,15 @@ function upgrade_project {
         echo "Warning: No new configurations were found for OpenStack $project."
         echo "If your patch fails during the upgrade this may be the cause."
     fi
+}
+
+# Determine whether grenade should be upgrading specified service, according
+# to DO_NOT_UPGRADE_SERVICES
+function should_upgrade {
+    if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "$1" ]]; then
+        return 1
+    fi
+    return 0
 }
 
 # Restore xtrace
