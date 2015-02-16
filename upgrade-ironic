@@ -110,7 +110,10 @@ function init_ironic {
     configure_ironic_auxiliary
     upload_baremetal_ironic_deploy
     stop_nova_compute || true
+    stop_nova_rest || true
+    start_nova_api
     start_nova_compute
+    start_nova_rest
 }
 
 
