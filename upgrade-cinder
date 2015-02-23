@@ -59,6 +59,8 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
+
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
@@ -66,17 +68,17 @@ source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
+# Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/cinder
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.cinder ]] || cp -pr $CINDER_CONF_DIR $SAVE_DIR/etc.cinder
 
 # install_cinder()
-install_cinderclient
-install_cinder
-install_cinderclient
+stack_install_service cinder
 
 # calls upgrade-cinder for specific release
 upgrade_project cinder $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
@@ -86,7 +88,7 @@ create_cinder_volume_group
 create_cinder_cache_dir
 
 # Migrate the database
-cinder-manage db sync || die $LINENO "DB migration error"
+$CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
 
 start_cinder
 

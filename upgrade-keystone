@@ -57,6 +57,8 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
+
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
@@ -65,21 +67,26 @@ source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 
 # Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
+
+# Temporary setting until venv change is in DevStack
+if [[ -z $KEYSTONE_BIN_DIR ]]; then
+    KEYSTONE_BIN_DIR=$(dirname $(which keystone-manage))
+fi
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.keystone ]] || cp -pr $KEYSTONE_CONF_DIR $SAVE_DIR/etc.keystone
 
 # install_keystone()
-install_keystoneclient
-install_keystone
+stack_install_service keystone
 
 # calls upgrade-keystone for specific release
 upgrade_project keystone $GRENADE_DIR $BASE_DEVSTACK_BRANCH
 
 # Simulate init_keystone()
 # Migrate the database
-keystone-manage db_sync || die $LINENO "DB sync error"
+$KEYSTONE_BIN_DIR/keystone-manage db_sync || die $LINENO "DB sync error"
 
 # Start Keystone
 start_keystone

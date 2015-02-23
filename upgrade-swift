@@ -57,6 +57,8 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
+
 FILES=$TARGET_DEVSTACK_DIR/files
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
@@ -64,6 +66,7 @@ SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 SERVICE_TOKEN=${SERVICE_TOKEN:-aa-token-bb}
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
 source $TARGET_DEVSTACK_DIR/lib/swift
@@ -73,8 +76,7 @@ source $TARGET_DEVSTACK_DIR/lib/swift
 cp -pr /etc/rsyncd.conf $SAVE_DIR
 
 # install_swift()
-install_swift
-install_swiftclient
+stack_install_service swift
 
 # calls upgrade-swift for specific release
 upgrade_project swift $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH

@@ -57,6 +57,8 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
+
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
@@ -64,6 +66,7 @@ source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
 SYSLOG=`trueorfalse False $SYSLOG`
@@ -75,8 +78,7 @@ source $TARGET_DEVSTACK_DIR/lib/glance
 [[ -d $SAVE_DIR/etc.glance ]] || cp -pr $GLANCE_CONF_DIR $SAVE_DIR/etc.glance
 
 # install_glance()
-install_glanceclient
-install_glance
+stack_install_service glance
 
 # calls upgrade-glance for specific release
 upgrade_project glance $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
@@ -85,7 +87,7 @@ upgrade_project glance $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANC
 create_glance_cache_dir
 
 # Migrate the database
-glance-manage db_sync || die $LINENO "DB sync error"
+$GLANCE_BIN_DIR/glance-manage db_sync || die $LINENO "DB sync error"
 
 
 # Start Glance

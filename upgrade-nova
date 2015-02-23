@@ -57,6 +57,7 @@ BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql:/
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
 
 # From stack.sh
 FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
@@ -69,7 +70,6 @@ SERVICE_HOST=${SERVICE_HOST:-$HOST_IP}
 
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
 S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
-source $TARGET_DEVSTACK_DIR/lib/database
 
 # Just do this rather than bring in all of glance
 GLANCE_HOSTPORT=$SERVICE_HOST:9292
@@ -77,15 +77,14 @@ GLANCE_HOSTPORT=$SERVICE_HOST:9292
 SYSLOG=`trueorfalse False $SYSLOG`
 
 # Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/neutron
-
-# install_neutronclient()
-install_neutronclient
 
 NOVNC_DIR=$DEST/noVNC
 
@@ -93,8 +92,7 @@ NOVNC_DIR=$DEST/noVNC
 [[ -d $SAVE_DIR/etc.nova ]] || cp -pr $NOVA_CONF_DIR $SAVE_DIR/etc.nova
 
 # install_nova()
-install_novaclient
-install_nova
+stack_install_service nova
 
 # calls upgrade-nova for specific release
 upgrade_project nova $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
@@ -104,7 +102,7 @@ create_nova_cache_dir
 create_nova_keys_dir
 
 # Migrate the database
-nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
+$NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
 # rolling nova-compute support
 if ! should_upgrade "n-cpu"; then

@@ -52,6 +52,7 @@ TOP_DIR=$TARGET_DEVSTACK_DIR
 cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/stack
 
 # From stack.sh
 FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
@@ -72,10 +73,11 @@ source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/infra
+source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/neutron
-source $TARGET_DEVSTACK_DIR/lib/infra
 source $TARGET_DEVSTACK_DIR/lib/ironic
 
 function is_nova_migration {
@@ -117,8 +119,7 @@ if  [[ -d $IRONIC_CONF_DIR ]] && [[ ! -d $SAVE_DIR/etc.ironic ]] ; then
     cp -pr $IRONIC_CONF_DIR $SAVE_DIR/etc.ironic
 fi
 
-install_ironicclient
-install_ironic
+stack_install_service ironic
 
 # If we are sideways upgrading and migrating from a base deployed /w
 # VIRT_DRIVER=fake, we need to run Ironic install, config and init
@@ -127,7 +128,7 @@ if is_nova_migration ; then
     init_ironic
 fi
 
-ironic-dbsync --config-file=$IRONIC_CONF_FILE
+$IRONIC_BIN_DIR/ironic-dbsync --config-file=$IRONIC_CONF_FILE
 
 start_ironic
 

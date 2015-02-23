@@ -64,6 +64,12 @@ if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
     cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
 fi
 
+# Build a wheel cache
+source $TARGET_DEVSTACK_DIR/stackrc
+if [[ -n ${WHEELHOUSE:-} && ! -d ${WHEELHOUSE:-} ]]; then
+    WHEELHOUSE=$WHEELHOUSE $TARGET_DEVSTACK_DIR/tools/build_wheels.sh
+fi
+
 
 # Set up Screen
 # =============
