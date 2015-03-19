@@ -35,6 +35,9 @@ if [[ -n ${WHEELHOUSE:-} && ! -d ${WHEELHOUSE:-} ]]; then
     WHEELHOUSE=$WHEELHOUSE $TARGET_DEVSTACK_DIR/tools/build_wheels.sh
 fi
 
+# Find additional Python packages for venvs
+install_database_python
+
 # Set up Screen
 # =============
 
