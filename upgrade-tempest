@@ -65,7 +65,6 @@ source $TARGET_DEVSTACK_DIR/lib/neutron
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/sahara
 source $TARGET_DEVSTACK_DIR/lib/swift
-source $TARGET_DEVSTACK_DIR/lib/trove
 source $TARGET_DEVSTACK_DIR/lib/zaqar
 
 # The following devstack libraries may have dependencies on service-specific

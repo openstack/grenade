@@ -1817,7 +1817,6 @@ function enable_service {
 #   **glance** returns true if any service enabled start with **g-**
 #   **neutron** returns true if any service enabled start with **q-**
 #   **swift** returns true if any service enabled start with **s-**
-#   **trove** returns true if any service enabled start with **tr-**
 #   For backward compatibility if we have **swift** in ENABLED_SERVICES all the
 #   **s-** services will be enabled. This will be deprecated in the future.
 #
@@ -1854,7 +1853,6 @@ function is_service_enabled {
         [[ ${service} == "glance" && ${ENABLED_SERVICES} =~ "g-" ]] && enabled=0
         [[ ${service} == "ironic" && ${ENABLED_SERVICES} =~ "ir-" ]] && enabled=0
         [[ ${service} == "neutron" && ${ENABLED_SERVICES} =~ "q-" ]] && enabled=0
-        [[ ${service} == "trove" && ${ENABLED_SERVICES} =~ "tr-" ]] && enabled=0
         [[ ${service} == "swift" && ${ENABLED_SERVICES} =~ "s-" ]] && enabled=0
         [[ ${service} == s-* && ${ENABLED_SERVICES} =~ "swift" ]] && enabled=0
         [[ ${service} == key-* && ${ENABLED_SERVICES} =~ "key" ]] && enabled=0

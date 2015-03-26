@@ -31,7 +31,6 @@ DEVSTACK_SERVICE_MAP = {
     'keystone': 'key',
     'nova': 'n-',
     'neutron': 'q-',
-    'trove': 'tr-',
     'swift': 's-',
 }
 
