@@ -221,21 +221,22 @@ function run_javelin() {
     local action=$1
     local tempest_dir=$BASE_RELEASE_DIR/tempest
     local javelin_conf=$tempest_dir/etc/javelin.conf
-    local javelin_resources=$GRENADE_DIR/resources.yaml
+    local javelin_resources=$SAVE_DIR/resources.yaml
 
     if [ ! -e $javelin_conf ]; then
         # initialize javelin config
         local tempest_conf=$tempest_dir/etc/tempest.conf
         cp $tempest_conf $javelin_conf
         # Make javelin write logs to javelin.log
-        iniset $javelin_conf DEFAULT log_file $GRENADE_DIR/javelin.log
+        iniset $javelin_conf DEFAULT log_file $LOGDIR/javelin.log
         echo "Logs can be found at javelin.log"
     fi
 
     if [ ! -e $javelin_resources ]; then
+        mkdir -p $SAVE_DIR
         # Generate javelin2 resources configuration
         (source $BASE_DEVSTACK_DIR/functions; source $BASE_DEVSTACK_DIR/stackrc;
-            $GRENADE_DIR/tools/generate_javelin_resources.py -o $GRENADE_DIR/resources.yaml \
+            $GRENADE_DIR/tools/generate_javelin_resources.py -o $javelin_resources \
             $ENABLED_SERVICES)
     fi
 
@@ -243,7 +244,7 @@ function run_javelin() {
 
     cd  $tempest_dir
     (source $BASE_DEVSTACK_DIR/openrc admin admin;
-        tox -evenv -- javelin2 -m $action -r $GRENADE_DIR/resources.yaml -d $BASE_DEVSTACK_DIR -c $javelin_conf)
+        tox -evenv -- javelin2 -m $action -r $javelin_resources -d $BASE_DEVSTACK_DIR -c $javelin_conf)
 }
 
 # Install 'Base' Build of OpenStack
