@@ -3,8 +3,6 @@
 # Find the other rc files
 RC_DIR=$(cd $(dirname "$BASH_SOURCE") && pwd)
 
-source $RC_DIR/functions
-
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com
@@ -63,7 +61,6 @@ if [ -f $RC_DIR/localrc ]; then
     source $RC_DIR/localrc
 fi
 
-
 # Defaults that use values from localrc go here
 
 # Enable tempest
@@ -79,30 +76,6 @@ TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
 # Projects that we should upgrade
 UPGRADE_PROJECTS="keystone ceilometer swift glance neutron nova cinder horizon ironic"
-
-# TODO(sdague): we really need to pull these in from devstack so we aren't
-# always listing them.
-BASE_SERVICES="nova-api nova-conductor keystone glance-api cinder-api"
-BASE_SERVICES+=" swift-object-server swift-proxy-server"
-
-# Partial nova upgrades (upgrade all but nova-compute)
-if should_upgrade "n-cpu"; then
-    # only check for compute in base if we aren't supposed to shut it down
-    BASE_SERVICES+=" nova-compute"
-else
-    TARGET_SERVICES="nova-compute "
-fi
-
-# Partial ironic upgrades (upgrade all but ironic)
-if is_service_enabled "ironic"; then
-    if should_upgrade "ir-"; then
-        BASE_SERVICES+=" ironic-conductor ironic-api"
-    else
-        TARGET_SERVICES=" ironic-conductor ironic-api"
-    fi
-fi
-
-TARGET_SERVICES+=$BASE_SERVICES
 
 # Need this for global requirements
 REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements

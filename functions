@@ -7,8 +7,8 @@
 
 
 # Include the common functions
-FUNC_DIR=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
-source ${FUNC_DIR}/functions-common
+GRENADE_DIR=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
+source ${GRENADE_DIR}/inc/upgrade
 
 # Save trace setting
 XTRACE=$(set +o | grep xtrace)
@@ -42,43 +42,6 @@ function save_data {
     done
 }
 
-# This function triggers the upgrade process for each project if it exists,
-# otherwise it shows up a warning message about the lack of this file.
-function upgrade_project {
-    # NOTE(maurosr): Ideally in a new upgrade test right after a release no new
-    # configuration is need, so we can go on without the from-<release> directory.
-    # This is also useful due to cross dependencie between d-g and grenade when
-    # enabling grenade to run a an upgrade between a new pair of releases.
-
-    project=$1
-    base_dir=$2
-    base_branch=$3
-    target_branch=$4
-
-    if [[ "$base_branch" == "$target_branch" ]]; then
-        direction="within"
-    else
-        direction="from"
-    fi
-
-    upgrade_dir=$(get_release_name_from_branch $base_branch)
-    upgrade_file=${base_dir}/${direction}"-"${upgrade_dir}/"upgrade-"${project}
-    if [[ -e ${upgrade_file} ]]; then
-        source ${upgrade_file} && configure_${project}_upgrade
-    else
-        echo "Warning: No new configurations were found for OpenStack $project."
-        echo "If your patch fails during the upgrade this may be the cause."
-    fi
-}
-
-# Determine whether grenade should be upgrading specified service, according
-# to DO_NOT_UPGRADE_SERVICES
-function should_upgrade {
-    if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "$1" ]]; then
-        return 1
-    fi
-    return 0
-}
 
 # Restore xtrace
 $XTRACE

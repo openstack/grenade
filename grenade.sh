@@ -21,13 +21,9 @@ GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 # Import common functions
 source $GRENADE_DIR/functions
 
-# Determine what system we are running on.  This provides ``os_VENDOR``,
-# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
-# and ``DISTRO``
-GetDistro
-
 # Source params
 source $GRENADE_DIR/grenaderc
+source $GRENADE_DIR/inc/bootstrap
 
 RUN_BASE=$(trueorfalse True $RUN_BASE)
 RUN_TARGET=$(trueorfalse True $RUN_TARGET)
@@ -66,29 +62,6 @@ function stop {
         echo "STOP called for $1"
         exit 1
     fi
-}
-
-function upgrade_service {
-    local local_service=$1
-    # figure out if the service should be upgraded
-    echo "Checking for $local_service is enabled"
-    local enabled=""
-    # TODO(sdague) terrible work around because of missing
-    # devstack functions
-    if [[ $local_service == 'keystone' ]]; then
-        enabled="True"
-    else
-        enabled=$(
-            source $TARGET_DEVSTACK_DIR/functions;
-            source $TARGET_DEVSTACK_DIR/stackrc;
-            is_service_enabled $local_service || echo "False")
-    fi
-    if [[ "$enabled" == "False" ]]; then
-        echo_summary "Not upgrading $local_service"
-        return
-    fi
-    echo_summary "Upgrading $local_service..."
-    $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
 }
 
 # Ensure that we can run this on a fresh system
@@ -203,8 +176,23 @@ set -o errexit
 set -o xtrace
 
 
-# More Setup
-# ==========
+# Devstack Phase 2 initialization
+# ===============================
+#
+# We now have enough infrastructure in grenade.sh to go and get *both*
+# SOURCE and TARGET devstack trees. After which point we 'pivot' onto
+# the TARGET devstack functions file, then source the rest of the
+# grenade settings. This should let us run the bulk of grenade.
+
+# get both devstack trees
+fetch_devstacks
+
+# get functions from Target Devstack
+source $TARGET_DEVSTACK_DIR/functions
+
+# source Phase 2 settings (which are dynamic). Realistically these are
+# all going to migrate into project level settings.
+source $GRENADE_DIR/grenaderc.settings
 
 # Set up for smoke tests (default to True)
 RUN_SMOKE=${RUN_SMOKE:=True}
@@ -251,9 +239,6 @@ function run_javelin() {
 # =================================
 
 if [[ "$RUN_BASE" == "True" ]]; then
-    echo_summary "Running prep-base"
-    $GRENADE_DIR/prep-base
-    stop $STOP prep-base 01
 
     echo_summary "Running base stack.sh"
     cd $BASE_DEVSTACK_DIR

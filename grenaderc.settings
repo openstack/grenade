@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+# These are late grenaderc settings that let us remove sourcing
+# functions from grenaderc
+
+# TODO(sdague): we really need to pull these in from devstack so we aren't
+# always listing them.
+BASE_SERVICES="nova-api nova-conductor keystone glance-api cinder-api"
+BASE_SERVICES+=" swift-object-server swift-proxy-server"
+
+# Partial nova upgrades (upgrade all but nova-compute)
+if should_upgrade "n-cpu"; then
+    # only check for compute in base if we aren't supposed to shut it down
+    BASE_SERVICES+=" nova-compute"
+else
+    TARGET_SERVICES="nova-compute "
+fi
+
+# Partial ironic upgrades (upgrade all but ironic)
+if is_service_enabled "ironic"; then
+    if should_upgrade "ir-"; then
+        BASE_SERVICES+=" ironic-conductor ironic-api"
+    else
+        TARGET_SERVICES=" ironic-conductor ironic-api"
+    fi
+fi
+
+TARGET_SERVICES+=$BASE_SERVICES

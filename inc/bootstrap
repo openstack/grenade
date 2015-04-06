@@ -1,0 +1,255 @@
+#!/bin/bash
+#
+# Copyright 2015 Hewlett-Packard Development Company, L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+# Bootstrapping Library for Grenade
+# =================================
+#
+# We'd like grenade to largely use DEVSTACK_TARGET functions, but in
+# order to do that we need to get to the point where we have a working
+# DEVSTACK_TARGET. This file includes *just* enough functions to get
+# us a working DEVSTACK_TARGET which then lets us pivot our
+# functionality into there. Most of these will have been manually
+# copied from upstream devstack.
+
+# Normalize config values to True or False
+# Accepts as False: 0 no No NO false False FALSE
+# Accepts as True: 1 yes Yes YES true True TRUE
+# VAR=$(trueorfalse default-value test-value)
+function trueorfalse {
+    local xtrace=$(set +o | grep xtrace)
+    set +o xtrace
+    local default=$1
+    local literal=$2
+    local testval=${!literal:-}
+
+    [[ -z "$testval" ]] && { echo "$default"; return; }
+    [[ "0 no No NO false False FALSE" =~ "$testval" ]] && { echo "False"; return; }
+    [[ "1 yes Yes YES true True TRUE" =~ "$testval" ]] && { echo "True"; return; }
+    echo "$default"
+    $xtrace
+}
+
+# git clone only if directory doesn't exist already.  Since ``DEST`` might not
+# be owned by the installation user, we create the directory and change the
+# ownership to the proper user.
+# Set global ``RECLONE=yes`` to simulate a clone when dest-dir exists
+# Set global ``ERROR_ON_CLONE=True`` to abort execution with an error if the git repo
+# does not exist (default is False, meaning the repo will be cloned).
+# Uses globals ``ERROR_ON_CLONE``, ``OFFLINE``, ``RECLONE``
+# git_clone remote dest-dir branch
+function git_clone {
+    local git_remote=$1
+    local git_dest=$2
+    local git_ref=$3
+    local orig_dir=$(pwd)
+    local git_clone_flags=""
+
+    RECLONE=$(trueorfalse False RECLONE)
+    if [[ "${GIT_DEPTH}" -gt 0 ]]; then
+        git_clone_flags="$git_clone_flags --depth $GIT_DEPTH"
+    fi
+
+    if [[ "$OFFLINE" = "True" ]]; then
+        echo "Running in offline mode, clones already exist"
+        # print out the results so we know what change was used in the logs
+        cd $git_dest
+        git show --oneline | head -1
+        cd $orig_dir
+        return
+    fi
+
+    if echo $git_ref | egrep -q "^refs"; then
+        # If our branch name is a gerrit style refs/changes/...
+        if [[ ! -d $git_dest ]]; then
+            [[ "$ERROR_ON_CLONE" = "True" ]] && \
+                die $LINENO "Cloning not allowed in this configuration"
+            git_timed clone $git_clone_flags $git_remote $git_dest
+        fi
+        cd $git_dest
+        git_timed fetch $git_remote $git_ref && git checkout FETCH_HEAD
+    else
+        # do a full clone only if the directory doesn't exist
+        if [[ ! -d $git_dest ]]; then
+            [[ "$ERROR_ON_CLONE" = "True" ]] && \
+                die $LINENO "Cloning not allowed in this configuration"
+            git_timed clone $git_clone_flags $git_remote $git_dest
+            cd $git_dest
+            # This checkout syntax works for both branches and tags
+            git checkout $git_ref
+        elif [[ "$RECLONE" = "True" ]]; then
+            # if it does exist then simulate what clone does if asked to RECLONE
+            cd $git_dest
+            # set the url to pull from and fetch
+            git remote set-url origin $git_remote
+            git_timed fetch origin
+            # remove the existing ignored files (like pyc) as they cause breakage
+            # (due to the py files having older timestamps than our pyc, so python
+            # thinks the pyc files are correct using them)
+            find $git_dest -name '*.pyc' -delete
+
+            # handle git_ref accordingly to type (tag, branch)
+            if [[ -n "`git show-ref refs/tags/$git_ref`" ]]; then
+                git_update_tag $git_ref
+            elif [[ -n "`git show-ref refs/heads/$git_ref`" ]]; then
+                git_update_branch $git_ref
+            elif [[ -n "`git show-ref refs/remotes/origin/$git_ref`" ]]; then
+                git_update_remote_branch $git_ref
+            else
+                die $LINENO "$git_ref is neither branch nor tag"
+            fi
+
+        fi
+    fi
+
+    # print out the results so we know what change was used in the logs
+    cd $git_dest
+    git show --oneline | head -1
+    cd $orig_dir
+}
+
+# git can sometimes get itself infinitely stuck with transient network
+# errors or other issues with the remote end.  This wraps git in a
+# timeout/retry loop and is intended to watch over non-local git
+# processes that might hang.  GIT_TIMEOUT, if set, is passed directly
+# to timeout(1); otherwise the default value of 0 maintains the status
+# quo of waiting forever.
+# usage: git_timed <git-command>
+function git_timed {
+    local count=0
+    local timeout=0
+
+    if [[ -n "${GIT_TIMEOUT}" ]]; then
+        timeout=${GIT_TIMEOUT}
+    fi
+
+    until timeout -s SIGINT ${timeout} git "$@"; do
+        # 124 is timeout(1)'s special return code when it reached the
+        # timeout; otherwise assume fatal failure
+        if [[ $? -ne 124 ]]; then
+            die $LINENO "git call failed: [git $@]"
+        fi
+
+        count=$(($count + 1))
+        warn "timeout ${count} for git call: [git $@]"
+        if [ $count -eq 3 ]; then
+            die $LINENO "Maximum of 3 git retries reached"
+        fi
+        sleep 5
+    done
+}
+
+# git update using reference as a branch.
+# git_update_branch ref
+function git_update_branch {
+    local git_branch=$1
+
+    git checkout -f origin/$git_branch
+    # a local branch might not exist
+    git branch -D $git_branch || true
+    git checkout -b $git_branch
+}
+
+# git update using reference as a branch.
+# git_update_remote_branch ref
+function git_update_remote_branch {
+    local git_branch=$1
+
+    git checkout -b $git_branch -t origin/$git_branch
+}
+
+# git update using reference as a tag. Be careful editing source at that repo
+# as working copy will be in a detached mode
+# git_update_tag ref
+function git_update_tag {
+    local git_tag=$1
+
+    git tag -d $git_tag
+    # fetching given tag only
+    git_timed fetch origin tag $git_tag
+    git checkout -f $git_tag
+}
+
+
+function fetch_devstacks {
+    # Fetch Base Devstack
+
+    # Get DevStack if it doesn't exist
+    if [[ ! -d $BASE_DEVSTACK_DIR ]]; then
+        git_clone $BASE_DEVSTACK_REPO $BASE_DEVSTACK_DIR $BASE_DEVSTACK_BRANCH
+    fi
+
+    # Load up a copy of the downloaded images if not present
+    if [[ -d ${STACK_ROOT}/images ]]; then
+        rsync -a ${STACK_ROOT}/images/* $BASE_DEVSTACK_DIR/files
+    fi
+
+    # Set up base localrc
+
+    # if localrc exists and localrc.orig does not exist, save localrc  to localrc.orig
+    if [[ -r $BASE_DEVSTACK_DIR/localrc && ! -r $BASE_DEVSTACK_DIR/localrc.orig ]]; then
+        mv $BASE_DEVSTACK_DIR/localrc $BASE_DEVSTACK_DIR/localrc.orig
+    fi
+
+
+    # put devstack.localrc.target in place as localrc
+    sed -e "
+        s|\@BASE_RELEASE_DIR\@|$BASE_RELEASE_DIR|
+        s|\@DATA_DIR@|$DATA_DIR|
+" $GRENADE_DIR/devstack.localrc.base >$BASE_DEVSTACK_DIR/localrc
+
+    # if localrc.orig exists, append it to localrc
+    if [[ -r $BASE_DEVSTACK_DIR/localrc.orig ]]; then
+        echo "#vvvvvvvvvv devstack-vm-gate.sh localrc vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/localrc
+        cat $BASE_DEVSTACK_DIR/localrc.orig >>$BASE_DEVSTACK_DIR/localrc
+    fi
+
+    # if devstack.localrc exists append it to locarc
+    if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
+        echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$BASE_DEVSTACK_DIR/localrc
+    fi
+
+    # Fetch Target Devstack
+    # Get DevStack if it doesn't exist
+    if [[ ! -d $TARGET_DEVSTACK_DIR ]]; then
+        git_clone $TARGET_DEVSTACK_REPO $TARGET_DEVSTACK_DIR $TARGET_DEVSTACK_BRANCH
+    fi
+
+    # Set up target localrc
+
+    # if localrc exists and localrc.orig does not exist, save localrc  to localrc.orig
+    if [[ -r $TARGET_DEVSTACK_DIR/localrc && ! -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
+        mv $TARGET_DEVSTACK_DIR/localrc $TARGET_DEVSTACK_DIR/localrc.orig
+    fi
+
+    # put devstack.localrc.target in place as localrc
+    sed -e "
+        s|\@TARGET_RELEASE_DIR\@|$TARGET_RELEASE_DIR|
+        s|\@DATA_DIR@|$DATA_DIR|
+" $GRENADE_DIR/devstack.localrc.target >$TARGET_DEVSTACK_DIR/localrc
+
+    # if localrc.orig exists, append it to localrc
+    if [[ -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
+        echo "#vvvvvvvvvv devstack-vm-gate.sh localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/localrc
+        cat $TARGET_DEVSTACK_DIR/localrc.orig >>$TARGET_DEVSTACK_DIR/localrc
+    fi
+
+    # if devstack.localrc exists append it to locarc
+    if [[ -r $GRENADE_DIR/devstack.localrc ]]; then
+        echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/localrc
+        cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/localrc
+    fi
+}
