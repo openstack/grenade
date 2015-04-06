@@ -77,6 +77,9 @@ RUN_SMOKE=${RUN_SMOKE:=True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
+# Projects that we should upgrade
+UPGRADE_PROJECTS="keystone ceilometer swift glance neutron nova cinder horizon ironic"
+
 # TODO(sdague): we really need to pull these in from devstack so we aren't
 # always listing them.
 BASE_SERVICES="nova-api nova-conductor keystone glance-api cinder-api"

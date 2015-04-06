@@ -332,45 +332,10 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     $GRENADE_DIR/start-dstat
     stop $STOP start-dstat 238
 
-    # Upgrade Keystone
-    upgrade_service keystone
-    stop $STOP upgrade-keystone 240
-
-    # Upgrade Ceilometer
-    #
-    # Bug: 1403024 - Ceilometer *must* be upgraded before any
-    # components that it has injected itself into.
-    upgrade_service ceilometer
-    stop $STOP upgrade-ceilometer 244
-
-    # Upgrade Swift
-    upgrade_service swift
-    stop $STOP upgrade-swift 245
-
-    # Upgrade Glance
-    upgrade_service glance
-    stop $STOP upgrade-glance 250
-
-    # Upgrade Neutron
-    upgrade_service neutron
-    stop $STOP upgrade-neutron 255
-
-    # Upgrade Nova
-    upgrade_service nova
-    stop $STOP upgrade-nova 260
-
-    # Upgrade Cinder
-    upgrade_service cinder
-    stop $STOP upgrade-cinder 270
-
-
-    # Upgrade Horizon
-    upgrade_service horizon
-    stop $STOP upgrade-horizon 285
-
-    # Upgrade Ironic
-    upgrade_service ironic
-    stop $STOP upgrade-ironic 285
+    # upgrade all the projects in order
+    for project in $UPGRADE_PROJECTS; do
+        upgrade_service $project
+    done
 
     # Upgrade Tempest
     if [[ "$ENABLE_TEMPEST" == "True" ]]; then
