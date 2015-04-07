@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``upgrade-glance``
+# ``upgrade-keystone``
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -46,8 +46,8 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Glance
-# ==============
+# Upgrade Keystone
+# ================
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
@@ -61,37 +61,35 @@ source $TARGET_DEVSTACK_DIR/lib/stack
 
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
-SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
 source $TARGET_DEVSTACK_DIR/lib/database
-source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
+
+# Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
-SYSLOG=`trueorfalse False $SYSLOG`
-
-# Get functions from current DevStack
-source $TARGET_DEVSTACK_DIR/lib/glance
+# Temporary setting until venv change is in DevStack
+if [[ -z $KEYSTONE_BIN_DIR ]]; then
+    KEYSTONE_BIN_DIR=$(dirname $(which keystone-manage))
+fi
 
 # Save current config files for posterity
-[[ -d $SAVE_DIR/etc.glance ]] || cp -pr $GLANCE_CONF_DIR $SAVE_DIR/etc.glance
+[[ -d $SAVE_DIR/etc.keystone ]] || cp -pr $KEYSTONE_CONF_DIR $SAVE_DIR/etc.keystone
 
-# install_glance()
-stack_install_service glance
+# install_keystone()
+stack_install_service keystone
 
-# calls upgrade-glance for specific release
-upgrade_project glance $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+# calls upgrade-keystone for specific release
+upgrade_project keystone $RUN_DIR $BASE_DEVSTACK_BRANCH
 
-# Simulate init_glance()
-create_glance_cache_dir
-
+# Simulate init_keystone()
 # Migrate the database
-$GLANCE_BIN_DIR/glance-manage db_sync || die $LINENO "DB sync error"
+$KEYSTONE_BIN_DIR/keystone-manage db_sync || die $LINENO "DB sync error"
 
-
-# Start Glance
-start_glance
+# Start Keystone
+start_keystone
 
 set +o xtrace
 echo "*********************************************************************"

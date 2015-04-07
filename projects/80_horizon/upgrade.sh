@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``upgrade-ceilometer``
+# ``upgrade-horizon``
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -46,28 +46,32 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Ceilometer
-# ==================
+# Upgrade Horizon
+# ================
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/stack
+source $TARGET_DEVSTACK_DIR/lib/horizon
+source $TARGET_DEVSTACK_DIR/lib/apache
 
-source $TARGET_DEVSTACK_DIR/lib/oslo
-source $TARGET_DEVSTACK_DIR/lib/ceilometer
 
-# install_ceilometer()
-stack_install_service ceilometer
+# stop horizon apache server
+stop_horizon
+# Kill horizon screen session if there one
+screen_stop horizon
 
-# calls upgrade-ceilometer for specific release
-upgrade_project ceilometer $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+# Save current config files for posterity
+#TODO
 
-# Migrate the database
-$CEILOMETER_BIN_DIR/ceilometer-dbsync || die $LINENO "DB sync error"
+# install_horizon()
+install_horizon
 
-# Start Ceilometer
-start_ceilometer
+# calls upgrade-horizon for specific release
+upgrade_project horizon $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+
+# Start Horizon
+start_horizon
 
 set +o xtrace
 echo "*********************************************************************"

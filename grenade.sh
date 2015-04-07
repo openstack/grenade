@@ -16,10 +16,7 @@
 # This is useful for debugging upgrades.
 
 # Keep track of the Grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
-
-# Import common functions
-source $GRENADE_DIR/functions
+export GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Source params
 source $GRENADE_DIR/grenaderc
@@ -188,7 +185,7 @@ set -o xtrace
 fetch_devstacks
 
 # get functions from Target Devstack
-source $TARGET_DEVSTACK_DIR/functions
+source $GRENADE_DIR/functions
 
 # source Phase 2 settings (which are dynamic). Realistically these are
 # all going to migrate into project level settings.
@@ -237,6 +234,8 @@ function run_javelin() {
 
 # Install 'Base' Build of OpenStack
 # =================================
+
+load_settings
 
 if [[ "$RUN_BASE" == "True" ]]; then
 

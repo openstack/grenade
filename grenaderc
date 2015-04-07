@@ -74,8 +74,11 @@ RUN_SMOKE=${RUN_SMOKE:=True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
+# declare the storage location for project specific things
+declare -A PLUGIN_DIR
+
 # Projects that we should upgrade
-UPGRADE_PROJECTS="keystone ceilometer swift glance neutron nova cinder horizon ironic"
+UPGRADE_PROJECTS=""
 
 # Need this for global requirements
 REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements

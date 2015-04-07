@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# ``upgrade-horizon``
+# ``upgrade-cinder``
+
+# ``upgrade-nova`` must be complete for this to work!!!
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -21,7 +23,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -46,32 +48,49 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Horizon
-# ================
+# Upgrade Cinder
+# ==============
 
-# Get functions from current DevStack
+MYSQL_HOST=${MYSQL_HOST:-localhost}
+MYSQL_USER=${MYSQL_USER:-root}
+BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
+
+# Duplicate some setup bits from target DevStack
+cd $TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/horizon
+source $TARGET_DEVSTACK_DIR/lib/stack
+
+SERVICE_HOST=${SERVICE_HOST:-localhost}
+SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
+source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/oslo
+source $TARGET_DEVSTACK_DIR/lib/keystone
 
-
-# stop horizon apache server
-stop_horizon
-# Kill horizon screen session if there one
-screen_stop horizon
+# Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/cinder
 
 # Save current config files for posterity
-#TODO
+[[ -d $SAVE_DIR/etc.cinder ]] || cp -pr $CINDER_CONF_DIR $SAVE_DIR/etc.cinder
 
-# install_horizon()
-install_horizon
+# install_cinder()
+stack_install_service cinder
 
-# calls upgrade-horizon for specific release
-upgrade_project horizon $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+# calls upgrade-cinder for specific release
+upgrade_project cinder $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
-# Start Horizon
-start_horizon
+# Simulate init_cinder()
+create_cinder_volume_group
+create_cinder_cache_dir
+
+# Migrate the database
+$CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
+
+start_cinder
 
 set +o xtrace
 echo "*********************************************************************"

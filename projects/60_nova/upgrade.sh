@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-# ``upgrade-cinder``
-
-# ``upgrade-nova`` must be complete for this to work!!!
+# ``upgrade-nova``
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -23,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -48,8 +46,8 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Cinder
-# ==============
+# Upgrade Nova
+# ============
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
@@ -61,36 +59,62 @@ source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/stack
 
-SERVICE_HOST=${SERVICE_HOST:-localhost}
-SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
+# From stack.sh
+FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
+FIXED_RANGE=${FIXED_RANGE:-10.0.0.0/24}
+HOST_IP=$(get_default_host_ip $FIXED_RANGE $FLOATING_RANGE "$HOST_IP_IFACE" "$HOST_IP")
+if [ "$HOST_IP" == "" ]; then
+    die $LINENO "Could not determine host ip address. Either localrc specified dhcp on ${HOST_IP_IFACE} or defaulted"
+fi
+SERVICE_HOST=${SERVICE_HOST:-$HOST_IP}
+
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+S3_SERVICE_PORT=${S3_SERVICE_PORT:-8080}
+
+# Just do this rather than bring in all of glance
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+
+SYSLOG=`trueorfalse False $SYSLOG`
+
+# Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
+source $TARGET_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
 
-# Get functions from current DevStack
-source $TARGET_DEVSTACK_DIR/lib/cinder
+NOVNC_DIR=$DEST/noVNC
 
 # Save current config files for posterity
-[[ -d $SAVE_DIR/etc.cinder ]] || cp -pr $CINDER_CONF_DIR $SAVE_DIR/etc.cinder
+[[ -d $SAVE_DIR/etc.nova ]] || cp -pr $NOVA_CONF_DIR $SAVE_DIR/etc.nova
 
-# install_cinder()
-stack_install_service cinder
+# install_nova()
+stack_install_service nova
 
-# calls upgrade-cinder for specific release
-upgrade_project cinder $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+# calls upgrade-nova for specific release
+upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
-# Simulate init_cinder()
-create_cinder_volume_group
-create_cinder_cache_dir
+# Simulate init_nova()
+create_nova_cache_dir
+create_nova_keys_dir
 
 # Migrate the database
-$CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
+$NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
-start_cinder
+# rolling nova-compute support
+if ! should_upgrade "n-cpu"; then
+    iniset $NOVA_CONF upgrade_levels compute $(basename $BASE_DEVSTACK_BRANCH)
+fi
+
+# Start Nova
+start_nova_api
+if should_upgrade "n-cpu"; then
+    start_nova_compute
+fi
+start_nova_rest
 
 set +o xtrace
 echo "*********************************************************************"

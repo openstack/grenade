@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -133,7 +133,7 @@ $IRONIC_BIN_DIR/ironic-dbsync --config-file=$IRONIC_CONF_FILE
 start_ironic
 
 # calls upgrade-ironic for specific release
-upgrade_project ironic $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+upgrade_project ironic $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 set +o xtrace
 echo "*********************************************************************"

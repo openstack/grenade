@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ``upgrade-swift``
+# ``upgrade-glance``
 
 echo "*********************************************************************"
 echo "Begin $0"
@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -46,8 +46,8 @@ set -o xtrace
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
-# Upgrade Swift
-# =============
+# Upgrade Glance
+# ==============
 
 MYSQL_HOST=${MYSQL_HOST:-localhost}
 MYSQL_USER=${MYSQL_USER:-root}
@@ -59,49 +59,39 @@ source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/stack
 
-FILES=$TARGET_DEVSTACK_DIR/files
 SERVICE_HOST=${SERVICE_HOST:-localhost}
 SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
-SERVICE_TOKEN=${SERVICE_TOKEN:-aa-token-bb}
+source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/keystone
 
-source $TARGET_DEVSTACK_DIR/lib/swift
+SYSLOG=`trueorfalse False $SYSLOG`
+
+# Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/lib/glance
 
 # Save current config files for posterity
-[[ -d $SAVE_DIR/etc.swift ]] || cp -pr $SWIFT_CONF_DIR $SAVE_DIR/etc.swift
-cp -pr /etc/rsyncd.conf $SAVE_DIR
+[[ -d $SAVE_DIR/etc.glance ]] || cp -pr $GLANCE_CONF_DIR $SAVE_DIR/etc.glance
 
-# install_swift()
-stack_install_service swift
+# install_glance()
+stack_install_service glance
 
-# calls upgrade-swift for specific release
-upgrade_project swift $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+# calls upgrade-glance for specific release
+upgrade_project glance $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
-# Simulate swift_init()
+# Simulate init_glance()
+create_glance_cache_dir
 
-# Create cache dir
-USER_GROUP=$(id -g)
-sudo mkdir -p ${SWIFT_DATA_DIR}/{drives,cache,run,logs}
-sudo chown -R $USER:${USER_GROUP} ${SWIFT_DATA_DIR}
-
-# Create auth cache dir
-sudo mkdir -p $SWIFT_AUTH_CACHE_DIR
-sudo chown $STACK_USER $SWIFT_AUTH_CACHE_DIR
-rm -f $SWIFT_AUTH_CACHE_DIR/*
-
-# Mount backing disk
-if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
-    sudo mount -t xfs -o loop,noatime,nodiratime,nobarrier,logbufs=8  \
-        ${SWIFT_DATA_DIR}/drives/images/swift.img ${SWIFT_DATA_DIR}/drives/sdb1
-fi
+# Migrate the database
+$GLANCE_BIN_DIR/glance-manage db_sync || die $LINENO "DB sync error"
 
 
-# Start Swift
-start_swift
+# Start Glance
+start_glance
 
 set +o xtrace
 echo "*********************************************************************"

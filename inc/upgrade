@@ -34,8 +34,15 @@ function upgrade_service {
         echo_summary "Not upgrading $local_service"
         return
     fi
-    echo_summary "Upgrading $local_service..."
-    $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
+
+    local plugin_dir=${PLUGIN_DIR[$local_service]}
+    if [[ -n "$plugin_dir" ]]; then
+        echo_summary "Upgrading $local_service..."
+        $plugin_dir/upgrade.sh || die $LINENO "Failure in $plugin_dir/upgrade.sh"
+    else
+        echo_summary "Upgrading $local_service... (legacy mode)"
+        $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
+    fi
 }
 
 
@@ -75,4 +82,16 @@ function should_upgrade {
         return 1
     fi
     return 0
+}
+
+# Registration interfaces for external plugins
+function register_project_for_upgrade {
+    local project=$1
+    # use caller so that we know the file this function was called
+    # from, and we'll derive the location of the plugin directory from
+    # that.
+    local settings_file=$(caller | awk '{print $2}')
+    local dir=$(dirname $settings_file)
+    UPGRADE_PROJECTS+=" $project"
+    PLUGIN_DIR[$project]=$dir
 }

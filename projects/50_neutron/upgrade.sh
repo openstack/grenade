@@ -21,7 +21,7 @@ cleanup() {
 trap cleanup SIGHUP SIGINT SIGTERM
 
 # Keep track of the grenade directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+RUN_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -109,7 +109,7 @@ install_neutron_third_party
 Q_L3_CONF_FILE=${Q_L3_CONF_FILE:-"$NEUTRON_CONF_DIR/l3_agent.ini"}
 Q_FWAAS_CONF_FILE=${Q_FWAAS_CONF_FILE:-"$NEUTRON_CONF_DIR/fwaas_driver.ini"}
 
-upgrade_project neutron $GRENADE_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
+upgrade_project neutron $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Get plugin config paths
 neutron_plugin_configure_common
