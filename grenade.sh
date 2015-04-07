@@ -25,9 +25,9 @@ source $GRENADE_DIR/functions
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
 
-RUN_BASE=$(trueorfalse True $RUN_BASE)
-RUN_TARGET=$(trueorfalse True $RUN_TARGET)
-VERBOSE=$(trueorfalse True $VERBOSE)
+RUN_BASE=$(trueorfalse True RUN_BASE)
+RUN_TARGET=$(trueorfalse True RUN_TARGET)
+VERBOSE=$(trueorfalse True VERBOSE)
 
 while getopts bqs:t c; do
     case $c in
@@ -200,10 +200,10 @@ BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
 # Set up for Javelin (default to True)
-RUN_JAVELIN=$(trueorfalse True $RUN_JAVELIN)
+RUN_JAVELIN=$(trueorfalse True RUN_JAVELIN)
 
 function run_javelin() {
-    if [ "$RUN_JAVELIN" != "True" ]; then
+    if [[ "$RUN_JAVELIN" != "True" ]]; then
         return
     fi
     local action=$1
