@@ -1,1 +1,4 @@
 register_project_for_upgrade ceilometer
+if grep -q 'connection *= *mysql' /etc/ceilometer/ceilometer.conf; then
+   register_db_to_save ceilometer
+fi

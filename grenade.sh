@@ -218,6 +218,7 @@ function run_javelin() {
 # Install 'Base' Build of OpenStack
 # =================================
 
+ENABLED_SERVICES=$(source $BASE_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
 load_settings
 
 if [[ "$RUN_BASE" == "True" ]]; then

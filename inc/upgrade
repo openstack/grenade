@@ -14,6 +14,25 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+DATABASES_TO_SAVE=""
+
+# save_data
+function save_mysql_dbs {
+    local release=$1
+    local dir=$2
+    # pull the mysql pass from the old config
+    local mysql_pass=$(source $dir/stackrc && echo $MYSQL_PASSWORD)
+    for db in $DATABASES_TO_SAVE; do
+        mysqldump -uroot -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
+    done
+}
+
+# register a database we should save
+function register_db_to_save {
+    for db in $@; do
+        DATABASES_TO_SAVE+=" $db"
+    done
+}
 
 function upgrade_service {
     local local_service=$1

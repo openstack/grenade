@@ -1,1 +1,4 @@
-register_project_for_upgrade ironic
+if is_ironic_enabled; then
+   register_project_for_upgrade ironic
+   register_db_to_save ironic
+fi
