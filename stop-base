@@ -5,20 +5,19 @@
 # restarted under the target DevStack.  This leaves /opt/stack/<base>/data
 # in a state where it can be copied to the target directory.
 
-
 # Keep track of the devstack directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+# GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
+source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/functions
+source $GRENADE_DIR/grenaderc.settings
 
 # Determine what system we are running on.  This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
 # and ``DISTRO``
 GetDistro
 
-# Source params
-source $GRENADE_DIR/grenaderc
 
 # Set for DevStack compatibility
 TOP_DIR=$TARGET_DEVSTACK_DIR

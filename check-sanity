@@ -9,8 +9,13 @@ echo "*********************************************************************"
 echo "Begin $0"
 echo "*********************************************************************"
 
+set -o errexit
+
 # Keep track of the devstack directory
-GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+# GRENADE_DIR=$(cd $(dirname "$0") && pwd)
+
+# Source params
+source $GRENADE_DIR/grenaderc
 
 # Import common functions
 source $GRENADE_DIR/functions
@@ -19,9 +24,6 @@ source $GRENADE_DIR/functions
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
 # and ``DISTRO``
 GetDistro
-
-# Source params
-source $GRENADE_DIR/grenaderc
 
 # We need the OS_ credentials
 source $TARGET_DEVSTACK_DIR/openrc

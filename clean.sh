@@ -11,6 +11,8 @@
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Import common functions
+source $GRENADE_DIR/grenaderc
+
 source $GRENADE_DIR/functions
 
 # Determine what system we are running on.  This provides ``os_VENDOR``,
@@ -18,8 +20,6 @@ source $GRENADE_DIR/functions
 # and ``DISTRO``
 GetDistro
 
-# Source params
-source $GRENADE_DIR/grenaderc
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
@@ -31,6 +31,7 @@ if [[ -d $BASE_DEVSTACK_DIR ]]; then
         cd $BASE_DEVSTACK_DIR; \
         source functions; \
         source stackrc; \
+        source lib/tls; \
         source lib/cinder; \
         DATA_DIR=\${STACK_ROOT}/data; \
         ./unstack.sh --all; \
@@ -48,6 +49,7 @@ if [[ -d $TARGET_DEVSTACK_DIR ]]; then
         cd $TARGET_DEVSTACK_DIR; \
         source functions; \
         source stackrc; \
+        source lib/tls; \
         source lib/cinder; \
         DATA_DIR=\${STACK_ROOT}/data; \
         ./unstack.sh --all; \
