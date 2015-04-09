@@ -22,4 +22,28 @@ function load_settings {
             source $settings
         fi
     done
+    export UPGRADE_PROJECTS
+}
+
+function shutdown_services {
+    echo "Upgrade projects: $UPGRADE_PROJECTS"
+    # iterate in reverse under the theory that we should take down
+    # services in opposite order
+    local reverse_projects=""
+    local project=""
+    for project in $UPGRADE_PROJECTS; do
+        reverse_projects="$project $reverse_projects"
+    done
+
+    for project in $reverse_projects; do
+        echo "Looking for $project"
+        local dir=${PLUGIN_DIR[$project]}
+        if [[ -z "$dir" ]]; then
+            die $LINENO "Couldn't find project '$project' in plugin list"
+        fi
+        local shutdown=$dir/shutdown.sh
+        if [[ -e $shutdown ]]; then
+            TOP_DIR=$BASE_DEVSTACK_DIR $shutdown || die "Failed to shutdown $project"
+        fi
+    done
 }

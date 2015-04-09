@@ -169,6 +169,7 @@ fetch_devstacks
 
 # get functions from Target Devstack
 source $GRENADE_DIR/functions
+export TOP_DIR=$TARGET_DEVSTACK_DIR
 
 # source Phase 2 settings (which are dynamic). Realistically these are
 # all going to migrate into project level settings.
@@ -263,11 +264,8 @@ if [[ "$RUN_BASE" == "True" ]]; then
     stop $STOP save-state 130
 
     # Shut down running code
-    echo_summary "Shutting down base"
-    # unstack.sh is too aggressive in cleaning up by default
-    # so we'll do it ourselves...
-    $GRENADE_DIR/stop-base
-    stop $STOP stop-base 140
+    echo_summary "Shutting down all services on base devstack..."
+    shutdown_services
 fi
 
 
@@ -301,7 +299,9 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     stop $STOP start-dstat 238
 
     # upgrade all the projects in order
+    echo "Upgrade projects: $UPGRADE_PROJECTS"
     for project in $UPGRADE_PROJECTS; do
+        echo "Upgrading project: $project"
         upgrade_service $project
     done
 

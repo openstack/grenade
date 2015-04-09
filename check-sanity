@@ -20,6 +20,9 @@ source $GRENADE_DIR/grenaderc
 # Import common functions
 source $GRENADE_DIR/functions
 
+# needed for enabled services
+source $GRENADE_DIR/grenaderc.settings
+
 # Determine what system we are running on.  This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
 # and ``DISTRO``
