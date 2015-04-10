@@ -146,23 +146,6 @@ if [[ -n "$SCREEN_LOGDIR" ]]; then
     fi
 fi
 
-# Setup Exit Traps for debug purposes
-trap exit_trap EXIT
-function exit_trap {
-    # really important that this is the *first* line in this
-    # function, otherwise we corrupt the exit code
-    local r=$?
-    # we don't need tracing during this
-    set +o xtrace
-    if [[ $r -ne 0 ]]; then
-        echo "Exit code: $r"
-        if [[ -x $TARGET_DEVSTACK_DIR/tools/worlddump.py ]]; then
-            $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
-            sleep 1
-        fi
-    fi
-    exit $r
-}
 
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
