@@ -70,7 +70,7 @@ sudo rm -rf /etc/keystone /etc/glance /etc/nova /etc/cinder /etc/swift /etc/neut
 sudo rm /etc/tgt/conf.d/*
 
 # Get ruthless with #$%%&^^#$%#@$%ing rabbit
-sudo killall epmd
+ps auxw | grep ^rabbitmq | awk '{print $2}' | sudo xargs kill
 sudo service rabbitmq-server stop
 sudo apt-get purge -y rabbitmq-server .*erlang
 
