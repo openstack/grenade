@@ -142,6 +142,10 @@ start_neutron_third_party
 start_neutron_service_and_check
 start_neutron_agents
 
+# Don't succeed unless the services come up
+# TODO: service names ensure_services_started
+ensure_logs_exist q-svc
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

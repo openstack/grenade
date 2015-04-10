@@ -135,6 +135,10 @@ start_ironic
 # calls upgrade-ironic for specific release
 upgrade_project ironic $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
+# Don't succeed unless the services come up
+ensure_services_started ironic-api ironic-conductor
+ensure_logs_exist ir-cond ir-api
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

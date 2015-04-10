@@ -155,3 +155,44 @@ function ensure_services_stopped {
         die $LINENO "The following services are still running: $still_running"
     fi
 }
+
+# Functions to handle service checking
+function ensure_services_started {
+    local wait_for=10
+    while [ $wait_for -gt 0 ]; do
+        not_running=""
+        local service=""
+        for service in $@; do
+            if ! is_service_running ${service}; then
+                not_running+=" $service"
+            fi
+        done
+
+        if [[ -n "$not_running" ]]; then
+            echo "The following services are not running: $not_running... sleeping and trying again"
+            sleep 1
+        else
+            break
+        fi
+        wait_for=$[$wait_for - 1]
+    done
+
+    if [[ -n "$not_running" ]]; then
+        die $LINENO "The following services did not appear to start: $not_running"
+    fi
+}
+
+function ensure_logs_exist {
+    local logname=""
+    local not_found=""
+    for logname in $@; do
+        local log=${SCREEN_LOGDIR}/screen-$logname.log
+        if [[ ! -e $log ]]; then
+            not_found+=" $log"
+        fi
+    done
+
+    if [[ -n "$not_found" ]]; then
+        die $LINENO "The following service logs were not found: $not_found"
+    fi
+}

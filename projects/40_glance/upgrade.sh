@@ -93,6 +93,10 @@ $GLANCE_BIN_DIR/glance-manage db_sync || die $LINENO "DB sync error"
 # Start Glance
 start_glance
 
+# Don't succeed unless the services come up
+ensure_services_started glance-api
+ensure_logs_exist g-api g-reg
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

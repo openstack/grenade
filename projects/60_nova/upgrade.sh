@@ -116,6 +116,15 @@ if should_upgrade "n-cpu"; then
 fi
 start_nova_rest
 
+# Don't succeed unless the services come up
+ensure_services_started nova-api nova-conductor
+ensure_logs_exist n-api n-cond
+
+if should_upgrade "n-cpu"; then
+    ensure_services_started nova-compute
+    ensure_logs_exist n-cpu
+fi
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

@@ -91,6 +91,10 @@ $KEYSTONE_BIN_DIR/keystone-manage db_sync || die $LINENO "DB sync error"
 # Start Keystone
 start_keystone
 
+# ensure the service has started
+ensure_services_started keystone
+ensure_logs_exist key
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

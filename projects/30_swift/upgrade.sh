@@ -99,6 +99,11 @@ fi
 # Start Swift
 start_swift
 
+# Don't succeed unless the services come up
+ensure_services_started swift-object-server swift-proxy-server
+ensure_logs_exist s-proxy
+
+
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

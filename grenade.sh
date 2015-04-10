@@ -312,11 +312,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
         stop $STOP upgrade-tempest 290
     fi
 
-    # Upgrade Checks
-    echo_summary "Running upgrade sanity check"
-    $GRENADE_DIR/check-sanity || die $LINENO "Failure in check-sanity"
-    stop $STOP check-sanity 310
-
     # Upgrade Tests
     # =============
 
