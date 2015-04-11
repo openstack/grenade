@@ -7,6 +7,9 @@
 # Keep track of the devstack directory
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
+# Source params
+source $GRENADE_DIR/grenaderc
+
 # Import common functions
 source $GRENADE_DIR/functions
 
@@ -15,12 +18,8 @@ source $GRENADE_DIR/functions
 # and ``DISTRO``
 GetDistro
 
-# Source params
-source $GRENADE_DIR/grenaderc
-
 # For debugging
 set -o xtrace
-
 
 # System Preparation
 # ==================
@@ -43,11 +42,16 @@ fi
 source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 
-# Set a reasonable statusbar
+# Set a reasonable screen statusbar
 SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
 screen -r $SCREEN_NAME -X hardstatus alwayslastline "$SCREEN_HARDSTATUS"
 
-# Prep the service check bits
+# Set up needed directories
+# =========================
+#
+# This ensures that we have a clean service status directory so that
+# we know for sure if services are coming up / down when we expect
+# them.
 init_service_check
 
 
@@ -79,3 +83,32 @@ fi
 if [[ -n "$SCREEN_LOGDIR" ]]; then
     mkdir -p $SCREEN_LOGDIR
 fi
+
+
+# Retain credentials
+# ==================
+
+# Preserve accrc files for future usage
+cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc
+
+
+# Set up requirements
+# ===================
+
+# Pull down the new global requirements repository
+#
+# FIXME: this also pulls in new pbr which is not really needed, we
+# should separate that in the future.
+source $TARGET_DEVSTACK_DIR/lib/infra
+
+install_infra
+
+# Start helper services
+# =====================
+
+# Start dstat if it's in the ENABLED_SERVICES list. We really want
+# this running before any services start to see what's going on when
+# they start up, especialy if there are failures.
+source $TARGET_DEVSTACK_DIR/lib/dstat
+
+start_dstat

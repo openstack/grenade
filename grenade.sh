@@ -273,30 +273,11 @@ fi
 # ========
 
 if [[ "$RUN_TARGET" == "True" ]]; then
-    # Get target bits ready
-    echo_summary "Running prep-target"
+    # Get target devstack tree ready for services to be run from it,
+    # including trying to reuse any existing files we pulled during
+    # the base run.
+    echo_summary "Preparing the target devstack environment"
     $GRENADE_DIR/prep-target
-    stop $STOP prep-target 210
-
-    # Upgrade DevStack
-    echo_summary "Running upgrade-devstack"
-    #$GRENADE_DIR/upgrade-devstack
-    stop $STOP upgrade-devstack 230
-
-    # Upgrade Infra
-    echo_summary "Running upgrade-infra"
-    $GRENADE_DIR/upgrade-infra || die $LINENO "Failure in upgrade-infra"
-    stop $STOP upgrade-infra 232
-
-    # Upgrade Oslo
-    echo_summary "Running upgrade-oslo"
-    $GRENADE_DIR/upgrade-oslo || die $LINENO "Failure in upgrade-oslo"
-    stop $STOP upgrade-oslo 235
-
-    # Start dstat
-    echo_summary "Running start-dstat"
-    $GRENADE_DIR/start-dstat
-    stop $STOP start-dstat 238
 
     # upgrade all the projects in order
     echo "Upgrade projects: $UPGRADE_PROJECTS"
