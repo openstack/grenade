@@ -15,16 +15,28 @@
 # ``-s stop-label`` is the name of the step after which the script will stop.
 # This is useful for debugging upgrades.
 
-# Keep track of the Grenade directory
+
+
+# ``GRENADE_DIR`` is set once by the top level grenade.sh and exported
+# so that all subsequent scripts can find their way back to the
+# grenade root directory. No other scripts should set this variable
 export GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
-# Source params
+# Source the bootstrapping facilities
+#
+# Grenade attempts to reuse as much content from devstack on the
+# target side as possible, but we need enough of our own code to get
+# there.
+#
+# ``grenaderc`` is a set of X=Y declarations that don't need *any* of
+# the devstack functions to work
+#
+# ``inc/bootstrap`` is the most minimal amount of functions that
+# grenade needs to get going. This includes things like echo
+# functions, trueorfalse, and the functions related to git cloning, so
+# that we can get our devstack trees.
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
-
-RUN_BASE=$(trueorfalse True RUN_BASE)
-RUN_TARGET=$(trueorfalse True RUN_TARGET)
-VERBOSE=$(trueorfalse True VERBOSE)
 
 while getopts bqs:t c; do
     case $c in
@@ -44,31 +56,20 @@ while getopts bqs:t c; do
 done
 shift `expr $OPTIND - 1`
 
-function echo_summary {
-    echo $@ >&6
-}
 
-function echo_nolog {
-    echo $@ >&3
-}
-
-function stop {
-    stop=$1
-    shift
-    if [[ "$@" =~ "$stop" ]]; then
-        echo "STOP called for $1"
-        exit 1
-    fi
-}
-
-# Ensure that we can run this on a fresh system
-sudo mkdir -p $(dirname $BASE_DEVSTACK_DIR)
-sudo mkdir -p $(dirname $TARGET_DEVSTACK_DIR)
-sudo chown -R `whoami` $(dirname $(dirname $BASE_DEVSTACK_DIR))
+# Create all the base directory structures needed for the rest of the
+# environment to run.
+#
+# This will give you an STACK_ROOT tree that you expect, and that your
+# normal user owns for follow on activities.
+sudo mkdir -p $BASE_RELEASE_DIR $TARGET_RELEASE_DIR
+sudo chown -R `whoami` $STACK_ROOT
 
 # Logging
 # =======
 
+# TODO(sdague): should this extract into ``inc/bootstrap``?
+#
 # Set up logging
 # Set ``LOGFILE`` to turn on logging
 # Append '.xxxxxxxx' to the given name to maintain history
@@ -164,64 +165,43 @@ set -o xtrace
 # the TARGET devstack functions file, then source the rest of the
 # grenade settings. This should let us run the bulk of grenade.
 
-# get both devstack trees
+# Get both devstack trees, so that BASE_DEVSTACK_DIR, and
+# TARGET_DEVSTACK_DIR are now fully populated.
 fetch_devstacks
 
-# get functions from Target Devstack
+# Source the rest of the Grenade functions. For convenience
+# ``$GRENADE_DIR/functions`` implicitly sources
+# ``$TARGET_DEVSTACK_DIR/functions``. So this line can't happen until
+# we have the devstacks pulled down.
 source $GRENADE_DIR/functions
+
+# Many calls inside of devstack functions reference $TOP_DIR, which is
+# the root of devstack. We export $TOP_DIR to all child processes here
+# to be the TARGET_DEVSTACK_DIR.
+#
+# If you want a script to use functions off of BASE_DEVSTACK_DIR (like
+# the shutdown phase) you *must* explicitly reset TOP_DIR in those
+# scripts.
 export TOP_DIR=$TARGET_DEVSTACK_DIR
 
-# source Phase 2 settings (which are dynamic). Realistically these are
-# all going to migrate into project level settings.
-source $GRENADE_DIR/grenaderc.settings
-
-# Set up for smoke tests (default to True)
-RUN_SMOKE=${RUN_SMOKE:=True}
-BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
-TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
-
-# Set up for Javelin (default to True)
-RUN_JAVELIN=$(trueorfalse True RUN_JAVELIN)
-
-function run_javelin() {
-    if [[ "$RUN_JAVELIN" != "True" ]]; then
-        return
-    fi
-    local action=$1
-    local tempest_dir=$BASE_RELEASE_DIR/tempest
-    local javelin_conf=$tempest_dir/etc/javelin.conf
-    local javelin_resources=$SAVE_DIR/resources.yaml
-
-    if [ ! -e $javelin_conf ]; then
-        # initialize javelin config
-        local tempest_conf=$tempest_dir/etc/tempest.conf
-        cp $tempest_conf $javelin_conf
-        # Make javelin write logs to javelin.log
-        iniset $javelin_conf DEFAULT log_file $LOGDIR/javelin.log
-        echo "Logs can be found at javelin.log"
-    fi
-
-    if [ ! -e $javelin_resources ]; then
-        mkdir -p $SAVE_DIR
-        # Generate javelin2 resources configuration
-        (source $BASE_DEVSTACK_DIR/functions; source $BASE_DEVSTACK_DIR/stackrc;
-            $GRENADE_DIR/tools/generate_javelin_resources.py -o $javelin_resources \
-            $ENABLED_SERVICES)
-    fi
-
-    echo_summary "Running Javelin to $action resources"
-
-    cd  $tempest_dir
-    (source $BASE_DEVSTACK_DIR/openrc admin admin;
-        tox -evenv -- javelin2 -m $action -r $javelin_resources -d $BASE_DEVSTACK_DIR -c $javelin_conf)
-}
 
 # Install 'Base' Build of OpenStack
 # =================================
 
+# Collect the ENABLED_SERVICES from the base directory, this is what
+# we are starting with.
 ENABLED_SERVICES=$(source $BASE_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
+
+# Load the ``settings`` files for all the in tree ``projects/``. This
+# registers all the projects in order that we're going to be upgrading
+# when the time is right.
+#
+# TODO(sdague): this will be where we ``enable_plugins`` when we start
+# supporting out of tree content for grenade.
 load_settings
 
+
+# Run the base install of the environment
 if [[ "$RUN_BASE" == "True" ]]; then
 
     echo_summary "Running base stack.sh"

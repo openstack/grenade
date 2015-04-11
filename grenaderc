@@ -49,28 +49,28 @@ TIMESTAMP_FORMAT="%F-%H%M%S"
 CURRENT_LOG_TIME=${CURRENT_LOG_TIME:-$(date "+$TIMESTAMP_FORMAT")}
 SCREEN_LOGDIR=${STACK_ROOT}/logs/screen
 
-# Project directories
-GLANCECLIENT_DIR=python-glanceclient
-GLANCE_DIR=glance
-KEYSTONECLIENT_DIR=python-keystoneclient
-KEYSTONE_DIR=keystone
-NOVACLIENT_DIR=python-novaclient
-NOVA_DIR=nova
-
 # Timeouts
+#
+# ``ACTIVE_TIMEOUT`` is used by javelin to determine how long to wait for
+# resources to become active.
 ACTIVE_TIMEOUT=120
 SERVICE_TIMEOUT=120
 
 # Defaults that use values from localrc go here
 
 # Enable tempest
-ENABLE_TEMPEST=${ENABLE_TEMPEST:=True}
+ENABLE_TEMPEST=${ENABLE_TEMPEST:-True}
 
 # We need RECLONE to get the updated branches; not everyone wants it though
 RECLONE=${RECLONE:-no}
 
+# Allow only running parts of this script
+RUN_BASE=${RUN_BASE:-True}
+RUN_TARGET=${RUN_TARGET:-True}
+VERBOSE=${VERBOSE:-True}
+
 # Allow skipping smoke tests
-RUN_SMOKE=${RUN_SMOKE:=True}
+RUN_SMOKE=${RUN_SMOKE:-True}
 BASE_RUN_SMOKE=${BASE_RUN_SMOKE:-$RUN_SMOKE}
 TARGET_RUN_SMOKE=${TARGET_RUN_SMOKE:-$RUN_SMOKE}
 
@@ -82,6 +82,11 @@ UPGRADE_PROJECTS=""
 
 # Need this for global requirements
 REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements
+
+# Should we do resource testing
+# Set up for Javelin (default to True)
+RUN_JAVELIN=${RUN_JAVELIN:-True}
+
 
 # Local variables:
 # mode: shell-script

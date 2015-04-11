@@ -24,6 +24,26 @@
 # functionality into there. Most of these will have been manually
 # copied from upstream devstack.
 
+# Echo to summary log file
+#
+# This function should be used to send messages out to the summary log
+# file which makes for good high level progress monitoring.
+function echo_summary {
+    echo $@ >&6
+}
+
+# Stop at a specific phase
+#
+# Use is DEPRECATED and will be removed once the refactor is done.
+function stop {
+    stop=$1
+    shift
+    if [[ "$@" =~ "$stop" ]]; then
+        echo "STOP called for $1"
+        exit 1
+    fi
+}
+
 # Normalize config values to True or False
 # Accepts as False: 0 no No NO false False FALSE
 # Accepts as True: 1 yes Yes YES true True TRUE
