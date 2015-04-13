@@ -184,6 +184,8 @@ source $GRENADE_DIR/functions
 # scripts.
 export TOP_DIR=$TARGET_DEVSTACK_DIR
 
+# Initialize grenade_db local storage, used for resource tracking
+init_grenade_db
 
 # Install 'Base' Build of OpenStack
 # =================================
@@ -235,6 +237,12 @@ if [[ "$RUN_BASE" == "True" ]]; then
     fi
     stop $STOP base-smoke 110
 
+    # Create resources
+    resources create
+
+    # Verify the resources were created
+    resources verify
+
     # Create the javelin resources
     run_javelin create
 
@@ -246,6 +254,9 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # Shut down running code
     echo_summary "Shutting down all services on base devstack..."
     shutdown_services
+
+    # Verify the resources still exist after the shutdown
+    resources verify_noapi
 fi
 
 
@@ -276,6 +287,9 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # Upgrade Tests
     # =============
 
+    # Verify the resources still exist after the upgrade
+    resources verify
+
     # Validate the created resources
     run_javelin check
 
@@ -290,6 +304,9 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # Save databases
     # --------------
     save_data $TARGET_RELEASE $TARGET_DEVSTACK_DIR
+
+    # Cleanup the resources
+    resources destroy
 
     # Cleanup all resources created by javelin
     run_javelin destroy

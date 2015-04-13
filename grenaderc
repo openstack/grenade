@@ -83,6 +83,11 @@ UPGRADE_PROJECTS=""
 # Need this for global requirements
 REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements
 
+# Should we verify resources survive the upgrade process. Previously
+# this was done with Javelin, but will be done with per resource
+# scripts going forward.
+VERIFY_RESOURCES=${VERIFY_RESOURCES:-True}
+
 # Should we do resource testing
 # Set up for Javelin (default to True)
 RUN_JAVELIN=${RUN_JAVELIN:-True}

@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+GRENADE_DB=$SAVE_DIR/grenade_db.ini
+
 function load_settings {
     local in_tree_plugins=$RC_DIR/projects
     for dir in $in_tree_plugins/*; do
@@ -46,4 +48,49 @@ function shutdown_services {
             TOP_DIR=$BASE_DEVSTACK_DIR $shutdown || die "Failed to shutdown $project"
         fi
     done
+}
+
+function resources {
+    # which resource phase are we in
+    local phase=$1
+
+    # bail early if we aren't going to do this level of verification.
+    if [[ "$VERIFY_RESOURCES" != "True" ]]; then
+        echo "Skipping resource phase ``$phase`` by configuration"
+        return
+    fi
+    echo_summary "Running resource phase ``$phase``"
+
+    for project in $UPGRADE_PROJECTS; do
+        local dir=${PLUGIN_DIR[$project]}
+        if [[ -z "$dir" ]]; then
+            die $LINENO "Couldn't find project '$project' in plugin list"
+        fi
+        local resource=$dir/resources.sh
+        if [[ -e $resource ]]; then
+            # NOTE(sdague): we might need to set topdir differently?
+            TOP_DIR=$BASE_DEVSTACK_DIR $resource $phase || die "Failed to run ``$resource $phase``"
+        fi
+    done
+}
+
+function init_grenade_db {
+    if [[ ! -e $GRENADE_DB ]]; then
+        mkdir -p $SAVE_DIR
+        touch $GRENADE_DB
+    fi
+}
+
+function resource_save {
+    local project=$1
+    local key=$2
+    local value=$3
+    iniset $GRENADE_DB $project $key $value
+}
+
+function resource_get {
+    local project=$1
+    local key=$2
+    local value=$(iniget $GRENADE_DB $project $key)
+    echo $value
 }
