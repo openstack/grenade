@@ -52,7 +52,7 @@ function configure_keystone_upgrade {
     # Take "xml_body" out of the admin_version_api pipeline
     values="$(iniget $KEYSTONE_PASTE_INI pipeline:admin_version_api pipeline)"
     admin_api_values="$(get_new_values "$values" xml_body)"
-    iniset $KEYSTONE_PASTE_INI pipeline:admin_version_api pipeline "$public_api_values"
+    iniset $KEYSTONE_PASTE_INI pipeline:admin_version_api pipeline "$admin_api_values"
 
     ## reset to previous state
     $XTRACE
