@@ -16,6 +16,33 @@ source ${GRENADE_DIR}/inc/plugin
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
+# TODO: we'd really like to use the ping_check_functions that exist in
+# devstack, however they are all wrapped up in lib/neutron-legacy
+# gorp. Until that can be cleanly separated we need to keep our own
+# copy here.
+#
+# ping_check_public $ip $timeout [False] - ping an machine on a public
+# ip address. Should work with either neutron or nova-net. Also works
+# to ensure the guest is not up if you pass False as last parameter.
+function ping_check_public {
+    local ip=$1
+    local boot_timeout=$2
+    local expected=${3:-"True"}
+    local check_command=""
+    if [[ "$expected" = "True" ]]; then
+        check_command="while ! ping -c1 -w1 $ip; do sleep 1; done"
+    else
+        check_command="while ping -c1 -w1 $ip; do sleep 1; done"
+    fi
+    if ! timeout $boot_timeout sh -c "$check_command"; then
+        if [[ "$expected" = "True" ]]; then
+            die $LINENO "[Fail] Couldn't ping server"
+        else
+            die $LINENO "[Fail] Could ping server"
+        fi
+    fi
+}
+
 # save_data() dumps service datastores into SAVE_DIR for base or
 # target release.
 function save_data {
