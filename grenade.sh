@@ -243,9 +243,6 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # Verify the resources were created
     resources verify
 
-    # Create the javelin resources
-    run_javelin create
-
     # Save some stuff before we shut that whole thing down
     echo_summary "Saving current state information"
     $GRENADE_DIR/save-state
@@ -290,9 +287,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # Verify the resources still exist after the upgrade
     resources verify
 
-    # Validate the created resources
-    run_javelin check
-
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running tempest scenario and smoke tests"
@@ -308,8 +302,6 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # Cleanup the resources
     resources destroy
 
-    # Cleanup all resources created by javelin
-    run_javelin destroy
 fi
 
 
