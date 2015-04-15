@@ -1,5 +1,46 @@
 # if you already have MYSQL and RABBIT setup on this system
-# from previous runs, copy this file to devstack.localrc 
+# from previous runs, copy this file to devstack.localrc
 # with the appropriate passwords for override.
 MYSQL_PASSWORD=pass
 RABBIT_PASSWORD=pass
+
+# Replication of gate configuration. Below helps you get to a
+# configuration that looks a lot like what we use in the gate
+#
+# Disable Heat: it's default on in stable/juno but not enabled in the
+# gate
+disable_service h-api h-api-cfn h-api-cw h-eng heat
+
+# If you need specific interfaces for nova network, specify them here
+#
+#FLAT_INTERFACE=eth1
+#VLAN_INTERFACE=eth1
+
+# Keystone in stable/juno defaults to eventlet, you need to also do
+# eventlet in kilo otherwise the upgrade does not detect the switch.
+KEYSTONE_USE_MOD_WSGI=False
+
+# Speed things up by tuning down screen sleep time
+SCREEN_SLEEP=0.5
+
+# Neutron needs a lot of manual hand holding to get rolling, we
+# specify a lot of config in the gate in neutron jobs related to
+# networks. The following block will let you flip NEUTRON=True to test
+# a neutron config.
+
+# Uncomment to test neutron
+#
+#NEUTRON=True
+
+if [[ "$NEUTRON" == "True" ]]; then
+    # turn off n-net
+    disable_service n-net
+    # turn on all of neutron
+    enable_service q-agt q-dhcp q-l3 q-meta q-svc quantum
+
+    Q_USE_DEBUG_COMMAND=True
+    NETWORK_GATEWAY=10.1.0.1
+    FIXED_RANGE=10.1.0.0/20
+    FLOATING_RANGE=172.24.5.0/24
+    PUBLIC_NETWORK_GATEWAY=172.24.5.1
+fi
