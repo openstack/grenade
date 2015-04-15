@@ -1,47 +1,102 @@
-Grenade
-=======
+=========
+ Grenade
+=========
 
 Grenade is an OpenStack test harness to exercise the upgrade process
-between releases.  It uses DevStack to perform an initial OpenStack
-install and as a reference for the final configuration.  Currently
-Grenade upgrades Keystone, Glance, Nova, Neutron, Cinder and Swift in
-their default DevStack configurations.
-
-The master branch tests the upgrade path from the previous release
-(aka 'base') to the current trunk (aka 'target').  Stable branches
-of Grenade will be created soon after an OpenStack release and after
-a corresponding DevStack stable branch is available.
-
-For example, following the release of Grizzly and the creation of
-DevStack's stable/grizzly branch a similar stable/grizzly branch
-of Grenade will be created.  At that time master will be re-worked
-to base on Grizzly and the cycle will continue.
-
+between releases. It uses DevStack to perform an initial OpenStack
+install and as a reference for the final configuration. Currently
+Grenade can upgrade Keystone, Glance, Nova, Neutron, Cinder, Swift,
+Ceilometer, and Ironic in their default DevStack configurations.
 
 Goals
------
+=====
 
-Continually test the upgrade process between OpenStack releases to
-find issues as they are introduced so they can be fixed immediately.
+Grenade has the following goals:
 
+- Block unintentional project changes that would break the ``Theory of
+  Upgrade``. Most Grenade fails that people hit are of this nature.
+- Ensure that upgrading a cloud doesn't do something dumb like delete
+  and recreate all your servers/volumes/networks.
+- Be able to grow to support additional upgrade scenarios (like
+  sideways migrations from one configuration to another equivalent
+  configuration)
+
+Theory of Upgrade
+=================
+
+Grenade works under the following theory of upgrade.
+
+- New code should work with old configs
+
+The upgrade process should not require a config change to run a new
+release. All config behavior is supposed to be deprecated over a
+release cycle, so that upon release new code works with the last
+releases configs. Those configs may create deprecation warnings which
+need to be addressed before the next release, but they should still
+work and largely have the same behavior.
+
+- New code should need nothing more than 'db migrations'
+
+Clearly the release of new code may include new database
+models. Standard upgrade procedure is to turn off all services that
+touch the database, run the db migration script, and start with new
+code.
+
+- Resources created by services before upgrade, should still be there
+  after the system is upgraded
+
+When upgrading Nova you expect all your VMs to still function during
+the entire upgrade (whether or not Nova services are up). Taking down
+the control plane should not take down your VMs.
+
+- Any other required changes on upgrade are an *exception* and must be
+  called out in the release notes.
+
+Grenade supports per release specific upgrade scripts (from-juno,
+from-kilo). These are designed to support upgrades where additional
+manual steps are needed for a specific upgrade (i.e. from juno to
+kilo). These should be used sparingly.
+
+The Grenade core team requires the following before landing these
+kinds of changes:
+
+- The Release Notes for the release where this will be required
+  clearly specify these manual upgrade steps.
+
+- The PTL for the project in question has signed off on this change.
 
 Status
-------
+======
 
-Preparations are ongoing to add Grenade as a non-voting job in the
-OpenStack CI Jenkins.
+Grenade is now running on every patch for projects that support
+upgrade. Gating Grenade configurations exist for the following in
+OpenStack's CI system.
 
-* Testing of the 'javelin' project artifacts is incomplete
+- A cloud with nova-network upgraded between releases
+- A cloud with neutron upgraded between releases
+- A cloud with nova-network that upgrades all services except
+  nova-compute, thus testing RPC backwards compatibility for rolling
+  upgrades.
 
-Process
--------
+Basic Flow
+==========
 
-* Install base OpenStack using current stable/<base-release> DevStack
-* Perform basic testing (tempest's smoke and scenarios tests)
-* Create some artifacts in a new project ('javelin') for comparison
-  after the upgrade process.
-* Install current target DevStack to support the upgrades
-* Run upgrade scripts preserving (running?) instances and data
+The grenade.sh script attempts to be reasonably readable, so it's
+worth looking there to see what's really going on. This is the super
+high level version of what that does.
+
+- get 2 devstacks (base & target)
+- install base devstack
+- perform some sanity checking (currently tempest smoke) to ensure
+  this is right
+- allow projects to create resources that should survive upgrade
+  - see projects/*/resources.sh
+- shut down all services
+- verify resources are still working during shutdown
+- upgrade and restart all services
+- verify resources are still working after upgrade
+- perform some sanity checking (currently tempest smoke) to ensure
+  everything seems good.
 
 
 Terminology
@@ -55,13 +110,14 @@ as 'base' and 'target'.
 
 
 Directory Structure
--------------------
+===================
 
 Grenade creates a set of directories for both the base and target
 OpenStack installation sources and DevStack.
 
 $STACK_ROOT
  |- logs                # Grenade logs
+ |- save                # Grenade state logs
  |- <base>
  |   |- data            # base data
  |   |- logs            # base DevStack logs
@@ -79,19 +135,25 @@ $STACK_ROOT
  |   |- swift
 
 Dependencies
-------------
+============
 
 This is a non-exhaustive list of dependencies:
 
 * git
-* tox<1.7
+* tox
 
 Install Grenade
----------------
+===============
 
 Get Grenade from GitHub in the usual way::
 
     git clone git://git.openstack.org/openstack-dev/grenade
+
+Optional: running grenade against a remote target
+-------------------------------------------------
+
+There is an *optional* setup-grenade script that is useful if you are
+running Grenade against a remote VM from a local laptop.
 
 Grenade knows how to install the current master branch using the included
 ``setup-grenade`` script.  The only argument is the hostname of the target
@@ -101,73 +163,35 @@ system that will run the upgrade testing.
 
     ./setup-grenade testbox
 
+If you are running Grenade on the same maching you cloned to, you **do
+not** need to do this.
+
+Configuration
+-------------
+
 The Grenade repo and branch used can be changed by adding something like
 this to ``localrc``::
 
-    GRENADE_REPO=git@github.com:dtroyer/grenade.git
-    GRENADE_BRANCH=dt-test
+  GRENADE_REPO=git@github.com:dtroyer/grenade.git
+  GRENADE_BRANCH=dt-test
 
-Grenade includes ``devstack.localrc.base`` and ``devstack.localrc.target``
-for DevStack that are used to customize its behaviour for use with Grenade.
-If ``$BASE_DEVSTACK_DIR/localrc`` does not exist the following is
-performed by ``prep-base``:
+If you need to configure your local devstacks for your specific
+environment you can do that by creating ``devstack.localrc``. This
+will get appended to the stub devstack configs for BASE and TARGET.
 
-* ``devstack.localrc.base`` is copied to to ``$BASE_DEVSTACK_DIR/localrc``
-* if ``devstack.localrc`` exists it is appended ``$BASE_DEVSTACK_DIR/localrc``
+For instance, specifying interfaces for Nova is a common use of
+``devstack.localrc``::
 
-Similar steps are performed by ``prep-target`` for ``$TARGET_DEVSTACK_DIR``.
-
-``devstack.localrc`` will be appended to both DevStack ``localrc`` files if it
-exists.  ``devstack.localrc`` is not included in Grenade and will not be
-overwritten it if it exists.
+  FLAT_INTERFACE=eth1
+  VLAN_INTERFACE=eth1
 
 
-Prepare For An Upgrade Test
----------------------------
+Run the Upgrade Testing
+-----------------------
 
 ::
 
     ./grenade.sh
 
-``grenade.sh`` installs DevStack for the **Base** release and
-runs its ``stack.sh``.  Then it creates a 'javelin' project containing
-some non-default configuration.
-
-This is roughly the equivalent to::
-
-    grenade/prep-base
-    (cd /opt/stack/grizzly/devstack
-     ./stack.sh)
-    grenade/setup-javelin
-    (cd /opt/stack/grizzly/devstack
-     ./unstack.sh)
-    # dump databases to $STACK_ROOT/save
-    grenade/prep-target
-    grenade/upgrade-devstack
-    grenade/upgrade-keystone
-    grenade/upgrade-glance
-    grenade/upgrade-nova
-    grenade/upgrade-neutron
-    grenade/upgrade-cinder
-    grenade/upgrade-swift
-
-The **Target** release of DevStack is installed in a different
-directory from the **Base** release.
-
-While the **Base** release is running an imaginary **Javelin** tenant
-is configured to populate the databases with some non-default content::
-
-    grenade/setup-javelin
-
-Set up the **javelin** credentials with ``javelinrc``.
-
-
-Testing Upgrades
-----------------
-
-The ``upgrade-*`` scripts are the individual components of the
-DevStack/Grenade upgrade process.  They typically stop any running
-processes, checkout updated sources, migrate the database, any other
-tasks that need to be done then start the processes in ``screen``.
-
-These scripts are written to be idempotent.
+Read ``grenade.sh`` for more details of the steps that happen from
+here.
