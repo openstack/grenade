@@ -84,11 +84,10 @@ function resources {
     done
 }
 
+# initialize the grenade_db and ensure that it's blank for each run
 function init_grenade_db {
-    if [[ ! -e $GRENADE_DB ]]; then
-        mkdir -p $SAVE_DIR
-        touch $GRENADE_DB
-    fi
+    mkdir -p $SAVE_DIR
+    echo "" > $GRENADE_DB
 }
 
 function resource_save {
