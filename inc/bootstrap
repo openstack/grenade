@@ -23,6 +23,23 @@
 # us a working DEVSTACK_TARGET which then lets us pivot our
 # functionality into there. Most of these will have been manually
 # copied from upstream devstack.
+#
+# The following variables are assumed to be defined by certain functions:
+#
+# - ``GRENADE_DIR``
+# - ``STACK_ROOT``
+# - ``BASE_DEVSTACK_DIR``
+# - ``BASE_DEVSTACK_BRANCH``
+# - ``TARGET_DEVSTACK_DIR``
+# - ``TARGET_DEVSTACK_BRANCH``
+#
+# for git related functions
+#
+# - ``RECLONE``
+# - ``OFFLINE``
+# - ``ERROR_ON_CLONE``
+# - ``GIT_TIMEOUT``
+
 
 # Echo to summary log file
 #

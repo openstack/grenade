@@ -13,6 +13,16 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+#
+# Functions related to grenade plugins
+#
+# The following variables are assumed to be defined by certain functions:
+#
+# - ``GRENADE_DIR``
+# - ``SAVE_DIR``
+# - ``UPGRADE_PROJECTS``
+# - ``PLUGIN_DIR``
+# - ``BASE_DEVSTACK_DIR``
 
 GRENADE_DB=$SAVE_DIR/grenade_db.ini
 

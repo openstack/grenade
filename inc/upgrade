@@ -14,6 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# The following variables are assumed to be defined by certain functions:
+#
+# - ``GRENADE_DIR``
+# - ``TARGET_DEVSTACK_DIR``
+# - ``SCREEN_LOGDIR``
+# - ``PLUGIN_DIR``
+# - ``MYSQL_PASSWORD``
+
 DATABASES_TO_SAVE=""
 
 # save_data
