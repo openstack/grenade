@@ -3,7 +3,7 @@
 ==============================
 
 Grenade was originally created to demonstrate some level of upgrade
-capacity for OpenStack projects. Orginally this just included a small
+capacity for OpenStack projects. Originally this just included a small
 number of services.
 
 Proposed new basic flow:
@@ -61,7 +61,7 @@ This is a script that's designed to be called in the following ways:
 
 - resources.sh create
 
-  creates a set of sample resources that should survice
+  creates a set of sample resources that should survive
   upgrade. Script should exit with a non zero exit code if any
   resources could not be created.
 
