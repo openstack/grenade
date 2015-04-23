@@ -23,6 +23,9 @@ trap cleanup SIGHUP SIGINT SIGTERM
 # Keep track of the grenade directory
 RUN_DIR=$(cd $(dirname "$0") && pwd)
 
+# Source params
+source $GRENADE_DIR/grenaderc
+
 # Import common functions
 source $GRENADE_DIR/functions
 
@@ -31,8 +34,6 @@ source $GRENADE_DIR/functions
 # and ``DISTRO``
 GetDistro
 
-# Source params
-source $GRENADE_DIR/grenaderc
 
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occured.
@@ -77,12 +78,6 @@ SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
 SYSLOG=`trueorfalse False $SYSLOG`
 SYSLOG_HOST=${SYSLOG_HOST:-$HOST_IP}
 SYSLOG_PORT=${SYSLOG_PORT:-516}
-
-TOP_DIR=$BASE_DEVSTACK_DIR
-source $BASE_DEVSTACK_DIR/lib/neutron
-
-# Save current config files for posterity
-[[ -d $SAVE_DIR/etc.neutron ]] || cp -pr $NEUTRON_CONF_DIR $SAVE_DIR/etc.neutron
 
 # Set for DevStack compatibility
 TOP_DIR=$TARGET_DEVSTACK_DIR
