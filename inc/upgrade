@@ -162,7 +162,7 @@ function ensure_services_stopped {
     if [[ -n "$still_running" ]]; then
         # TODO(sdague): work around because worlddump is apparently misconfigured
         ps auxw
-        ss -p -t -o state established '( dport = :5000 or dport = :35357 )'
+        ss -p -t -o state established
         die $LINENO "The following services are still running: $still_running"
     fi
 }
