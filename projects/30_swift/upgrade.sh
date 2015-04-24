@@ -34,38 +34,17 @@ source $GRENADE_DIR/functions
 # only the first error that occurred.
 set -o errexit
 
+# Upgrade Swift
+# =============
+source $TARGET_DEVSTACK_DIR/stackrc
+
+FILES=$TARGET_DEVSTACK_DIR/files
+source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/swift
+
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
 set -o xtrace
-
-# Set for DevStack compatibility
-TOP_DIR=$TARGET_DEVSTACK_DIR
-
-
-# Upgrade Swift
-# =============
-
-MYSQL_HOST=${MYSQL_HOST:-localhost}
-MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
-
-# Duplicate some setup bits from target DevStack
-cd $TARGET_DEVSTACK_DIR
-source $TARGET_DEVSTACK_DIR/functions
-source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/stack
-
-FILES=$TARGET_DEVSTACK_DIR/files
-SERVICE_HOST=${SERVICE_HOST:-localhost}
-SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
-SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
-SERVICE_TOKEN=${SERVICE_TOKEN:-aa-token-bb}
-source $TARGET_DEVSTACK_DIR/lib/apache
-source $TARGET_DEVSTACK_DIR/lib/tls
-source $TARGET_DEVSTACK_DIR/lib/oslo
-source $TARGET_DEVSTACK_DIR/lib/keystone
-
-source $TARGET_DEVSTACK_DIR/lib/swift
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.swift ]] || cp -pr $SWIFT_CONF_DIR $SAVE_DIR/etc.swift

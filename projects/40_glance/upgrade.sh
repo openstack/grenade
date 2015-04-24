@@ -23,56 +23,27 @@ trap cleanup SIGHUP SIGINT SIGTERM
 # Keep track of the grenade directory
 RUN_DIR=$(cd $(dirname "$0") && pwd)
 
-# Import common functions
-source $GRENADE_DIR/functions
-
-# Determine what system we are running on.  This provides ``os_VENDOR``,
-# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
-# and ``DISTRO``
-GetDistro
-
 # Source params
 source $GRENADE_DIR/grenaderc
+
+# Import common functions
+source $GRENADE_DIR/functions
 
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
 
-# Print the commands being run so that we can see the command that triggers
-# an error.  It is also useful for following allowing as the install occurs.
-set -o xtrace
-
-# Set for DevStack compatibility
-TOP_DIR=$TARGET_DEVSTACK_DIR
-
-
 # Upgrade Glance
 # ==============
 
-MYSQL_HOST=${MYSQL_HOST:-localhost}
-MYSQL_USER=${MYSQL_USER:-root}
-BASE_SQL_CONN=$(source $BASE_DEVSTACK_DIR/stackrc; echo ${BASE_SQL_CONN:-mysql://$MYSQL_USER:$MYSQL_PASSWORD@$MYSQL_HOST})
-
-# Duplicate some setup bits from target DevStack
-cd $TARGET_DEVSTACK_DIR
-source $TARGET_DEVSTACK_DIR/functions
-source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/stack
-
-SERVICE_HOST=${SERVICE_HOST:-localhost}
-SERVICE_PROTOCOL=${SERVICE_PROTOCOL:-http}
-SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
-source $TARGET_DEVSTACK_DIR/lib/database
-source $TARGET_DEVSTACK_DIR/lib/rpc_backend
-source $TARGET_DEVSTACK_DIR/lib/apache
-source $TARGET_DEVSTACK_DIR/lib/tls
-source $TARGET_DEVSTACK_DIR/lib/oslo
-source $TARGET_DEVSTACK_DIR/lib/keystone
-
-SYSLOG=`trueorfalse False $SYSLOG`
-
 # Get functions from current DevStack
+source $TARGET_DEVSTACK_DIR/stackrc
+source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/glance
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
+set -o xtrace
 
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.glance ]] || cp -pr $GLANCE_CONF_DIR $SAVE_DIR/etc.glance

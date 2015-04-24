@@ -23,62 +23,29 @@ trap cleanup SIGHUP SIGINT SIGTERM
 # Keep track of the grenade directory
 RUN_DIR=$(cd $(dirname "$0") && pwd)
 
-# Import common functions
-source $GRENADE_DIR/functions
-
-# Determine what system we are running on.  This provides ``os_VENDOR``,
-# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
-# and ``DISTRO``
-GetDistro
-
 # Source params
 source $GRENADE_DIR/grenaderc
+
+# Import common functions
+source $GRENADE_DIR/functions
 
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
 
-# Print the commands being run so that we can see the command that triggers
-# an error.  It is also useful for following allowing as the install occurs.
-set -o xtrace
-
-# Set for DevStack compatibility
-TOP_DIR=$TARGET_DEVSTACK_DIR
-
 # Upgrade Ironic
 # ============
 
 # Duplicate some setup bits from target DevStack
-cd $TARGET_DEVSTACK_DIR
-source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/stack
-
-# From stack.sh
-FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
-FIXED_RANGE=${FIXED_RANGE:-10.0.0.0/24}
-HOST_IP=$(get_default_host_ip $FIXED_RANGE $FLOATING_RANGE "$HOST_IP_IFACE")
-if [ "$HOST_IP" == "" ]; then
-    die $LINENO "Could not determine host ip address. Either localrc specified dhcp on ${HOST_IP_IFACE} or defaulted"
-fi
-
-## Just do this rather than bring in all of glance
-GLANCE_HOSTPORT=$SERVICE_HOST:9292
-
-SYSLOG=`trueorfalse False $SYSLOG`
-
-#
-# Get functions from current DevStack
-source $TARGET_DEVSTACK_DIR/lib/database
-source $TARGET_DEVSTACK_DIR/lib/rpc_backend
-source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
-source $TARGET_DEVSTACK_DIR/lib/infra
-source $TARGET_DEVSTACK_DIR/lib/oslo
-source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
 source $TARGET_DEVSTACK_DIR/lib/ironic
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
+set -o xtrace
 
 function is_nova_migration {
     # Deterine whether we're "upgrading" from another compute driver

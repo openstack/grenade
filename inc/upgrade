@@ -65,7 +65,7 @@ function upgrade_service {
     local plugin_dir=${PLUGIN_DIR[$local_service]}
     if [[ -n "$plugin_dir" ]]; then
         echo_summary "Upgrading $local_service..."
-        $plugin_dir/upgrade.sh || die $LINENO "Failure in $plugin_dir/upgrade.sh"
+        TOP_DIR=$TARGET_DEVSTACK_DIR $plugin_dir/upgrade.sh || die $LINENO "Failure in $plugin_dir/upgrade.sh"
     else
         echo_summary "Upgrading $local_service... (legacy mode)"
         $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
