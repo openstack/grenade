@@ -35,6 +35,14 @@ source ${GRENADE_DIR}/inc/plugin
 XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
+# just like source, except turn off tracing, as it just gets in the way
+function source_quiet {
+    XTRACE=$(set +o | grep xtrace)
+    set +o xtrace
+    source $@
+    $XTRACE
+}
+
 # TODO: we'd really like to use the ping_check_functions that exist in
 # devstack, however they are all wrapped up in lib/neutron-legacy
 # gorp. Until that can be cleanly separated we need to keep our own

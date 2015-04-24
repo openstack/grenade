@@ -115,7 +115,7 @@ function destroy {
     nova secgroup-delete $NOVA_USER || /bin/true
 
     # lastly, get rid of our user - done as admin
-    source $TOP_DIR/openrc admin admin
+    source_quiet $TOP_DIR/openrc admin admin
     local user_id=$(resource_get nova user_id)
     local project_id=$(resource_get nova project_id)
     openstack user delete $user_id

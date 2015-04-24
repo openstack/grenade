@@ -21,6 +21,8 @@ source $GRENADE_DIR/functions
 
 source $TOP_DIR/openrc admin admin
 
+set -o xtrace
+
 KEYSTONE_TEST_USER=keystone_check
 KEYSTONE_TEST_GROUP=keystone_check
 KEYSTONE_TEST_PASS=pass

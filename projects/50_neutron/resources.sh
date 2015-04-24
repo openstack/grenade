@@ -19,9 +19,9 @@ set -o errexit
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/functions
 
-set -o xtrace
-
 source $TOP_DIR/openrc admin admin
+
+set -o xtrace
 
 NEUTRON_NET=neutron_grenade
 
