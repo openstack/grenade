@@ -23,39 +23,27 @@ trap cleanup SIGHUP SIGINT SIGTERM
 # Keep track of the grenade directory
 RUN_DIR=$(cd $(dirname "$0") && pwd)
 
-# Import common functions
-source $GRENADE_DIR/functions
-
-# Determine what system we are running on.  This provides ``os_VENDOR``,
-# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
-# and ``DISTRO``
-GetDistro
-
 # Source params
 source $GRENADE_DIR/grenaderc
+
+# Import common functions
+source $GRENADE_DIR/functions
 
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
-
-# Print the commands being run so that we can see the command that triggers
-# an error.  It is also useful for following allowing as the install occurs.
-set -o xtrace
-
-# Set for DevStack compatibility
-TOP_DIR=$TARGET_DEVSTACK_DIR
 
 
 # Upgrade Ceilometer
 # ==================
 
 # Get functions from current DevStack
-source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
-source $TARGET_DEVSTACK_DIR/lib/stack
-
-source $TARGET_DEVSTACK_DIR/lib/oslo
 source $TARGET_DEVSTACK_DIR/lib/ceilometer
+
+# Print the commands being run so that we can see the command that triggers
+# an error.  It is also useful for following allowing as the install occurs.
+set -o xtrace
 
 # install_ceilometer()
 stack_install_service ceilometer

@@ -32,6 +32,7 @@ set +o xtrace
 # Include the common functions
 GRENADE_DIR=$(cd $(dirname "${BASH_SOURCE:-$0}") && pwd)
 source ${TARGET_DEVSTACK_DIR}/functions
+source ${TARGET_DEVSTACK_DIR}/lib/stack
 source ${GRENADE_DIR}/inc/upgrade
 source ${GRENADE_DIR}/inc/plugin
 
