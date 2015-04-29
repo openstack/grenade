@@ -234,6 +234,12 @@ if [[ "$RUN_BASE" == "True" ]]; then
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
         cd $BASE_RELEASE_DIR/tempest
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
+        # once we are done, copy our created artifacts to the target
+        if [[ -e $TARGET_RELEASE_DIR/tempest ]]; then
+            for file in .tox .testrepository; do
+                rsync -avP $BASE_RELEASE_DIR/tempest/$file/ $TARGET_RELEASE_DIR/tempest/$file/
+            done
+        fi
     fi
     stop $STOP base-smoke 110
 
