@@ -182,7 +182,7 @@ function destroy {
     nova secgroup-delete $CINDER_USER
 
     # lastly, get rid of our user - done as admin
-    source $TOP_DIR/openrc admin admin
+    source_quiet $TOP_DIR/openrc admin admin
     local user_id=$(resource_get cinder user_id)
     local project_id=$(resource_get cinder project_id)
     openstack user delete $user_id
