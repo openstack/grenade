@@ -55,7 +55,7 @@ function shutdown_services {
         fi
         local shutdown=$dir/shutdown.sh
         if [[ -e $shutdown ]]; then
-            TOP_DIR=$BASE_DEVSTACK_DIR $shutdown || die "Failed to shutdown $project"
+            TOP_DIR=$BASE_DEVSTACK_DIR $shutdown || die $LINENO "Failed to shutdown $project"
         fi
     done
 }
@@ -79,7 +79,7 @@ function resources {
         local resource=$dir/resources.sh
         if [[ -e $resource ]]; then
             # NOTE(sdague): we might need to set topdir differently?
-            TOP_DIR=$BASE_DEVSTACK_DIR $resource $phase || die "Failed to run ``$resource $phase``"
+            TOP_DIR=$BASE_DEVSTACK_DIR $resource $phase || die $LINENO "Failed to run ``$resource $phase``"
         fi
     done
 }
