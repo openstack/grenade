@@ -92,8 +92,15 @@ function exit_trap {
     # really important that this is the *first* line in this
     # function, otherwise we corrupt the exit code
     local r=$?
+
     # we don't need tracing during this
     set +o xtrace
+
+    # we have to turn off errexit at this point, otherwise we're going
+    # to exit from this function early when the while caller ends
+    # (with a bad exit)
+    set +o errexit
+
     if [[ $r -ne 0 ]]; then
         # unwind the call stack on failures
         local frame=0
