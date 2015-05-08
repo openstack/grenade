@@ -65,6 +65,8 @@ This is a script that's designed to be called in the following ways:
   upgrade. Script should exit with a non zero exit code if any
   resources could not be created.
 
+  Example: create an instance in nova or a volume in cinder
+
 - resources.sh survived_shutdown
 
   resource survival checks for after all services are shut down (the
@@ -81,6 +83,27 @@ This is a script that's designed to be called in the following ways:
 
   cleanup all resources
 
+- resources.sh verify
+
+  verify that the resources were created. Services are running at this
+  point, and the APIs may be expected to work.
+
+  Example: use the nova command to verify that the test instance is
+  still ACTIVE, or the cinder command to verify that the volume is
+  still available.
+
+- resources.sh verify_noapi
+
+  verify that the resources are still present. This is called in the
+  phase where services are stopped, and APIs are expected to not be
+  accessible. Resource verification at this phase my require probing
+  underlying components to make sure nothing has gone awry during
+  service shutdown.
+
+  Example: check with libvirt to make sure the instance is actually
+  created and running. Bonus points for being able to ping the
+  instance, or otherwise check its live-ness. With cinder, checking
+  that the LVM volume exists and looks reasonable.
 
 In order to assist with the checks listed the following functions
 exist::
