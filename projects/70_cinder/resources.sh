@@ -130,7 +130,7 @@ function create {
     set +o errexit
     local timeleft=30
     while [[ $timeleft -gt 0 ]]; do
-        ssh -o "StrictHostKeyChecking no" -i $CINDER_KEY_FILE cirros@$ip \
+        $FSSH -i $CINDER_KEY_FILE cirros@$ip \
             "echo '$CINDER_STATE' > $CINDER_STATE_FILE"
         local rc=$?
 
@@ -161,9 +161,9 @@ function verify_noapi {
     ping_check_public $server_ip 30
     # this sync is here to ensure that we don't accidentally pass when
     # the volume is actually down.
-    timeout 30 ssh -o "StrictHostKeyChecking no" -i $CINDER_KEY_FILE cirros@$server_ip \
+    timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$server_ip \
         "sync"
-    local state=$(ssh -o "StrictHostKeyChecking no" -i $CINDER_KEY_FILE cirros@$server_ip \
+    local state=$($FSSH -i $CINDER_KEY_FILE cirros@$server_ip \
         "cat $CINDER_STATE_FILE")
     if [[ "$state" != "$CINDER_STATE" ]]; then
         die $LINENO "The expected state left in the volume isn't there!"

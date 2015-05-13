@@ -124,5 +124,9 @@ function exit_trap {
 }
 
 
+# Don't check or store host keys, and auto-accept whatever we connect to
+FSSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
+
 # Restore xtrace
 $XTRACE
