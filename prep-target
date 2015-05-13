@@ -29,10 +29,14 @@ if [[ -d $BASE_RELEASE_DIR/images ]]; then
     rsync -a $BASE_RELEASE_DIR/images $TARGET_DEVSTACK_DIR/files
 fi
 
+# Get target config
+source $TARGET_DEVSTACK_DIR/functions
+source $TARGET_DEVSTACK_DIR/stackrc
+
 # Build a wheel cache
 source $TARGET_DEVSTACK_DIR/stackrc
 if [[ -n ${WHEELHOUSE:-} && ! -d ${WHEELHOUSE:-} ]]; then
-    WHEELHOUSE=$WHEELHOUSE $TARGET_DEVSTACK_DIR/tools/build_wheels.sh
+    WHEELHOUSE=$WHEELHOUSE source $TARGET_DEVSTACK_DIR/tools/build_wheels.sh
 fi
 
 # Find additional Python packages for venvs
@@ -40,10 +44,6 @@ install_database_python
 
 # Set up Screen
 # =============
-
-# Get target config
-source $TARGET_DEVSTACK_DIR/functions
-source $TARGET_DEVSTACK_DIR/stackrc
 
 # Set a reasonable screen statusbar
 SCREEN_HARDSTATUS=${SCREEN_HARDSTATUS:-'%{= .} %-Lw%{= .}%> %n%f %t*%{= .}%+Lw%< %-=%{g}(%{d}%H/%l%{g})'}
