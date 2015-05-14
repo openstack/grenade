@@ -86,6 +86,15 @@ function save_data {
     fi
 }
 
+function worlddump {
+    if [[ -x $TARGET_DEVSTACK_DIR/tools/worlddump.py ]]; then
+        $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
+        sleep 1
+    else
+        echo "WARNING: Attempted to worlddump but couldn't find $TARGET_DEVSTACK_DIR/tools/worlddump.py"
+    fi
+}
+
 
 # Setup Exit Traps for debug purposes
 trap exit_trap EXIT
@@ -108,12 +117,8 @@ function exit_trap {
         while caller $frame; do
             ((frame++));
         done
-
         echo "Exit code: $r"
-        if [[ -x $TARGET_DEVSTACK_DIR/tools/worlddump.py ]]; then
-            $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
-            sleep 1
-        fi
+        worlddump
     fi
     exit $r
 }
