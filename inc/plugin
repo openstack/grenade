@@ -27,6 +27,7 @@
 GRENADE_DB=$SAVE_DIR/grenade_db.ini
 
 function load_settings {
+    # In tree plugins
     local in_tree_plugins=$RC_DIR/projects
     for dir in $in_tree_plugins/*; do
         local settings=$dir/settings
@@ -34,6 +35,26 @@ function load_settings {
             source $settings
         fi
     done
+
+    # External plugins
+    local plugins="${GRENADE_PLUGINS}"
+    local plugin
+
+    # short circuit if nothing to do
+    if [[ -z $plugins ]]; then
+        return
+    fi
+
+    echo "Loading plugin settings"
+    for plugin in ${plugins//,/ }; do
+        local dir=${GITDIR[$plugin]}
+        # source any known settings
+        if [[ -f $dir/devstack/upgrade/settings ]]; then
+            echo "Loading settings for $plugin from $dir/devstack/upgrade/settings"
+            source $dir/devstack/upgrade/settings
+        fi
+    done
+
     export UPGRADE_PROJECTS
 }
 
@@ -103,3 +124,58 @@ function resource_get {
     local value=$(iniget $GRENADE_DB $project $key)
     echo $value
 }
+
+# External plugin interface for grenade
+
+function enable_grenade_plugin {
+    local name=$1
+    local url=$2
+    local branch=${3:-$TARGET_DEVSTACK_BRANCH}
+    # the following allows us to set the PLUGIN_DIR for the gate to
+    # zuul checked out locations.
+    local plugin_dir=${PLUGIN_DIR:-$STACK_ROOT/plugins}
+    GRENADE_PLUGINS+=",$name"
+    # NOTE(sdague): we're intentional namespace colliding with
+    # devstack to reuse devstack architecture. I don't think this is
+    # going to get us in trouble, but it might. So here be dragons, or
+    # at least small fierce lizards of unknown provenance.
+    GITREPO[$name]=$url
+    GITDIR[$name]=$plugin_dir/$name
+    GITBRANCH[$name]=$branch
+}
+
+function devstack_localrc {
+    local settings_file=$(caller | awk '{print $2}')
+    local where=$1
+    shift
+    case $where in
+        base)
+            echo "# added by $settings_file" >> $BASE_DEVSTACK_DIR/localrc
+            echo "$@" >> $BASE_DEVSTACK_DIR/localrc
+            ;;
+        target)
+            echo "# added by $settings_file" >> $TARGET_DEVSTACK_DIR/localrc
+            echo "$@" >> $TARGET_DEVSTACK_DIR/localrc
+            ;;
+    esac
+}
+
+function fetch_grenade_plugins {
+    local plugins="${GRENADE_PLUGINS}"
+    local plugin
+
+    # short circuit if nothing to do
+    if [[ -z $plugins ]]; then
+        return
+    fi
+
+    echo "Fetching Grenade plugins"
+    for plugin in ${plugins//,/ }; do
+        git_clone_by_name $plugin
+    done
+}
+
+# this allows us to expose this late
+if [[ -f ${GRENADE_DIR}/pluginrc ]]; then
+    source ${GRENADE_DIR}/pluginrc
+fi
