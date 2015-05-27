@@ -39,6 +39,7 @@ set -o errexit
 
 # Get functions from current DevStack
 source $TARGET_DEVSTACK_DIR/stackrc
+source $BASE_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/ceilometer
 
 # Print the commands being run so that we can see the command that triggers
