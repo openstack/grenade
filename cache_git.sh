@@ -57,6 +57,9 @@ while getopts hd: opt; do
     esac
 done
 
+for dir in $@; do
+    PROJECTS+="$dir "
+done
 
 function git_update_mirror {
     local project=$1
