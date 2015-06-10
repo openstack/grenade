@@ -220,10 +220,10 @@ if [[ "$RUN_BASE" == "True" ]]; then
     for image_url in ${IMAGE_URLS//,/ }; do
         IMAGE_FNAME=`basename "$image_url"`
         if [[ -r $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME ]]; then
-            rsync -av $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
+            rsync -a $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
         fi
     done
-    rsync -av $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
+    rsync -a $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
     stop $STOP image-cache 20
 
     # Operation
@@ -237,7 +237,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
         # once we are done, copy our created artifacts to the target
         if [[ -e $TARGET_RELEASE_DIR/tempest ]]; then
             for file in .tox .testrepository; do
-                rsync -avP $BASE_RELEASE_DIR/tempest/$file/ $TARGET_RELEASE_DIR/tempest/$file/
+                rsync -a $BASE_RELEASE_DIR/tempest/$file/ $TARGET_RELEASE_DIR/tempest/$file/
             done
         fi
     fi
