@@ -1,0 +1,8 @@
+function configure_nova_upgrade() {
+    source $TARGET_DEVSTACK_DIR/lib/database
+    # We need to create the api database before we can sync it
+    apidburl=$(iniget $NOVA_CONF database connection | sed "s#/nova#/${NOVA_API_DB}#")
+    iniset $NOVA_CONF api_database connection "$apidburl"
+    initialize_database_backends
+    recreate_database $NOVA_API_DB
+}

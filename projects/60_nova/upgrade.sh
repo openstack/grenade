@@ -64,6 +64,7 @@ create_nova_keys_dir
 
 # Migrate the database
 $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
+$NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF api_db sync || die $LINENO "API DB sync error"
 
 iniset $NOVA_CONF upgrade_levels compute auto
 
