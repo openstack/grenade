@@ -194,14 +194,16 @@ init_grenade_db
 # we are starting with.
 ENABLED_SERVICES=$(source $BASE_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
 
+# Fetch all the grenade plugins which were registered in ``pluginrc``
+# via the ``enable_grenade_plugin`` stanza. This must be done before
+# settings are loaded, but has to be this late to give access to all
+# the devstack functions.
+fetch_grenade_plugins
+
 # Load the ``settings`` files for all the in tree ``projects/``. This
 # registers all the projects in order that we're going to be upgrading
 # when the time is right.
-#
-# TODO(sdague): this will be where we ``enable_plugins`` when we start
-# supporting out of tree content for grenade.
 load_settings
-
 
 # Run the base install of the environment
 if [[ "$RUN_BASE" == "True" ]]; then

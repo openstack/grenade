@@ -174,3 +174,50 @@ covered other places. The value in the resource scripts is these side
 effects. Actual VMs running, actual iscsi targets running, etc. And
 ensuring these things are not disrupted when the control plane is
 shifted out from under them.
+
+Out of Tree Plugins
+===================
+
+A grenade plugin can be hosted out of tree in a project tree, similar
+to external devstack plugins. There are a few subtle differences when
+this happens.
+
+The plugin structure will live under ``$project/devstack/upgrade/``
+directory.
+
+The plugin is enabled by adding::
+
+  enable_grenade_plugin <$project> <giturl> [branch]
+
+To ``pluginrc`` in the ``GRENADE_DIR``. An additional rc file was
+required due to sequencing of when plugin functions become available.
+
+Changing Devstack Localrc
+-------------------------
+
+There is also a mechanism that allows a ``settings`` file change the
+devstack localrc files with the ``devstack_localrc`` function.
+
+::
+   devstack_localrc <base|target> arbitrary stuff to add
+
+Which will take all the rest of the stuff on that line and add it to
+the localrc for either the base or target devstack.
+
+Example settings
+----------------
+
+The following is a reasonable example ``settings`` for out of tree
+plugin::
+
+  register_project_for_upgrade heat
+  register_db_to_save heat
+  devstack_localrc base enable_service h-api h-api-cfn h-api-cw h-eng heat
+  devstack_localrc target enable_service h-api h-api-cfn h-api-cw h-eng heat
+
+This registers the project for upgrade, symbolicly enables the heat
+database for dump during upgrade, and adds the heat services into the
+service list for base and target.
+
+It's expected that most ``settings`` files for out of tree plugins
+will need equivalent lines.
