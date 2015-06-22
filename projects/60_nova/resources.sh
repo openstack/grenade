@@ -92,6 +92,9 @@ function create {
     resource_save nova nova_server_float $id
     openstack ip floating add $ip $NOVA_SERVER
 
+    # NOTE(sdague): for debugging when things go wrong, so we have a
+    # before and an after
+    worlddump
 }
 
 function verify {

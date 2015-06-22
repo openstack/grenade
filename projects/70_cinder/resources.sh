@@ -145,6 +145,10 @@ function create {
             break
         fi
     done
+
+    # NOTE(sdague): for debugging when things go wrong, so we have a
+    # before and an after
+    worlddump
 }
 
 function verify {
