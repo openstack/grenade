@@ -47,6 +47,11 @@
 # file which makes for good high level progress monitoring.
 function echo_summary {
     echo $@ >&6
+    echo
+    echo "#********************************************"
+    echo "# " $@
+    echo "#********************************************"
+    echo
 }
 
 # Stop at a specific phase
