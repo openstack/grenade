@@ -100,8 +100,10 @@ cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc
 
 # Pull down the new global requirements repository
 #
-# FIXME: this also pulls in new pbr which is not really needed, we
-# should separate that in the future.
+# this also pulls in new pbr which is needed because older
+# releases of various libraries trigger downgrades which then
+# would break, and pbr as a setup_requires can't be sanely
+# minimum-versioned.
 source $TARGET_DEVSTACK_DIR/lib/infra
 
 install_infra
