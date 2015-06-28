@@ -34,7 +34,6 @@ source $TARGET_DEVSTACK_DIR/functions
 source $TARGET_DEVSTACK_DIR/stackrc
 
 # Build a wheel cache
-source $TARGET_DEVSTACK_DIR/stackrc
 if [[ -n ${WHEELHOUSE:-} && ! -d ${WHEELHOUSE:-} ]]; then
     WHEELHOUSE=$WHEELHOUSE source $TARGET_DEVSTACK_DIR/tools/build_wheels.sh
 fi
