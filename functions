@@ -79,11 +79,6 @@ function save_data {
     echo_summary "Dumping $release databases"
     mkdir -p $SAVE_DIR
     save_mysql_dbs $release $dir
-
-    # TODO(sdague): this should go into per project save-state scripts
-    if grep -q 'connection *= *mongo' /etc/ceilometer/ceilometer.conf; then
-        mongodump --db ceilometer --out $SAVE_DIR/ceilometer-dump.$release
-    fi
 }
 
 function worlddump {
