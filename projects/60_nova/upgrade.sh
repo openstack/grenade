@@ -48,6 +48,9 @@ set -o xtrace
 # Save current config files for posterity
 [[ -d $SAVE_DIR/etc.nova ]] || cp -pr $NOVA_CONF_DIR $SAVE_DIR/etc.nova
 
+# calls pre-upgrade hooks for within-$base before we upgrade
+upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $BASE_DEVSTACK_BRANCH
+
 # install_nova()
 stack_install_service nova
 
