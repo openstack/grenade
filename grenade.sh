@@ -213,6 +213,14 @@ if [[ "$RUN_BASE" == "True" ]]; then
     GIT_BASE=$GIT_BASE ./stack.sh
     stop $STOP stack.sh 10
 
+    echo_summary "Running post-stack.sh"
+    if [[ -e $GRENADE_DIR/post-stack.sh ]]; then
+        cd $GRENADE_DIR
+        ./post-stack.sh
+        stop $STOP post-stack.sh 15
+        echo_summary "Completed post-stack.sh"
+    fi
+
     # Cache downloaded instances
     # --------------------------
 
