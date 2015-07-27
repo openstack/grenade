@@ -95,6 +95,9 @@ function create {
     # NOTE(sdague): for debugging when things go wrong, so we have a
     # before and an after
     worlddump
+
+    # ping check on the way up so we can add ssh content
+    ping_check_public $ip 30
 }
 
 function verify {
