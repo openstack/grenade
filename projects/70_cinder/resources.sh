@@ -178,6 +178,8 @@ function destroy {
 
     openstack server delete $CINDER_SERVER
     # wait for server to be down before we delete the volume
+    # TODO(mriedem): Use the --wait option with the openstack server delete
+    # command when python-openstackclient>=1.4.0 is in global-requirements.
     local wait_cmd="while openstack server show $CINDER_SERVER >/dev/null; do sleep 1; done"
     timeout 30 sh -c "$wait_cmd"
 
