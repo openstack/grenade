@@ -30,6 +30,7 @@ PROJECTS+="openstack/ironic "
 PROJECTS+="openstack/ceilometer "
 PROJECTS+="openstack/horizon "
 PROJECTS+="openstack-dev/devstack "
+PROJECTS+="kanaka/noVNC "
 
 function usage {
     cat - <<EOF
