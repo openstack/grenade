@@ -277,6 +277,10 @@ fi
 # ========
 
 if [[ "$RUN_TARGET" == "True" ]]; then
+    # Clone all devstack plugins on the new side, because we're not
+    # running a full stack.sh
+    fetch_plugins
+
     # Get target devstack tree ready for services to be run from it,
     # including trying to reuse any existing files we pulled during
     # the base run.
