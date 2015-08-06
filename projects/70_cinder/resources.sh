@@ -148,7 +148,7 @@ function create {
 
     # NOTE(sdague): for debugging when things go wrong, so we have a
     # before and an after
-    worlddump
+    worlddump cinder_resources_created
 }
 
 function verify {

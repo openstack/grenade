@@ -87,8 +87,12 @@ function save_data {
 }
 
 function worlddump {
+    local name=$1
+    if [[ -n "$name" ]]; then
+        name="-n $name"
+    fi
     if [[ -x $TARGET_DEVSTACK_DIR/tools/worlddump.py ]]; then
-        $TARGET_DEVSTACK_DIR/tools/worlddump.py -d $LOGDIR
+        $TARGET_DEVSTACK_DIR/tools/worlddump.py $name -d $LOGDIR
         sleep 1
     else
         echo "WARNING: Attempted to worlddump but couldn't find $TARGET_DEVSTACK_DIR/tools/worlddump.py"
