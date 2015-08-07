@@ -29,8 +29,7 @@ if [[ -d $BASE_RELEASE_DIR/images ]]; then
     rsync -a $BASE_RELEASE_DIR/images $TARGET_DEVSTACK_DIR/files
 fi
 
-# Get target config
-source $TARGET_DEVSTACK_DIR/functions
+# Get target config (stackrc grabs devstack "functions" too)
 source $TARGET_DEVSTACK_DIR/stackrc
 
 # Build a wheel cache

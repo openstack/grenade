@@ -29,7 +29,6 @@ set -o xtrace
 if [[ -d $BASE_DEVSTACK_DIR ]]; then
     bash -c "
         cd $BASE_DEVSTACK_DIR; \
-        source functions; \
         source stackrc; \
         source lib/tls; \
         source lib/cinder; \
@@ -47,7 +46,6 @@ fi
 if [[ -d $TARGET_DEVSTACK_DIR ]]; then
     bash -x -c "
         cd $TARGET_DEVSTACK_DIR; \
-        source functions; \
         source stackrc; \
         source lib/tls; \
         source lib/cinder; \
