@@ -23,7 +23,7 @@ The script needs to know the location of the Grenade install directory.
 ``GRENADE_DIR`` should always point there, even if the script itself is located in
 a subdirectory::
 
-    # Keep track of the current devstack directory.
+    # Keep track of the current grenade directory.
     GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 Many scripts will utilize shared functions from the ``functions`` file.  This
@@ -31,7 +31,7 @@ file is copied directly from DevStack trunk periodically.  There is also an
 rc file (``grenaderc``) that is sourced to set the default configuration of
 the user environment::
 
-    # Keep track of the current devstack directory.
+    # Keep track of the current grenade directory.
     GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
     # Import common functions
