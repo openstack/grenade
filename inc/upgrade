@@ -22,7 +22,7 @@
 # - ``PLUGIN_DIR``
 # - ``MYSQL_PASSWORD``
 
-DATABASES_TO_SAVE=""
+export DATABASES_TO_SAVE
 
 # save_data
 function save_mysql_dbs {
