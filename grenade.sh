@@ -184,9 +184,6 @@ source $GRENADE_DIR/functions
 # scripts.
 export TOP_DIR=$TARGET_DEVSTACK_DIR
 
-# Initialize grenade_db local storage, used for resource tracking
-init_grenade_db
-
 # Install 'Base' Build of OpenStack
 # =================================
 
@@ -207,6 +204,9 @@ load_settings
 
 # Run the base install of the environment
 if [[ "$RUN_BASE" == "True" ]]; then
+
+    # Initialize grenade_db local storage, used for resource tracking
+    init_grenade_db
 
     echo_summary "Running base stack.sh"
     cd $BASE_DEVSTACK_DIR
