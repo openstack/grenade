@@ -9,8 +9,7 @@ number of services.
 Proposed new basic flow:
 
 - setup_grenade
-  - all the magic setup involved around err traps and filehandle
-    redirects
+  - all the magic setup involved around err traps and filehandle redirects
   - setup devstack trees
 - setup_base
   - run stack.sh to build the correct base environment
@@ -65,7 +64,7 @@ service is running in an upgrade environment. The script should return
 zero on success for actions, and nonzero on failure.
 
 Calling Interface
----------
+-----------------
 
 The following is the supported calling interface
 

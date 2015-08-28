@@ -90,7 +90,7 @@ high level version of what that does.
 - perform some sanity checking (currently tempest smoke) to ensure
   this is right
 - allow projects to create resources that should survive upgrade
-  - see projects/*/resources.sh
+  - see projects/\*/resources.sh
 - shut down all services
 - verify resources are still working during shutdown
 - upgrade and restart all services
@@ -113,26 +113,26 @@ Directory Structure
 ===================
 
 Grenade creates a set of directories for both the base and target
-OpenStack installation sources and DevStack.
+OpenStack installation sources and DevStack::
 
-$STACK_ROOT
- |- logs                # Grenade logs
- |- save                # Grenade state logs
- |- <base>
- |   |- data            # base data
- |   |- logs            # base DevStack logs
- |   |- devstack
- |   |- images          # cache of downloaded images
- |   |- cinder
- |   |- ...
- |   |- swift
- |- <target>
- |   |- data            # target data
- |   |- logs            # target DevStack logs
- |   |- devstack
- |   |- cinder
- |   |- ...
- |   |- swift
+    $STACK_ROOT
+     |- logs                # Grenade logs
+     |- save                # Grenade state logs
+     |- <base>
+     |   |- data            # base data
+     |   |- logs            # base DevStack logs
+     |   |- devstack
+     |   |- images          # cache of downloaded images
+     |   |- cinder
+     |   |- ...
+     |   |- swift
+     |- <target>
+     |   |- data            # target data
+     |   |- logs            # target DevStack logs
+     |   |- devstack
+     |   |- cinder
+     |   |- ...
+     |   |- swift
 
 Dependencies
 ============
