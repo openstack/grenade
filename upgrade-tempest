@@ -40,8 +40,7 @@ GetDistro
 TOP_DIR=$TARGET_DEVSTACK_DIR
 
 cd $TARGET_DEVSTACK_DIR
-source $TARGET_DEVSTACK_DIR/functions
-source $TARGET_DEVSTACK_DIR/stackrc
+ # note; openrc sources functions & stackrc
 source $TARGET_DEVSTACK_DIR/openrc
 FILES=$TARGET_DEVSTACK_DIR/files
 
