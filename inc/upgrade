@@ -123,9 +123,9 @@ function register_project_for_upgrade {
 }
 
 function is_service_running {
-    local name=$1
+    local name="$1"
     # the following is needed to filter out upgrade / shutdown scripts
-    ps auxw | grep -v grep | grep -v shutdown.sh | grep -v upgrade.sh | grep ${name}
+    ps auxw | grep -v grep | grep -v shutdown.sh | grep -v upgrade.sh | grep -e "${name}"
     local exitcode=$?
     # some times I really hate bash reverse binary logic
     return $exitcode
@@ -143,8 +143,8 @@ function ensure_services_stopped {
     while [ $wait_for -gt 0 ]; do
         still_running=""
         local service=""
-        for service in $@; do
-            if is_service_running ${service}; then
+        for service in "$@"; do
+            if is_service_running "${service}"; then
                 still_running+=" $service"
             fi
         done
@@ -172,8 +172,8 @@ function ensure_services_started {
     while [ $wait_for -gt 0 ]; do
         not_running=""
         local service=""
-        for service in $@; do
-            if ! is_service_running ${service}; then
+        for service in "$@"; do
+            if ! is_service_running "${service}"; then
                 not_running+=" $service"
             fi
         done
