@@ -1,3 +1,9 @@
 devstack.localrc
 localrc
 *.swp
+doc/files
+doc/build
+shocco
+.tox
+AUTHORS
+ChangeLog
