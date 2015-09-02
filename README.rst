@@ -13,13 +13,15 @@ Goals
 
 Grenade has the following goals:
 
-- Block unintentional project changes that would break the ``Theory of
-  Upgrade``. Most Grenade fails that people hit are of this nature.
+- Block unintentional project changes that would break the :ref:`Theory of
+  Upgrade`. Most Grenade fails that people hit are of this nature.
 - Ensure that upgrading a cloud doesn't do something dumb like delete
   and recreate all your servers/volumes/networks.
 - Be able to grow to support additional upgrade scenarios (like
   sideways migrations from one configuration to another equivalent
   configuration)
+
+.. _Theory of Upgrade:
 
 Theory of Upgrade
 =================
