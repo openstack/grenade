@@ -56,7 +56,6 @@ source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/swift
-source $TARGET_DEVSTACK_DIR/lib/zaqar
 
 # The following devstack libraries may have dependencies on service-specific
 # environment variables, they must be loaded after.
