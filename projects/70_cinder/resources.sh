@@ -37,6 +37,14 @@ CINDER_STATE_FILE=verify.txt
 DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
 DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
 
+# glance v2 api doesn't implement the name based resources needed by
+# OSC, so we disable it for now.
+#
+# Remove when:
+# https://bugs.launchpad.net/python-openstackclient/+bug/1501362 is
+# resolved.
+export OS_IMAGE_API_VERSION=1
+
 # BUG openstack client doesn't work with cinder v2
 export OS_VOLUME_API_VERSION=1
 
