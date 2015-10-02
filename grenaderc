@@ -92,6 +92,9 @@ VERIFY_RESOURCES=${VERIFY_RESOURCES:-True}
 # Set up for Javelin (default to True)
 RUN_JAVELIN=${RUN_JAVELIN:-True}
 
+# How long should we wait for services to start / stop before we
+# consider it a fail. Defaults to 30 seconds.
+SERVICE_TIMEOUT=${SERVICE_TIMEOUT:-30}
 
 # Local variables:
 # mode: shell-script

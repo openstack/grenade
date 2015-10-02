@@ -138,7 +138,7 @@ function is_service_running {
 # wait for services to stop, wait up to 10 seconds because sometimes
 # services take a while to shutdown.
 function ensure_services_stopped {
-    local wait_for=10
+    local wait_for=$SERVICE_TIMEOUT
     local still_running=""
     while [ $wait_for -gt 0 ]; do
         still_running=""
@@ -168,7 +168,7 @@ function ensure_services_stopped {
 
 # Functions to handle service checking
 function ensure_services_started {
-    local wait_for=10
+    local wait_for=$SERVICE_TIMEOUT
     while [ $wait_for -gt 0 ]; do
         not_running=""
         local service=""
