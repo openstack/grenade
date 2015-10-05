@@ -42,25 +42,9 @@ function register_db_to_save {
     done
 }
 
+# Upgrade a service listed in $UPGRADE_PROJECTS.
 function upgrade_service {
     local local_service=$1
-    # figure out if the service should be upgraded
-    echo "Checking for $local_service is enabled"
-    local enabled=""
-    # TODO(sdague) terrible work around because of missing
-    # devstack functions
-    if [[ $local_service == 'keystone' ]]; then
-        enabled="True"
-    else
-        enabled=$(
-            source $TARGET_DEVSTACK_DIR/stackrc;
-            is_service_enabled $local_service || echo "False")
-    fi
-    if [[ "$enabled" == "False" ]]; then
-        echo_summary "Not upgrading $local_service"
-        return
-    fi
-
     local plugin_dir=${PLUGIN_DIR[$local_service]}
     if [[ -n "$plugin_dir" ]]; then
         echo_summary "Upgrading $local_service..."
@@ -70,7 +54,6 @@ function upgrade_service {
         $GRENADE_DIR/upgrade-$local_service || die $LINENO "Failure in upgrade-$local_service"
     fi
 }
-
 
 # This function triggers the upgrade process for each project if it exists,
 # otherwise it shows up a warning message about the lack of this file.
