@@ -39,6 +39,7 @@ set -o errexit
 # Duplicate some setup bits from target DevStack
 source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/nova
 
 # Print the commands being run so that we can see the command that triggers
