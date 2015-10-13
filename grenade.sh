@@ -189,7 +189,9 @@ export TOP_DIR=$TARGET_DEVSTACK_DIR
 
 # Collect the ENABLED_SERVICES from the base directory, this is what
 # we are starting with.
-ENABLED_SERVICES=$(source $BASE_DEVSTACK_DIR/stackrc; echo $ENABLED_SERVICES)
+ENABLED_SERVICES=$(set +o xtrace &&
+                   source $BASE_DEVSTACK_DIR/stackrc &&
+                   echo $ENABLED_SERVICES)
 
 # Fetch all the grenade plugins which were registered in ``pluginrc``
 # via the ``enable_grenade_plugin`` stanza. This must be done before

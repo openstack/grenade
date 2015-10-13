@@ -26,7 +26,7 @@
 
 
 # Save trace setting
-XTRACE=$(set +o | grep xtrace)
+_XTRACE_GRENADE_FUNCTIONS=$(set +o | grep xtrace)
 set +o xtrace
 
 # Include the common functions
@@ -128,4 +128,4 @@ FSSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 
 # Restore xtrace
-$XTRACE
+$_XTRACE_GRENADE_FUNCTIONS

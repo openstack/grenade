@@ -46,12 +46,18 @@
 # This function should be used to send messages out to the summary log
 # file which makes for good high level progress monitoring.
 function echo_summary {
+    local xtrace
+    xtrace=$(set +o | grep xtrace)
+    set +o xtrace
+
     echo $@ >&6
     echo
     echo "#********************************************"
     echo "# " $@
     echo "#********************************************"
     echo
+
+    $xtrace
 }
 
 # Stop at a specific phase

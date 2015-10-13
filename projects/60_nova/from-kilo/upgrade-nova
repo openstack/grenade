@@ -3,11 +3,13 @@
 # ``upgrade-nova``
 
 function configure_nova_upgrade {
-    XTRACE=$(set +o | grep xtrace)
+    local xtrace
+    xtrace=$(set +o | grep xtrace)
+
     set -o xtrace
     # Apply new rootwrap compute.filters
     sudo cp -f $TARGET_RELEASE_DIR/nova/etc/nova/rootwrap.d/compute.filters $NOVA_CONF_DIR/rootwrap.d/
 
     # reset to previous state
-    $XTRACE
+    $xtrace
 }
