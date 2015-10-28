@@ -14,7 +14,8 @@ function get_new_values {
 }
 
 function configure_keystone_upgrade {
-    XTRACE=$(set +o | grep xtrace)
+    local xtrace
+    xtrace=$(set +o | grep xtrace)
     set -o xtrace
 
     # Remove XmlBodyMiddleware from the keystone-paste.ini file. All
@@ -55,5 +56,5 @@ function configure_keystone_upgrade {
     iniset $KEYSTONE_PASTE_INI pipeline:admin_version_api pipeline "$admin_api_values"
 
     ## reset to previous state
-    $XTRACE
+    $xtrace
 }
