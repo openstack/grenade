@@ -240,8 +240,8 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # ---------
 
     # Validate the install
-    echo_summary "Running base smoke test"
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
+        echo_summary "Running base smoke test"
         cd $BASE_RELEASE_DIR/tempest
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         # once we are done, copy our created artifacts to the target
