@@ -65,11 +65,7 @@ create_nova_keys_dir
 # Migrate the database
 $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sync error"
 
-# rolling nova-compute support
-if ! should_upgrade "n-cpu"; then
-    # NOTE(danms): In the Mitaka->N timeframe, we can always set this!
-    iniset $NOVA_CONF upgrade_levels compute auto
-fi
+iniset $NOVA_CONF upgrade_levels compute auto
 
 # Start Nova
 start_nova_api
