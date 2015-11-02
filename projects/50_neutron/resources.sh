@@ -59,11 +59,13 @@ function verify_noapi {
 }
 
 function destroy {
-    # BUG: for now we'll be sloppy on shutdown, once we get everything
-    # working we'll clean up better.
+    # Must clean the router before we can remove a net
     # set +o errexit
-    neutron net-delete $(resource_get network net_id) || /bin/true
+    neutron router-gateway-clear $(resource_get network router_id) || /bin/true
+    neutron router-interface-delete $(resource_get network router_id) $(resource_get network subnet_
+id) || /bin/true
     neutron router-delete $(resource_get network router_id) || /bin/true
+    neutron net-delete $(resource_get network net_id) || /bin/true
 }
 
 
