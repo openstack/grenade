@@ -103,6 +103,7 @@ cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc
 # would break, and pbr as a setup_requires can't be sanely
 # minimum-versioned.
 source $TARGET_DEVSTACK_DIR/lib/infra
+git_clone $REQUIREMENTS_REPO $REQUIREMENTS_DIR $REQUIREMENTS_BRANCH
 
 install_infra
 
