@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# ``upgrade-cinder``
+
+function configure_cinder_upgrade {
+    XTRACE=$(set +o | grep xtrace)
+    set -o xtrace
+
+    # Copy update volume.filters config file because of rootwrap filters changes
+    sudo cp -f $TARGET_RELEASE_DIR/cinder/etc/cinder/rootwrap.d/volume.filters $CINDER_CONF_DIR/rootwrap.d/
+
+    $XTRACE
+}
