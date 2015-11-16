@@ -87,15 +87,6 @@ function upgrade_project {
     fi
 }
 
-# Determine whether grenade should be upgrading specified service, according
-# to DO_NOT_UPGRADE_SERVICES
-function should_upgrade {
-    if [[ "$DO_NOT_UPGRADE_SERVICES" =~ "$1" ]]; then
-        return 1
-    fi
-    return 0
-}
-
 # Registration interfaces for external plugins
 function register_project_for_upgrade {
     local project=$1
