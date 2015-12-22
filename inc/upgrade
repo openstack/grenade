@@ -64,7 +64,7 @@ function upgrade_project {
     # NOTE(maurosr): Ideally in a new upgrade test right after a release no new
     # configuration is need, so we can go on without the from-<release> directory.
     # This is also useful due to cross dependencie between d-g and grenade when
-    # enabling grenade to run a an upgrade between a new pair of releases.
+    # enabling grenade to run an upgrade between a new pair of releases.
 
     project=$1
     base_dir=$2

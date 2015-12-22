@@ -119,7 +119,7 @@ install_infra
 
 # Start dstat if it's in the ENABLED_SERVICES list. We really want
 # this running before any services start to see what's going on when
-# they start up, especialy if there are failures.
+# they start up, especially if there are failures.
 source $TARGET_DEVSTACK_DIR/lib/dstat
 
 start_dstat

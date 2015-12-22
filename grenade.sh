@@ -131,7 +131,7 @@ fi
 
 # Set up logging of screen windows
 # Set ``SCREEN_LOGDIR`` to turn on logging of screen windows to the
-# directory specified in ``SCREEN_LOGDIR``, we will log to the the file
+# directory specified in ``SCREEN_LOGDIR``, we will log to the file
 # ``screen-$SERVICE_NAME-$TIMESTAMP.log`` in that dir and have a link
 # ``screen-$SERVICE_NAME.log`` to the latest log file.
 # Logs are kept for as long specified in ``LOGDAYS``.
