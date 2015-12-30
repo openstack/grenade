@@ -8,8 +8,8 @@ General
 Grenade is written in POSIX shell script. It specifies BASH and is
 compatible with Bash 3.
 
-Grenade's official repository is located on GitHub at
-https://github.com/openstack-dev/grenade.git.
+Grenade's official repository is located at
+https://git.openstack.org/cgit/openstack-dev/grenade.
 
 
 Scripts
