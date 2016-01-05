@@ -123,8 +123,15 @@ function exit_trap {
 }
 
 
-# Don't check or store host keys, and auto-accept whatever we connect to
-FSSH="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+# Force a shorter connect timeout, if networking has gone off the
+# rails we could potentially be hanging around for minutes on every
+# ssh attempt due to TCP timeouts/retries.
+#
+# Don't check or store host keys, which makes it easier for local dev
+# when hosts come and go.
+#
+# Auto-accept whatever we connect to
+FSSH="ssh -o ConnectTimeout=10 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 
 # Restore xtrace
