@@ -12,7 +12,7 @@
 SRC_DIR=$(cd $(dirname "$0") && pwd)
 
 # Set up some defaults if grenaderc is not present
-GRENADE_REPO=https://github.com/openstack-dev/grenade.git
+GRENADE_REPO=https://git.openstack.org/openstack-dev/grenade
 GRENADE_DIR=${STACK_ROOT}/grenade
 GRENADE_BRANCH=master
 
