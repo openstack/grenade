@@ -131,7 +131,7 @@ function exit_trap {
 # when hosts come and go.
 #
 # Auto-accept whatever we connect to
-FSSH="ssh -o ConnectTimeout=10 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+FSSH="ssh -v -o ConnectTimeout=10 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 
 # Restore xtrace
