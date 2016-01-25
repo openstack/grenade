@@ -93,6 +93,13 @@ fi
 cp -a $BASE_DEVSTACK_DIR/accrc $TARGET_DEVSTACK_DIR/accrc
 
 
+# Install package requirements from new devstack
+# ==============================================
+echo_summary "Installing package prerequisites"
+FILES=$TARGET_DEVSTACK_DIR/files
+source $TARGET_DEVSTACK_DIR/tools/install_prereqs.sh
+
+
 # Set up requirements
 # ===================
 
