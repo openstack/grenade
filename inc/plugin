@@ -58,17 +58,25 @@ function load_settings {
     export UPGRADE_PROJECTS
 }
 
-function shutdown_services {
-    echo "Upgrade projects: $UPGRADE_PROJECTS"
-    # iterate in reverse under the theory that we should take down
-    # services in opposite order
-    local reverse_projects=""
-    local project=""
-    for project in $UPGRADE_PROJECTS; do
-        reverse_projects="$project $reverse_projects"
+function reverse_list {
+    local str=""
+    local reversed=""
+    for str in $@; do
+        reversed="$str $reversed"
     done
 
-    for project in $reverse_projects; do
+    echo $reversed
+}
+
+function shutdown_services {
+    local projects=""
+    local project=""
+
+    projects=`reverse_list "$UPGRADE_PROJECTS"`
+    echo "Upgrade projects: $projects"
+    # iterate in reverse under the theory that we should take down
+    # services in opposite order
+    for project in $projects; do
         echo "Looking for $project"
         local dir=${PLUGIN_DIR[$project]}
         if [[ -z "$dir" ]]; then
@@ -84,6 +92,7 @@ function shutdown_services {
 function resources {
     # which resource phase are we in
     local phase=$1
+    local project=""
 
     # bail early if we aren't going to do this level of verification.
     if [[ "$VERIFY_RESOURCES" != "True" ]]; then
@@ -92,7 +101,12 @@ function resources {
     fi
     echo_summary "Running resource phase ``$phase``"
 
-    for project in $UPGRADE_PROJECTS; do
+    local projects=$UPGRADE_PROJECTS
+    if [[ $phase == "destroy" ]];then
+        projects=`reverse_list "$UPGRADE_PROJECTS"`
+    fi
+
+    for project in $projects; do
         local dir=${PLUGIN_DIR[$project]}
         if [[ -z "$dir" ]]; then
             die $LINENO "Couldn't find project '$project' in plugin list"
