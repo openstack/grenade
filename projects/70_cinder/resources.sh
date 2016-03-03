@@ -138,15 +138,18 @@ function create {
     set +o errexit
     local timeleft=30
     while [[ $timeleft -gt 0 ]]; do
-        $FSSH -i $CINDER_KEY_FILE cirros@$ip \
-            "echo '$CINDER_STATE' > $CINDER_STATE_FILE"
+        local start=$(date +%s)
+        timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$ip \
+                "echo '$CINDER_STATE' > $CINDER_STATE_FILE"
         local rc=$?
 
         if [[ "$rc" -ne 0 ]]; then
             echo "SSH not responding yet, trying again..."
             sleep 1
-            timeleft=$((timeleft - 1))
-            if [[ $timeleft == 0 ]]; then
+            local end=$(date +%s)
+            local took=$((end - start))
+            timeleft=$((timeleft - took))
+            if [[ $timeleft -le 0 ]]; then
                 die $LINENO "SSH to the client did not work, something very wrong"
             fi
         else
