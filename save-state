@@ -52,6 +52,12 @@ sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
 sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
 sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
 
+# Log RabbitMQ state
+# ------------------
+if $(source $BASE_DEVSTACK_DIR/stackrc; is_service_enabled rabbit); then
+    sudo rabbitmqctl list_queues messages consumers arguments name >$SAVE_DIR/rabbitmq-queues.txt
+    sudo rabbitmqctl report >$SAVE_DIR/rabbitmq-report.txt
+fi
 
 set +o xtrace
 echo "*********************************************************************"
