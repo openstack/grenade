@@ -96,6 +96,10 @@ RUN_JAVELIN=${RUN_JAVELIN:-True}
 # consider it a fail. Defaults to 30 seconds.
 SERVICE_TIMEOUT=${SERVICE_TIMEOUT:-30}
 
+# Should we run any online migrations manually during the upgrade
+# process?
+FORCE_ONLINE_MIGRATIONS=${FORCE_ONLINE_MIGRATIONS:-True}
+
 # Local variables:
 # mode: shell-script
 # End:

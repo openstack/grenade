@@ -68,6 +68,11 @@ $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF api_db sync || die $LINENO "A
 
 iniset $NOVA_CONF upgrade_levels compute auto
 
+if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
+    # Run "online" migrations that can complete before we start
+    $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
+fi
+
 # Start Nova
 start_nova_api
 start_nova
@@ -75,6 +80,11 @@ start_nova
 # Don't succeed unless the services come up
 ensure_services_started nova-api nova-conductor nova-compute
 ensure_logs_exist n-api n-cond n-cpu
+
+if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
+    # Run "online" migrations after we've got all the services running
+    $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
+fi
 
 set +o xtrace
 echo "*********************************************************************"
