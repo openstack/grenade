@@ -63,7 +63,7 @@ $CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
 start_cinder
 
 # Don't succeed unless the services come up
-ensure_services_started cinder-api
+ensure_services_started cinder-api cinder-volume
 ensure_logs_exist c-api c-vol
 
 set +o xtrace
