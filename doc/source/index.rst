@@ -7,6 +7,7 @@ Grenade - an OpenStack Community Upgrade Production
 
    readme
    plugins
+   plugin-registry
    hacking
 
 Code
