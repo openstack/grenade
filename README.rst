@@ -158,12 +158,13 @@ There is an *optional* setup-grenade script that is useful if you are
 running Grenade against a remote VM from a local laptop.
 
 Grenade knows how to install the current master branch using the included
-``setup-grenade`` script.  The only argument is the hostname of the target
-system that will run the upgrade testing.
+``setup-grenade`` script.  The arguments are the hostname of the target
+system that will run the upgrade testing and the user for the target
+system:
 
 ::
 
-    ./setup-grenade testbox
+    ./setup-grenade [testbox [testuser]]
 
 If you are running Grenade on the same maching you cloned to, you **do
 not** need to do this.
