@@ -255,6 +255,9 @@ if [[ "$RUN_BASE" == "True" ]]; then
     fi
     stop $STOP base-smoke 110
 
+    # Early Create resources, used largely for network setup
+    resources early_create
+
     # Create resources
     resources create
 

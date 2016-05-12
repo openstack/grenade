@@ -68,6 +68,17 @@ Calling Interface
 
 The following is the supported calling interface
 
+- resources.sh early_create
+
+  creates a set of sample resources that should survive very early in
+  the upgrade process. This should only be used for horizontal
+  resources that impact other services, that *have* to be available
+  before they do any of their setup. For instance setup of neutron
+  networks.
+
+  Do not use the phase unless you really know why ``create`` will not
+  work for you.
+
 - resources.sh create
 
   creates a set of sample resources that should survive

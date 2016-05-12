@@ -29,7 +29,7 @@ NEUTRON_NET=neutron_grenade
 # resource flow can be sorted out, unwinding what's currently hard
 # coded in javelin is a little odd.
 
-function create {
+function early_create {
     # this builds a default network for other services to use
     local net_id=$(neutron net-create --shared $NEUTRON_NET | grep ' id ' | get_field 2)
     resource_save network net_id $net_id
@@ -71,8 +71,8 @@ id) || /bin/true
 
 # Dispatcher
 case $1 in
-    "create")
-        create
+    "early_create")
+        early_create
         ;;
     "verify_noapi")
         verify_noapi
