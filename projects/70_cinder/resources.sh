@@ -48,6 +48,11 @@ export OS_IMAGE_API_VERSION=1
 # BUG openstack client doesn't work with cinder v2
 export OS_VOLUME_API_VERSION=1
 
+if ! is_service_enabled c-api; then
+    echo "Cinder is not enabled. Skipping resource phase $1 for cinder."
+    exit 0
+fi
+
 function _cinder_set_user {
     OS_TENANT_NAME=$CINDER_PROJECT
     OS_PROJECT_NAME=$CINDER_PROJECT
