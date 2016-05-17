@@ -99,7 +99,7 @@ function resources {
         echo "Skipping resource phase ``$phase`` by configuration"
         return
     fi
-    echo_summary "Running resource phase ``$phase``"
+    echo_summary "Running resource phase: ``$phase``"
 
     local projects=$UPGRADE_PROJECTS
     if [[ $phase == "destroy" ]];then
