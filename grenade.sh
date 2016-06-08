@@ -35,6 +35,7 @@ export GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 # grenade needs to get going. This includes things like echo
 # functions, trueorfalse, and the functions related to git cloning, so
 # that we can get our devstack trees.
+export DSTOOLS_VERSION=${DSTOOLS_VERSION:-0.1.4}
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
 
@@ -190,6 +191,13 @@ export TOP_DIR=$TARGET_DEVSTACK_DIR
 # Install 'Base' Build of OpenStack
 # =================================
 
+source $TARGET_DEVSTACK_DIR/inc/meta-config
+# Oh the complexity of bootstrapping. We need to populate enabled
+# services from what devstack-gate might have set it as.
+extract_localrc_section $BASE_DEVSTACK_DIR/local.conf \
+                        $BASE_DEVSTACK_DIR/localrc \
+                        $BASE_DEVSTACK_DIR/.localrc.auto
+
 # Collect the ENABLED_SERVICES from the base directory, this is what
 # we are starting with.
 ENABLED_SERVICES=$(set +o xtrace &&
@@ -206,6 +214,14 @@ fetch_grenade_plugins
 # registers all the projects in order that we're going to be upgrading
 # when the time is right.
 load_settings
+
+# And ensure that we setup the target localrc.auto, because stack.sh
+# isn't run there. This has to be run after load_settings because
+# plugins might change the service list during this phase.
+
+extract_localrc_section $TARGET_DEVSTACK_DIR/local.conf \
+                        $TARGET_DEVSTACK_DIR/localrc \
+                        $TARGET_DEVSTACK_DIR/.localrc.auto
 
 # Run the base install of the environment
 if [[ "$RUN_BASE" == "True" ]]; then
