@@ -175,6 +175,9 @@ fetch_devstacks
 # we have the devstacks pulled down.
 source $GRENADE_DIR/functions
 
+# We now have the 'short_source' function available, so setup our PS4 variable
+export PS4='+ $(short_source):   '
+
 # Many calls inside of devstack functions reference $TOP_DIR, which is
 # the root of devstack. We export $TOP_DIR to all child processes here
 # to be the TARGET_DEVSTACK_DIR.
