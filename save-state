@@ -47,10 +47,15 @@ save_data $BASE_RELEASE $BASE_DEVSTACK_DIR
 # Save ebtables/iptables
 # ----------------------
 
-sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
-sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
-sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
-sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
+# NOTE(sileht): If nova is not installed this tools are not present
+if [ -x "$(iptable-save)" ]; then
+    sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
+fi
+if [ -x "$(ebtables)" ]; then
+    sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
+    sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
+    sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
+fi
 
 # Log RabbitMQ state
 # ------------------
