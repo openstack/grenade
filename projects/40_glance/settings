@@ -1,2 +1,4 @@
-register_project_for_upgrade glance
-register_db_to_save glance
+if is_service_enabled glance; then
+    register_project_for_upgrade glance
+    register_db_to_save glance
+fi
