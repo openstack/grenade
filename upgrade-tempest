@@ -79,6 +79,7 @@ if $(source $BASE_DEVSTACK_DIR/stackrc; is_service_enabled neutron); then
 fi
 
 configure_tempest
+install_tempest_plugins
 
 DEST=$DEST_BACKUP
 
