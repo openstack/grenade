@@ -316,6 +316,11 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     resources verify
 
     # Validate the upgrade
+    # This is used for testing grenade locally, and should not be used in the
+    # gate. Instead, grenade.sh runs smoke tests on the old cloud above, but
+    # smoke tests are run on the upgraded cloud by the gate script after
+    # grenade.sh has finished. If this option is enabled in the gate, tempest
+    # will be run twice against the new cloud.
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running tempest scenario and smoke tests"
         cd $TARGET_RELEASE_DIR/tempest
