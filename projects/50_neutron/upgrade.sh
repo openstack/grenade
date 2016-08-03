@@ -99,7 +99,6 @@ sudo apt-get -y install python-qpid
 install_neutron
 install_neutronclient
 install_neutron_agent_packages
-install_neutron_third_party
 
 Q_L3_CONF_FILE=${Q_L3_CONF_FILE:-"$NEUTRON_CONF_DIR/l3_agent.ini"}
 Q_FWAAS_CONF_FILE=${Q_FWAAS_CONF_FILE:-"$NEUTRON_CONF_DIR/fwaas_driver.ini"}
@@ -133,7 +132,6 @@ AGENT_L3_BINARY=${AGENT_L3_BINARY:-"$NEUTRON_BIN_DIR/neutron-l3-agent"}
 AGENT_VPN_BINARY=${AGENT_VPN_BINARY:-"$NEUTRON_BIN_DIR/neutron-vpn-agent"}
 
 # Start neutron and agents
-start_neutron_third_party
 start_neutron_service_and_check
 start_neutron_agents
 

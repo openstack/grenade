@@ -17,4 +17,3 @@ set -o xtrace
 
 # BUG: neutron stop scripts don't exit cleanly, this needs to be fixed
 stop_neutron || /bin/true
-stop_neutron_third_party || /bin/true
