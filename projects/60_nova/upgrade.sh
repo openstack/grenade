@@ -41,6 +41,7 @@ source $TARGET_DEVSTACK_DIR/stackrc
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/nova
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
@@ -72,6 +73,9 @@ if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
     # Run "online" migrations that can complete before we start
     $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
 fi
+
+# Setup cellsv2 records, if necessary
+$NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
 
 # Start Nova
 start_nova_api

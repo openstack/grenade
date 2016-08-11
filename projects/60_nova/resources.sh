@@ -93,6 +93,10 @@ function create {
     resource_save nova nova_server_float $id
     openstack ip floating add $ip $NOVA_SERVER
 
+
+    uuid=$(openstack server show $NOVA_SERVER -f value -c id)
+    resource_save nova nova_server_uuid $uuid
+
     # ping check on the way up to ensure we're really running
     ping_check_public $ip 30
 
@@ -102,10 +106,16 @@ function create {
 }
 
 function verify {
+    local side="$1"
     # we aren't doing any API verification here, so just call
     # verify_noapi for now. Additional API verification can be added
     # later.
     verify_noapi
+
+    if [[ "$side" = "post-upgrade" ]]; then
+        uuid=$(resource_get nova nova_server_uuid)
+        nova-manage cell_v2 verify_instance --uuid $uuid
+    fi
 }
 
 function verify_noapi {
@@ -140,10 +150,10 @@ case $1 in
         create
         ;;
     "verify_noapi")
-        verify_noapi
+        verify_noapi $2
         ;;
     "verify")
-        verify
+        verify $2
         ;;
     "destroy")
         destroy
