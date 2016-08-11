@@ -16,13 +16,13 @@ Proposed new basic flow:
 - verify_base
   - for project in projects; do verify_project; done
 - resources.sh create
-- resources.sh verify
+- resources.sh verify pre-upgrade
 - shutdown
   - for project in projects; do shutdown; done
 - snapshot.sh pre_upgrade (NOT YET IMPLEMENTED)
-- resources.sh verify_noapi
+- resources.sh verify_noapi pre-upgrade
 - upgrade ...
-- resources.sh verify
+- resources.sh verify post-upgrade
 - verify_target
 - resources.sh destroy
 
@@ -87,10 +87,11 @@ The following is the supported calling interface
 
   Example: create an instance in nova or a volume in cinder
 
-- resources.sh verify
+- resources.sh verify (pre-upgrade|post-upgrade)
 
   verify that the resources were created. Services are running at this
-  point, and the APIs may be expected to work.
+  point, and the APIs may be expected to work. The second argument
+  indicates whether we are pre-upgrade or post-upgrade.
 
   Example: use the nova command to verify that the test instance is
   still ACTIVE, or the cinder command to verify that the volume is
@@ -102,7 +103,8 @@ The following is the supported calling interface
   phase where services are stopped, and APIs are expected to not be
   accessible. Resource verification at this phase my require probing
   underlying components to make sure nothing has gone awry during
-  service shutdown.
+  service shutdown. The second argument indicates whether we are
+  pre-upgrade or post-upgrade.
 
   Example: check with libvirt to make sure the instance is actually
   created and running. Bonus points for being able to ping the
@@ -121,11 +123,11 @@ The calling sequence during a grenade run looks as follows:
 
 - # start old side
 - create (create will be called during the working old side)
-- verify
+- verify pre-upgrade
 - # shutdown all services
-- verify_noapi
+- verify_noapi pre-upgrade
 - # upgrade and start all services
-- verify
+- verify post-upgrade
 - destroy
 
 The important thing to remember is verify/verify_noapi will be called

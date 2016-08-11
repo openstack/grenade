@@ -92,6 +92,7 @@ function shutdown_services {
 function resources {
     # which resource phase are we in
     local phase=$1
+    local side=$2
     local project=""
 
     # bail early if we aren't going to do this level of verification.
@@ -115,7 +116,7 @@ function resources {
         if [[ -e $resource ]]; then
             # NOTE(sdague): we might need to set topdir differently?
             TOP_DIR=$BASE_DEVSTACK_DIR LOGDIR=$LOGDIR \
-                   $resource $phase || die $LINENO "Failed to run ``$resource $phase``"
+                   $resource $phase $side || die $LINENO "Failed to run ``$resource $phase $side``"
         fi
     done
 }

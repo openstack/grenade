@@ -265,7 +265,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
     resources create
 
     # Verify the resources were created
-    resources verify
+    resources verify pre-upgrade
 
     # Save some stuff before we shut that whole thing down
     echo_summary "Saving current state information"
@@ -277,7 +277,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
     shutdown_services
 
     # Verify the resources still exist after the shutdown
-    resources verify_noapi
+    resources verify_noapi pre-upgrade
 fi
 
 
@@ -313,7 +313,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # =============
 
     # Verify the resources still exist after the upgrade
-    resources verify
+    resources verify post-upgrade
 
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
