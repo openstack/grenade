@@ -238,7 +238,10 @@ if [[ "$RUN_BASE" == "True" ]]; then
             rsync -a $BASE_DEVSTACK_DIR/files/$IMAGE_FNAME $BASE_RELEASE_DIR/images
         fi
     done
-    rsync -a $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
+    # NOTE(sileht): If glance is not enabled the directory cannot exists.
+    if [[ -d $BASE_DEVSTACK_DIR/files/images ]] ; then
+        rsync -a $BASE_DEVSTACK_DIR/files/images/ $BASE_RELEASE_DIR/images
+    fi
     stop $STOP image-cache 20
 
     # Operation
