@@ -113,8 +113,12 @@ function verify {
     verify_noapi
 
     if [[ "$side" = "post-upgrade" ]]; then
-        uuid=$(resource_get nova nova_server_uuid)
-        nova-manage cell_v2 verify_instance --uuid $uuid
+        # We can only verify the cells v2 setup if we created the mappings by
+        # calling simple_cell_setup.
+        if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
+            uuid=$(resource_get nova nova_server_uuid)
+            nova-manage cell_v2 verify_instance --uuid $uuid
+        fi
     fi
 }
 

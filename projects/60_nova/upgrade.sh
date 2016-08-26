@@ -74,8 +74,10 @@ if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
     $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
 fi
 
-# Setup cellsv2 records, if necessary
-$NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
+# Setup cellsv2 records, if necessary.
+if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
+    $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
+fi
 
 # Start Nova
 start_nova_api
