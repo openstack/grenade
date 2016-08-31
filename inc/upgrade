@@ -33,8 +33,12 @@ function save_mysql_dbs {
         set +o xtrace &&
             source $dir/stackrc &&
             echo $MYSQL_PASSWORD)
+    local database_user=$(
+        set +o xtrace &&
+            source $dir/stackrc &&
+            echo ${DATABASE_USER:-root})
     for db in $DATABASES_TO_SAVE; do
-        mysqldump -uroot -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
+        mysqldump -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
     done
 }
 
