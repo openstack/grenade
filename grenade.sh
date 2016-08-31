@@ -320,7 +320,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
 
     # Validate the upgrade
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
-        echo_summary "Running tempest scenario and smoke tests"
+        echo_summary "Running tempest smoke tests"
         cd $TARGET_RELEASE_DIR/tempest
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         stop $STOP run-smoke 330
