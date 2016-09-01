@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# ``upgrade-keystone``
+
+function configure_keystone_upgrade {
+    local xtrace
+    xtrace=$(set +o | grep xtrace)
+    set -o xtrace
+
+    # Run `keysetone-manage credential_setup` to ensure keystone has a fernet
+    # key repository to encrypt and decrypt credentials.
+    $KEYSTONE_BIN_DIR/keystone-manage --config-file $KEYSTONE_CONF credential_setup
+
+    # reset to previous state
+    $xtrace
+}
