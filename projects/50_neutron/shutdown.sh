@@ -21,5 +21,4 @@ source $BASE_DEVSTACK_DIR/lib/neutron-legacy
 
 set -o xtrace
 
-# BUG: neutron stop scripts don't exit cleanly, this needs to be fixed
-stop_neutron || /bin/true
+stop_neutron
