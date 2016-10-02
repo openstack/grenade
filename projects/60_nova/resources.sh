@@ -88,7 +88,7 @@ function create {
     # Add a floating IP because this is something which will work in
     # either n-net or neutron. More advanced server creates with
     # neutron should be done in neutron test.
-    eval $(openstack ip floating create public -f shell -c id -c ip -c floating_ip_address)
+    eval $(openstack floating ip create public -f shell -c id -c ip -c floating_ip_address)
     # NOTE(dhellmann): Around version 3.0.0 of python-openstackclient
     # the column name changed from "ip" to "floating_ip_address". We
     # look for both here to support upgrades.
@@ -97,7 +97,7 @@ function create {
     fi
     resource_save nova nova_server_ip $ip
     resource_save nova nova_server_float $id
-    openstack ip floating add $ip $NOVA_SERVER
+    openstack server add floating ip $NOVA_SERVER $ip
 
 
     uuid=$(openstack server show $NOVA_SERVER -f value -c id)
@@ -135,8 +135,8 @@ function verify_noapi {
 
 function destroy {
     _nova_set_user
-    openstack ip floating remove $(resource_get nova nova_server_ip) $NOVA_SERVER
-    openstack ip floating delete $(resource_get nova nova_server_float)
+    openstack server remove floating ip $NOVA_SERVER $(resource_get nova nova_server_ip)
+    openstack floating ip delete $(resource_get nova nova_server_float)
     openstack server delete $NOVA_SERVER
     # wait for server to be down before we delete the security group
     # TODO(mriedem): Use the --wait option with the openstack server delete
