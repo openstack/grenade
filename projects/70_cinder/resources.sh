@@ -132,7 +132,7 @@ function create {
 
     # Add a floating IP because this is something which will work in
     # either n-net or neutron.
-    eval $(openstack ip floating create public -f shell -c id -c ip -c floating_ip_address)
+    eval $(openstack floating ip create public -f shell -c id -c ip -c floating_ip_address)
     # NOTE(dhellmann): Around version 3.0.0 of python-openstackclient
     # the column name changed from "ip" to "floating_ip_address". We
     # look for both here to support upgrades.
@@ -141,7 +141,7 @@ function create {
     fi
     resource_save cinder cinder_server_ip $ip
     resource_save cinder cinder_server_float $id
-    openstack ip floating add $ip $CINDER_SERVER
+    openstack server add floating ip $CINDER_SERVER $ip
 
     # ping check on the way up so we can add ssh content
     ping_check_public $ip 30
@@ -196,8 +196,8 @@ function verify_noapi {
 
 function destroy {
     _cinder_set_user
-    openstack ip floating remove $(resource_get cinder cinder_server_ip) $CINDER_SERVER
-    openstack ip floating delete $(resource_get cinder cinder_server_float)
+    openstack server remove floating ip $CINDER_SERVER $(resource_get cinder cinder_server_ip)
+    openstack floating ip delete $(resource_get cinder cinder_server_float)
 
     openstack server delete $CINDER_SERVER
     # wait for server to be down before we delete the volume
