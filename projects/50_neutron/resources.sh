@@ -62,8 +62,7 @@ function destroy {
     # Must clean the router before we can remove a net
     # set +o errexit
     neutron router-gateway-clear $(resource_get network router_id) || /bin/true
-    neutron router-interface-delete $(resource_get network router_id) $(resource_get network subnet_
-id) || /bin/true
+    neutron router-interface-delete $(resource_get network router_id) $(resource_get network subnet_id) || /bin/true
     neutron router-delete $(resource_get network router_id) || /bin/true
     neutron net-delete $(resource_get network net_id) || /bin/true
 }
