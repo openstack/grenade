@@ -137,12 +137,7 @@ function destroy {
     _nova_set_user
     openstack server remove floating ip $NOVA_SERVER $(resource_get nova nova_server_ip)
     openstack floating ip delete $(resource_get nova nova_server_float)
-    openstack server delete $NOVA_SERVER
-    # wait for server to be down before we delete the security group
-    # TODO(mriedem): Use the --wait option with the openstack server delete
-    # command when python-openstackclient>=1.4.0 is in global-requirements.
-    local wait_cmd="while openstack server show $NOVA_SERVER >/dev/null; do sleep 1; done"
-    timeout 30 sh -c "$wait_cmd"
+    openstack server delete --wait $NOVA_SERVER
 
     nova secgroup-delete $NOVA_USER || /bin/true
 
