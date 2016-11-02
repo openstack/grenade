@@ -54,9 +54,6 @@ stack_install_service glance
 # calls upgrade-glance for specific release
 upgrade_project glance $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
-# Simulate init_glance()
-create_glance_cache_dir
-
 # Migrate the database
 $GLANCE_BIN_DIR/glance-manage db_sync || die $LINENO "DB sync error"
 

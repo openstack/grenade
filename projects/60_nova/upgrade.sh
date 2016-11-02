@@ -60,7 +60,6 @@ stack_install_service nova
 upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Simulate init_nova()
-create_nova_cache_dir
 create_nova_keys_dir
 
 # Migrate the database
