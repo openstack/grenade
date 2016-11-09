@@ -120,7 +120,12 @@ Q_DHCP_CONF_FILE=${Q_DHCP_CONF_FILE:-"$NEUTRON_CONF_DIR/dhcp_agent.ini"}
 AGENT_META_BINARY=${AGENT_META_BINARY:-"$NEUTRON_BIN_DIR/neutron-metadata-agent"}
 Q_META_CONF_FILE=${Q_META_CONF_FILE:-"$NEUTRON_CONF_DIR/metadata_agent.ini"}
 
-AGENT_BINARY=${AGENT_BINARY:-"$NEUTRON_BIN_DIR/neutron-openvswitch-agent"}
+if [ "$Q_AGENT" == "linuxbridge" ]; then
+    AGENT_BINARY=${AGENT_BINARY:-"$NEUTRON_BIN_DIR/neutron-linuxbridge-agent"}
+else
+    # fall back to openvswitch as the default
+    AGENT_BINARY=${AGENT_BINARY:-"$NEUTRON_BIN_DIR/neutron-openvswitch-agent"}
+fi
 
 AGENT_LBAAS_BINARY=${AGENT_LBAAS_BINARY:-"$NEUTRON_BIN_DIR/neutron-lbaas-agent"}
 LBAAS_AGENT_CONF_FILENAME=${LBAAS_AGENT_CONF_FILENAME:-"/etc/neutron/services/loadbalancer/haproxy/lbaas_agent.ini"}
