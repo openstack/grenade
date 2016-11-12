@@ -47,11 +47,11 @@ save_data $BASE_RELEASE $BASE_DEVSTACK_DIR
 # Save ebtables/iptables
 # ----------------------
 
-# NOTE(sileht): If nova is not installed this tools are not present
-if [ -x "$(iptable-save)" ]; then
+# NOTE(sileht): If nova is not installed these tools are not present
+if [[ $(type -P iptables-save) != "" ]]; then
     sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
 fi
-if [ -x "$(ebtables)" ]; then
+if [[ $(type -P ebtables) != "" ]]; then
     sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
     sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
     sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
