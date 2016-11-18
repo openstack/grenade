@@ -35,7 +35,7 @@ if [[ -d $BASE_DEVSTACK_DIR ]]; then
         DATA_DIR=${STACK_ROOT}/data; \
         ./unstack.sh --all; \
         cd -; \
-        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
+        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP_NAME}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
         if mount | grep \$DATA_DIR/swift/drives; then \
             umount \$DATA_DIR/swift/drives/sdb1; \
         fi; \
@@ -53,7 +53,7 @@ if [[ -d $TARGET_DEVSTACK_DIR ]]; then
         ./unstack.sh --all; \
         cd -; \
         # need to test if volume is present
-        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
+        sudo losetup -d \$(sudo losetup -j \$DATA_DIR/\${VOLUME_GROUP_NAME}-backing-file | awk -F':' '/backing-file/ { print \$1}'); \
         if mount | grep \$DATA_DIR/swift/drives; then \
             sudo umount \$DATA_DIR/swift/drives/sdb1; \
         fi; \
