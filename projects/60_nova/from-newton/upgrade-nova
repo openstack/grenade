@@ -1,0 +1,10 @@
+source $TARGET_DEVSTACK_DIR/lib/database
+source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+
+function configure_nova_upgrade() {
+    # Perform an unconditional simple setup of the cells v2 models and mappings
+    # We need to create the cell0 database before we can sync it
+    initialize_database_backends
+    recreate_database nova_api_cell0
+    $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
+}
