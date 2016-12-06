@@ -78,9 +78,9 @@ if $(source $BASE_DEVSTACK_DIR/stackrc; is_service_enabled neutron); then
     Q_L3_ENABLED="True"
 fi
 
-configure_tempest
 install_tempest_plugins
-
+# Use the same config to target smoke tests.
+cp $BASE_RELEASE_DIR/tempest/etc/tempest.conf $TARGET_RELEASE_DIR/tempest/etc/tempest.conf
 DEST=$DEST_BACKUP
 
 set +o xtrace
