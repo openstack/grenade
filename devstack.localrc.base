@@ -18,7 +18,6 @@ API_RATE_LIMIT=False
 LOGDAYS=1
 LOGFILE=$DEST/logs/stack.sh.log
 MYSQL_PASSWORD=superstack
-RABBIT_HOST=localhost
 RABBIT_PASSWORD=superstack
 SCREEN_LOGDIR=$DEST/logs/screen
 SCREEN_NAME=${SCREEN_NAME:-stack}
