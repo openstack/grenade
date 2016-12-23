@@ -40,7 +40,10 @@ source $TARGET_DEVSTACK_DIR/stackrc
 
 FILES=$TARGET_DEVSTACK_DIR/files
 source $TARGET_DEVSTACK_DIR/lib/tls
+source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/swift
+#Set OS_AUTH_URL as it is needed during start_swift when tempurls are enabled
+source $BASE_DEVSTACK_DIR/userrc_early
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
@@ -68,7 +71,6 @@ if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
     sudo mount -t xfs -o nouuid,loop,noatime,nodiratime,nobarrier,logbufs=8  \
         ${SWIFT_DATA_DIR}/drives/images/swift.img ${SWIFT_DATA_DIR}/drives/sdb1
 fi
-
 
 # Start Swift
 start_swift
