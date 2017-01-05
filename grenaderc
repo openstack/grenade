@@ -88,10 +88,6 @@ REQUIREMENTS_DIR=$TARGET_RELEASE_DIR/requirements
 # scripts going forward.
 VERIFY_RESOURCES=${VERIFY_RESOURCES:-True}
 
-# Should we do resource testing
-# Set up for Javelin (default to True)
-RUN_JAVELIN=${RUN_JAVELIN:-True}
-
 # How long should we wait for services to start / stop before we
 # consider it a fail. Defaults to 30 seconds.
 SERVICE_TIMEOUT=${SERVICE_TIMEOUT:-30}
