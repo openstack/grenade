@@ -63,11 +63,6 @@ USER_GROUP=$(id -g)
 sudo mkdir -p ${SWIFT_DATA_DIR}/{drives,cache,run,logs}
 sudo chown -R $USER:${USER_GROUP} ${SWIFT_DATA_DIR}
 
-# Create auth cache dir
-sudo mkdir -p $SWIFT_AUTH_CACHE_DIR
-sudo chown $STACK_USER $SWIFT_AUTH_CACHE_DIR
-rm -f $SWIFT_AUTH_CACHE_DIR/*
-
 # Mount backing disk
 if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
     sudo mount -t xfs -o nouuid,loop,noatime,nodiratime,nobarrier,logbufs=8  \

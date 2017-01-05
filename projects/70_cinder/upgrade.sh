@@ -55,7 +55,6 @@ upgrade_project cinder $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
 
 # Simulate init_cinder()
 create_cinder_volume_group
-create_cinder_cache_dir
 
 # Migrate the database
 $CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
