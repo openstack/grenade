@@ -163,17 +163,11 @@ function enable_grenade_plugin {
 function devstack_localrc {
     local settings_file=$(caller | awk '{print $2}')
     local where=$1
+    local path=$(localrc_path $where)
     shift
-    case $where in
-        base)
-            echo "# added by $settings_file" >> $BASE_DEVSTACK_DIR/localrc
-            echo "$@" >> $BASE_DEVSTACK_DIR/localrc
-            ;;
-        target)
-            echo "# added by $settings_file" >> $TARGET_DEVSTACK_DIR/localrc
-            echo "$@" >> $TARGET_DEVSTACK_DIR/localrc
-            ;;
-    esac
+    echo "Adding settings to $where at $path"
+    echo "# added by $settings_file" >> $path
+    echo "$@" >> $path
 }
 
 function fetch_grenade_plugins {
