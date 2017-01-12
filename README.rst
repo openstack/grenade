@@ -30,42 +30,41 @@ Grenade works under the following theory of upgrade.
 
 - New code should work with old configs
 
-The upgrade process should not require a config change to run a new
-release. All config behavior is supposed to be deprecated over a
-release cycle, so that upon release new code works with the last
-releases configs. Those configs may create deprecation warnings which
-need to be addressed before the next release, but they should still
-work and largely have the same behavior.
+  The upgrade process should not require a config change to run a new
+  release. All config behavior is supposed to be deprecated over a
+  release cycle, so that upon release new code works with the last
+  releases configs. Those configs may create deprecation warnings which
+  need to be addressed before the next release, but they should still
+  work and largely have the same behavior.
 
 - New code should need nothing more than 'db migrations'
 
-Clearly the release of new code may include new database
-models. Standard upgrade procedure is to turn off all services that
-touch the database, run the db migration script, and start with new
-code.
+  Clearly the release of new code may include new database
+  models. Standard upgrade procedure is to turn off all services that
+  touch the database, run the db migration script, and start with new
+  code.
 
 - Resources created by services before upgrade, should still be there
   after the system is upgraded
 
-When upgrading Nova you expect all your VMs to still function during
-the entire upgrade (whether or not Nova services are up). Taking down
-the control plane should not take down your VMs.
+  When upgrading Nova you expect all your VMs to still function during
+  the entire upgrade (whether or not Nova services are up). Taking down
+  the control plane should not take down your VMs.
 
 - Any other required changes on upgrade are an *exception* and must be
   called out in the release notes.
 
-Grenade supports per release specific upgrade scripts (from-juno,
-from-kilo). These are designed to support upgrades where additional
-manual steps are needed for a specific upgrade (i.e. from juno to
-kilo). These should be used sparingly.
+  Grenade supports per release specific upgrade scripts (from-juno,
+  from-kilo). These are designed to support upgrades where additional
+  manual steps are needed for a specific upgrade (i.e. from juno to
+  kilo). These should be used sparingly.
 
-The Grenade core team requires the following before landing these
-kinds of changes:
+  The Grenade core team requires the following before landing these
+  kinds of changes:
 
-- The Release Notes for the release where this will be required
-  clearly specify these manual upgrade steps.
-
-- The PTL for the project in question has signed off on this change.
+  - The Release Notes for the release where this will be required
+    clearly specify these manual upgrade steps.
+  - The PTL for the project in question has signed off on this change.
 
 Status
 ======
