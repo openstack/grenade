@@ -51,7 +51,7 @@ Grenade works under the following theory of upgrade.
   the entire upgrade (whether or not Nova services are up). Taking down
   the control plane should not take down your VMs.
 
-- Any other required changes on upgrade are an *exception* and must be
+- Any other required changes on upgrade are an **exception** and must be
   called out in the release notes.
 
   Grenade supports per release specific upgrade scripts (from-juno,
@@ -65,6 +65,14 @@ Grenade works under the following theory of upgrade.
   - The Release Notes for the release where this will be required
     clearly specify these manual upgrade steps.
   - The PTL for the project in question has signed off on this change.
+
+  .. note:: While we expect the various deployment projects within the
+            OpenStack ecosystem, for example TripleO, Kolla, etc, to read the
+            release notes of each project, it is good practice to communicate
+            any exceptional upgrade changes made to Grenade to those teams
+            directly or at least via the `openstack-dev mailing list`_.
+
+.. _openstack-dev mailing list: http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-dev
 
 Status
 ======
