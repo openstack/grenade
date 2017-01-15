@@ -5,6 +5,12 @@ function configure_nova_upgrade() {
     # Perform an unconditional simple setup of the cells v2 models and mappings
     # We need to create the cell0 database before we can sync it
     initialize_database_backends
-    recreate_database nova_api_cell0
+    recreate_database nova_cell0
+    # NOTE: We use map_cell0 to create the cell0 mapping with the main
+    # database connection URL directly since simple_cell_setup was incorrectly
+    # using the api_database connection for this in Newton. As long as the
+    # cell0 mapping exists before simple_cell_setup is called it will not be
+    # re-created.
+    ($NOVA_BIN_DIR/nova-manage cell_v2 map_cell0 --database_connection $(database_connection_url nova_cell0) || true)
     $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
 }

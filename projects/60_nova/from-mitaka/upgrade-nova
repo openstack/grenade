@@ -3,6 +3,6 @@ function configure_nova_upgrade() {
         source $TARGET_DEVSTACK_DIR/lib/database
         # We need to create the cell0 database before we can sync it
         initialize_database_backends
-        recreate_database nova_api_cell0
+        recreate_database nova_cell0
     fi
 }
