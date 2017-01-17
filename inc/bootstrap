@@ -247,6 +247,16 @@ function localrc_path {
     fi
 }
 
+function dump_local_files {
+    local dir=$1
+    for i in $dir/local*; do
+        echo "_______________________________________________"
+        echo "-- $i -- file dump"
+        echo "_______________________________________________"
+        cat $i
+        echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    done
+}
 
 function fetch_devstacks {
     # Fetch Base Devstack
@@ -255,6 +265,15 @@ function fetch_devstacks {
     if [[ ! -d $BASE_DEVSTACK_DIR ]]; then
         git_clone $BASE_DEVSTACK_REPO $BASE_DEVSTACK_DIR $BASE_DEVSTACK_BRANCH
     fi
+    # Fetch Target Devstack
+    if [[ ! -d $TARGET_DEVSTACK_DIR ]]; then
+        git_clone $TARGET_DEVSTACK_REPO $TARGET_DEVSTACK_DIR $TARGET_DEVSTACK_BRANCH
+    fi
+
+    # This depends on REQUIREMENTS_DIR being set in grenaderc, which
+    # it needs to be to have gotten this far.
+    source $TARGET_DEVSTACK_DIR/inc/python
+    install_devstack_tools
 
     # Load up a copy of the downloaded images if not present
     if [[ -d ${STACK_ROOT}/images ]]; then
@@ -263,13 +282,19 @@ function fetch_devstacks {
 
     # Set up base localrc
 
-    # if local.conf exists and local.conf.orig does not exist, save local.conf  to local.conf.orig
-    if [[ -r $BASE_DEVSTACK_DIR/local.conf && ! -r $BASE_DEVSTACK_DIR/local.conf.orig ]]; then
-        mv $BASE_DEVSTACK_DIR/local.conf $BASE_DEVSTACK_DIR/local.conf.orig
-    elif [[ -r $BASE_DEVSTACK_DIR/localrc && ! -r $BASE_DEVSTACK_DIR/localrc.orig ]]; then
-        mv $BASE_DEVSTACK_DIR/localrc $BASE_DEVSTACK_DIR/localrc.orig
+    # if there is a localrc, make that a local.conf.orig and get rid of the artifact
+    if [[ -r $BASE_DEVSTACK_DIR/localrc ]]; then
+        # Convert to a local.conf
+        echo "[[local|localrc]]" > $BASE_DEVSTACK_DIR/local.conf.orig
+        cat $BASE_DEVSTACK_DIR/localrc >> $BASE_DEVSTACK_DIR/local.conf.orig
+        rm $BASE_DEVSTACK_DIR/localrc
     fi
 
+    # if a local.conf exists, merge that into local.conf.orig (which we're going to remerge later)
+    if [[ -r $BASE_DEVSTACK_DIR/local.conf ]]; then
+        dsconf merge_lc $BASE_DEVSTACK_DIR/local.conf.orig $BASE_DEVSTACK_DIR/local.conf
+        rm $BASE_DEVSTACK_DIR/local.conf
+    fi
 
     # put devstack.local.conf.target in place as local.conf
     sed -e "
@@ -279,35 +304,36 @@ function fetch_devstacks {
 
     # if local.conf.orig or localrc.orig exists, append it to local.conf
     if [[ -r $BASE_DEVSTACK_DIR/local.conf.orig ]]; then
-        echo "#vvvvvvvvvv devstack-vm-gate.sh local.conf vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/local.conf
-        cat $BASE_DEVSTACK_DIR/local.conf.orig >>$BASE_DEVSTACK_DIR/local.conf
-    elif [[ -r $BASE_DEVSTACK_DIR/localrc.orig ]]; then
-        echo "#vvvvvvvvvv devstack-vm-gate.sh localrc vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/local.conf
-        cat $BASE_DEVSTACK_DIR/localrc.orig >>$BASE_DEVSTACK_DIR/local.conf
+        dsconf merge_lc $BASE_DEVSTACK_DIR/local.conf $BASE_DEVSTACK_DIR/local.conf.orig
     fi
 
     # if devstack.local.conf exists append it to locarc
     if [[ -r $GRENADE_DIR/devstack.local.conf ]]; then
-        echo "#vvvvvvvvvv devstack.local.conf vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/local.conf
-        cat $GRENADE_DIR/devstack.local.conf >>$BASE_DEVSTACK_DIR/local.conf
+        dsconf merge_lc $BASE_DEVSTACK_DIR/local.conf $GRENADE_DIR/devstack.local.conf
     elif [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$BASE_DEVSTACK_DIR/local.conf
-        cat $GRENADE_DIR/devstack.localrc >>$BASE_DEVSTACK_DIR/local.conf
+        echo "[[local|localrc]]" > $GRENADE_DIR/devstack.local.conf
+        cat $GRENADE_DIR/devstack.localrc >> $GRENADE_DIR/devstack.local.conf
+        dsconf merge_lc $BASE_DEVSTACK_DIR/local.conf $GRENADE_DIR/devstack.local.conf
     fi
 
-    # Fetch Target Devstack
-    # Get DevStack if it doesn't exist
-    if [[ ! -d $TARGET_DEVSTACK_DIR ]]; then
-        git_clone $TARGET_DEVSTACK_REPO $TARGET_DEVSTACK_DIR $TARGET_DEVSTACK_BRANCH
-    fi
+    dump_local_files $BASE_DEVSTACK_DIR
+
+    # ... time for TARGET
 
     # Set up target local.conf
 
-    # if local.conf exists and local.conf.orig does not exist, save local.conf  to local.conf.orig
-    if [[ -r $TARGET_DEVSTACK_DIR/local.conf && ! -r $TARGET_DEVSTACK_DIR/local.conf.orig ]]; then
-        mv $TARGET_DEVSTACK_DIR/local.conf $TARGET_DEVSTACK_DIR/local.conf.orig
-    elif [[ -r $TARGET_DEVSTACK_DIR/localrc && ! -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
-        mv $TARGET_DEVSTACK_DIR/localrc $TARGET_DEVSTACK_DIR/localrc.orig
+    # if there is a localrc, make that a local.conf.orig and get rid of the artifact
+    if [[ -r $TARGET_DEVSTACK_DIR/localrc ]]; then
+        # Convert to a local.conf
+        echo "[[local|localrc]]" > $TARGET_DEVSTACK_DIR/local.conf.orig
+        cat $TARGET_DEVSTACK_DIR/localrc >> $TARGET_DEVSTACK_DIR/local.conf.orig
+        rm $TARGET_DEVSTACK_DIR/localrc
+    fi
+
+    # if a local.conf exists, merge that into local.conf.orig (which we're going to remerge later)
+    if [[ -r $TARGET_DEVSTACK_DIR/local.conf ]]; then
+        dsconf merge_lc $TARGET_DEVSTACK_DIR/local.conf.orig $TARGET_DEVSTACK_DIR/local.conf
+        rm $TARGET_DEVSTACK_DIR/local.conf
     fi
 
     # put devstack.local.conf.target in place as local.conf
@@ -316,21 +342,18 @@ function fetch_devstacks {
         s|\@DATA_DIR@|$DATA_DIR|
 " $GRENADE_DIR/devstack.local.conf.target >$TARGET_DEVSTACK_DIR/local.conf
 
-    # if local.conf.orig exists, append it to local.conf
+    # if local.conf.orig or localrc.orig exists, append it to local.conf
     if [[ -r $TARGET_DEVSTACK_DIR/local.conf.orig ]]; then
-        echo "#vvvvvvvvvv devstack-vm-gate.sh local.conf vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/local.conf
-        cat $TARGET_DEVSTACK_DIR/local.conf.orig >>$TARGET_DEVSTACK_DIR/local.conf
-    elif [[ -r $TARGET_DEVSTACK_DIR/localrc.orig ]]; then
-        echo "#vvvvvvvvvv devstack-vm-gate.sh localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/local.conf
-        cat $TARGET_DEVSTACK_DIR/localrc.orig >>$TARGET_DEVSTACK_DIR/local.conf
+        dsconf merge_lc $TARGET_DEVSTACK_DIR/local.conf $TARGET_DEVSTACK_DIR/local.conf.orig
     fi
 
     # if devstack.local.conf exists append it to locarc
     if [[ -r $GRENADE_DIR/devstack.local.conf ]]; then
-        echo "#vvvvvvvvvv devstack.local.conf vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/local.conf
-        cat $GRENADE_DIR/devstack.local.conf >>$TARGET_DEVSTACK_DIR/local.conf
+        dsconf merge_lc $TARGET_DEVSTACK_DIR/local.conf $GRENADE_DIR/devstack.local.conf
     elif [[ -r $GRENADE_DIR/devstack.localrc ]]; then
-        echo "#vvvvvvvvvv devstack.localrc vvvvvvvvvv" >>$TARGET_DEVSTACK_DIR/local.conf
-        cat $GRENADE_DIR/devstack.localrc >>$TARGET_DEVSTACK_DIR/local.conf
+        echo "[[local|localrc]]" > $GRENADE_DIR/devstack.local.conf
+        cat $GRENADE_DIR/devstack.localrc >> $GRENADE_DIR/devstack.local.conf
+        dsconf merge_lc $TARGET_DEVSTACK_DIR/local.conf $GRENADE_DIR/devstack.local.conf
     fi
+    dump_local_files $TARGET_DEVSTACK_DIR
 }
