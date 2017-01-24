@@ -42,6 +42,7 @@ source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/placement
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
@@ -82,9 +83,10 @@ fi
 # Start Nova
 start_nova_api
 start_nova
+start_placement
 
 # Don't succeed unless the services come up
-ensure_services_started nova-api nova-conductor nova-compute
+ensure_services_started nova-api nova-conductor nova-compute placement
 ensure_logs_exist n-api n-cond n-cpu
 
 if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then

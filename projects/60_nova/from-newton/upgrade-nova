@@ -1,5 +1,8 @@
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
+source $TARGET_DEVSTACK_DIR/lib/keystone
+source $TARGET_DEVSTACK_DIR/lib/placement
+source $GRENADE_DIR/inc/bootstrap
 
 function configure_nova_upgrade() {
     # Perform an unconditional simple setup of the cells v2 models and mappings
@@ -13,4 +16,20 @@ function configure_nova_upgrade() {
     # re-created.
     ($NOVA_BIN_DIR/nova-manage cell_v2 map_cell0 --database_connection $(database_connection_url nova_cell0) || true)
     $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
+
+    # Make sure we enable the Placement API before rolling out Ocata since it's
+    # now mandatory.
+
+    # Set for DevStack compatibility
+    TOP_DIR=$TARGET_DEVSTACK_DIR
+    source $TOP_DIR/openrc admin admin
+
+    FILES=$TARGET_DEVSTACK_DIR/files
+
+    stack_install_service placement
+    cleanup_placement
+    configure_placement
+    configure_placement_nova_compute
+    init_placement
+    devstack_localrc target enable_service placement
 }
