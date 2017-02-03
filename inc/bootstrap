@@ -272,6 +272,7 @@ function fetch_devstacks {
 
     # This depends on REQUIREMENTS_DIR being set in grenaderc, which
     # it needs to be to have gotten this far.
+    source $TARGET_DEVSTACK_DIR/functions-common
     source $TARGET_DEVSTACK_DIR/inc/python
     install_devstack_tools
 

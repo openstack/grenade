@@ -8,6 +8,11 @@ if [ -f $RC_DIR/localrc ]; then
     source $RC_DIR/localrc
 fi
 
+# When Python 3 is supported by an application, adding the specific
+# version of Python 3 to this variable will install the app using that
+# version of the interpreter instead of 2.7.
+export PYTHON3_VERSION=${PYTHON3_VERSION:-3.5}
+
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com
