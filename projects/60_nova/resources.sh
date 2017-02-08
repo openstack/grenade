@@ -44,16 +44,22 @@ function create {
         die $LINENO "Didn't create $NOVA_PROJECT project"
     fi
     resource_save nova project_id $id
+    local project_id=$id
 
     # creates the user, and sets $id locally
     eval $(openstack user create $NOVA_USER \
-        --project $id \
+        --project $project_id \
         --password $NOVA_PASS \
         -f shell -c id)
     if [[ -z "$id" ]]; then
         die $LINENO "Didn't create $NOVA_USER user"
     fi
     resource_save nova user_id $id
+
+    # BUG(sdague): this really shouldn't be required, in Keystone v2 a
+    # user created in a project was assigned to that project, in v3 it
+    # is not - https://bugs.launchpad.net/keystone/+bug/1662911
+    openstack role add Member --user $id --project $project_id
 
     # set ourselves to the created nova user
     _nova_set_user

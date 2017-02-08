@@ -67,10 +67,11 @@ function create {
         die $LINENO "Didn't create $CINDER_PROJECT project"
     fi
     resource_save cinder project_id $id
+    local project_id=$id
 
     # creates the user, and sets $id locally
     eval $(openstack user create $CINDER_USER \
-        --project $id \
+        --project $project_id \
         --password $CINDER_PASS \
         -f shell -c id)
     if [[ -z "$id" ]]; then
@@ -78,6 +79,10 @@ function create {
     fi
     resource_save cinder user_id $id
 
+    # BUG(sdague): this really shouldn't be required, in Keystone v2 a
+    # user created in a project was assigned to that project, in v3 it
+    # is not - https://bugs.launchpad.net/keystone/+bug/1662911
+    openstack role add Member --user $id --project $project_id
     # set ourselves to the created cinder user
     _cinder_set_user
 
