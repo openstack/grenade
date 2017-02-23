@@ -166,8 +166,8 @@ function devstack_localrc {
     local path=$(localrc_path $where)
     shift
     echo "Adding settings to $where at $path"
-    echo "# added by $settings_file" >> $path
-    echo "$@" >> $path
+    dsconf setlc_raw $path "# added by $settings_file"
+    dsconf setlc_raw $path "$@"
 }
 
 function fetch_grenade_plugins {
