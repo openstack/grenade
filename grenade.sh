@@ -35,7 +35,7 @@ export GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 # grenade needs to get going. This includes things like echo
 # functions, trueorfalse, and the functions related to git cloning, so
 # that we can get our devstack trees.
-export DSTOOLS_VERSION=${DSTOOLS_VERSION:-0.1.4}
+export DSTOOLS_VERSION=${DSTOOLS_VERSION:-0.4.0}
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
 
