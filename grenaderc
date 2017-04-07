@@ -69,6 +69,10 @@ ENABLE_TEMPEST=${ENABLE_TEMPEST:-True}
 # We need RECLONE to get the updated branches; not everyone wants it though
 RECLONE=${RECLONE:-no}
 
+# Set this to True if you want to abort execution with an error if a git repo
+# does not exist
+ERROR_ON_CLONE=${ERROR_ON_CLONE:-False}
+
 # Allow only running parts of this script
 RUN_BASE=${RUN_BASE:-True}
 RUN_TARGET=${RUN_TARGET:-True}
