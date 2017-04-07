@@ -29,6 +29,11 @@ source $GRENADE_DIR/grenaderc
 # Import common functions
 source $GRENADE_DIR/functions
 
+# Determine what system we are running on.  This provides ``os_VENDOR``,
+# ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
+# and ``DISTRO``
+GetDistro
+
 # This script exits on an error so that errors don't compound and you see
 # only the first error that occurred.
 set -o errexit
