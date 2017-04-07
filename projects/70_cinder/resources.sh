@@ -88,12 +88,9 @@ function create {
 
     # setup a working security group
     # BUG(sdague): I have no idea how to make openstack security group work
-    # openstack security group create --description "BUG" $CINDER_USER
-    # openstack security group rule create --proto icmp --dst-port 0 $CINDER_USER
-    # openstack security group rule create --proto tcp --dst-port 22 $CINDER_USER
-    nova secgroup-create $CINDER_USER "BUG: this should not be mandatory"
-    nova secgroup-add-rule $CINDER_USER icmp -1 -1 0.0.0.0/0
-    nova secgroup-add-rule $CINDER_USER tcp 22 22 0.0.0.0/0
+    openstack security group create --description "BUG" $CINDER_USER
+    openstack security group rule create --proto icmp --dst-port 0 $CINDER_USER
+    openstack security group rule create --proto tcp --dst-port 22 $CINDER_USER
 
     # create key pairs for access
     openstack keypair create $CINDER_KEY > $CINDER_KEY_FILE
@@ -208,7 +205,7 @@ function destroy {
 
     openstack volume delete $CINDER_VOL
 
-    nova secgroup-delete $CINDER_USER
+    openstack security group delete $CINDER_USER
 
     # lastly, get rid of our user - done as admin
     source_quiet $TOP_DIR/openrc admin admin

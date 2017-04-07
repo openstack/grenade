@@ -66,12 +66,9 @@ function create {
 
     # setup a working security group
     # BUG(sdague): I have no idea how to make openstack security group work
-    # openstack security group create --description "BUG" $NOVA_USER
-    # openstack security group rule create --proto icmp --dst-port 0 $NOVA_USER
-    # openstack security group rule create --proto tcp --dst-port 22 $NOVA_USER
-    nova secgroup-create $NOVA_USER "BUG: this should not be mandatory"
-    nova secgroup-add-rule $NOVA_USER icmp -1 -1 0.0.0.0/0
-    nova secgroup-add-rule $NOVA_USER tcp 22 22 0.0.0.0/0
+    openstack security group create --description " BUG: this should not be mandatory" $NOVA_USER
+    openstack security group rule create --proto icmp --dst-port 0 $NOVA_USER
+    openstack security group rule create --proto tcp --dst-port 22 $NOVA_USER
 
     # BUG(sdague): openstack client server create fails on volume
     # error by default.
@@ -145,7 +142,7 @@ function destroy {
     openstack floating ip delete $(resource_get nova nova_server_float)
     openstack server delete --wait $NOVA_SERVER
 
-    nova secgroup-delete $NOVA_USER || /bin/true
+    openstack security group delete $NOVA_USER || /bin/true
 
     # lastly, get rid of our user - done as admin
     source_quiet $TOP_DIR/openrc admin admin
