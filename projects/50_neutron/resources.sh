@@ -31,23 +31,24 @@ NEUTRON_NET=neutron_grenade
 
 function early_create {
     # this builds a default network for other services to use
-    local net_id=$(neutron net-create --shared $NEUTRON_NET | grep ' id ' | get_field 2)
+    local net_id=$(openstack network create --share $NEUTRON_NET | grep ' id ' | get_field 2)
     resource_save network net_id $net_id
 
     local subnet_params=""
-    subnet_params+="--ip_version 4 "
+    subnet_params+="--ip-version 4 "
     subnet_params+="--gateway $NETWORK_GATEWAY "
-    subnet_params+="--name $NEUTRON_NET "
-    subnet_params+="$net_id $FIXED_RANGE"
+    subnet_params+="--network $net_id "
+    subnet_params+="--subnet-range $FIXED_RANGE "
+    subnet_params+="$NEUTRON_NET"
 
-    local subnet_id=$(neutron subnet-create $subnet_params | grep ' id ' | get_field 2)
+    local subnet_id=$(openstack subnet create $subnet_params | grep ' id ' | get_field 2)
     resource_save network subnet_id $subnet_id
 
-    local router_id=$(neutron router-create $NEUTRON_NET | grep ' id ' | get_field 2)
+    local router_id=$(openstack router create $NEUTRON_NET | grep ' id ' | get_field 2)
     resource_save network router_id $router_id
 
-    neutron router-interface-add $NEUTRON_NET $subnet_id
-    neutron router-gateway-set $NEUTRON_NET public
+    openstack router add subnet $NEUTRON_NET $subnet_id
+    openstack router set $router_id --external-gateway public
 }
 
 function verify {
@@ -61,10 +62,11 @@ function verify_noapi {
 function destroy {
     # Must clean the router before we can remove a net
     # set +o errexit
-    neutron router-gateway-clear $(resource_get network router_id) || /bin/true
-    neutron router-interface-delete $(resource_get network router_id) $(resource_get network subnet_id) || /bin/true
-    neutron router-delete $(resource_get network router_id) || /bin/true
-    neutron net-delete $(resource_get network net_id) || /bin/true
+    local router_id=$(resource_get network router_id)
+    openstack router unset $router_id --external-gateway || /bin/true
+    openstack router remove subnet $router_id $(resource_get network subnet_id) || /bin/true
+    openstack router delete $router_id || /bin/true
+    openstack network delete $(resource_get network net_id) || /bin/true
 }
 
 
