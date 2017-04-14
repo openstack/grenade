@@ -29,3 +29,7 @@ VOLUME_BACKING_FILE_SIZE=10000M
 enable_service s-account s-container s-object s-proxy
 SWIFT_HASH=8213897fads879789asdf789
 SWIFT_REPLICAS=1
+
+# because this was the default in ocata, remove after pike has
+# shipped.
+WSGI_MODE="mod_wsgi"

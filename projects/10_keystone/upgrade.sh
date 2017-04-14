@@ -66,12 +66,6 @@ start_keystone
 # ensure the service has started
 ensure_services_started keystone
 
-# TODO(sdague): we should probably check that apache looks like it's
-# logging, but this will let us pass for now.
-if [[ "$KEYSTONE_USE_MOD_WSGI" != "True" ]]; then
-    ensure_logs_exist key
-fi
-
 set +o xtrace
 echo "*********************************************************************"
 echo "SUCCESS: End $0"

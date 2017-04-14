@@ -219,6 +219,10 @@ load_settings
 # isn't run there. This has to be run after load_settings because
 # plugins might change the service list during this phase.
 
+# Remove in Queens
+# Set WSGI_MODE to mod_wsgi
+devstack_localrc target "WSGI_MODE=mod_wsgi"
+
 extract_localrc_section $TARGET_DEVSTACK_DIR/local.conf \
                         $TARGET_DEVSTACK_DIR/localrc \
                         $TARGET_DEVSTACK_DIR/.localrc.auto

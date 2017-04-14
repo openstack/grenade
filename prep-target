@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o error
+
 # ``prep-target`` handles the preparations for installing and configuring
 # the "target" configuration of DevStack.
 
@@ -8,6 +10,7 @@
 GRENADE_DIR=$(cd $(dirname "$0") && pwd)
 
 # Source params
+source $GRENADE_DIR/inc/bootstrap
 source $GRENADE_DIR/grenaderc
 
 # Import common functions
