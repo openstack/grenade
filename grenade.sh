@@ -237,6 +237,9 @@ if [[ "$RUN_BASE" == "True" ]]; then
     cd $BASE_DEVSTACK_DIR
     GIT_BASE=$GIT_BASE ./stack.sh
     stop $STOP stack.sh 10
+    # copy over the base .stackenv to the target one so that openrc
+    # works as expected.
+    cp .stackenv $TARGET_DEVSTACK_DIR
 
     echo_summary "Running post-stack.sh"
     if [[ -e $GRENADE_DIR/post-stack.sh ]]; then
