@@ -222,6 +222,8 @@ load_settings
 # Remove in Queens
 # Set WSGI_MODE to mod_wsgi
 devstack_localrc target "WSGI_MODE=mod_wsgi"
+# Don't let Nova use WSGI
+devstack_localrc target "NOVA_USE_MOD_WSGI=False"
 
 extract_localrc_section $TARGET_DEVSTACK_DIR/local.conf \
                         $TARGET_DEVSTACK_DIR/localrc \
