@@ -112,7 +112,14 @@ fi
 
 # Start Nova
 start_nova_api
-start_nova
+# NOTE(danms): Transition to conductor fleet; for now just start
+# a conductor the old way to mirror people upgrading with the same
+# service topology.
+if [ $(type -t start_nova_conductor) ]; then
+    run_process n-cond "$NOVA_BIN_DIR/nova-conductor --config-file $NOVA_CONF"
+fi
+start_nova_rest
+start_nova_compute nomulticell
 
 # Don't succeed unless the services come up
 expected_runnning_services="nova-api nova-conductor "
