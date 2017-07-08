@@ -45,8 +45,8 @@ DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
 # resolved.
 export OS_IMAGE_API_VERSION=1
 
-# BUG openstack client doesn't work with cinder v2
-export OS_VOLUME_API_VERSION=1
+# BUG openstack client doesn't work with cinder v3
+export OS_VOLUME_API_VERSION=2
 
 if ! is_service_enabled c-api; then
     echo "Cinder is not enabled. Skipping resource phase $1 for cinder."
