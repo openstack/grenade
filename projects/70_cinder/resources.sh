@@ -30,6 +30,7 @@ CINDER_SERVER=cinder_server1
 CINDER_KEY=cinder_key
 CINDER_KEY_FILE=$SAVE_DIR/cinder_key.pem
 CINDER_VOL=cinder_grenade_vol
+CINDER_VOL2=cinder_grenade_vol2
 # don't put ' or " in this, it complicates things
 CINDER_STATE="I am a teapot"
 CINDER_STATE_FILE=verify.txt
@@ -139,6 +140,27 @@ function create {
     resource_save cinder cinder_server_float $id
     openstack server add floating ip $CINDER_SERVER $ip
 
+    # Create a second (not bootable) volume to test attach/detach
+    eval $(openstack volume create --size 1 $CINDER_VOL2 -f shell)
+    resource_save cinder cinder_volume2_id $id
+
+    # Attach second volume and ensure it becomes in-use
+    openstack server add volume $CINDER_SERVER $CINDER_VOL2
+    local timeleft=30
+    while [[ $timeleft -gt 0 ]]; do
+        eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
+        if [[ "$status" != "in-use" ]]; then
+            echo "Volume is not yet attached (status $status), waiting..."
+            sleep 1
+            timeleft=$((timeleft - 1))
+            if [[ $timeleft == 0 ]]; then
+                die $LINENO "Volume failed to become in-use"
+            fi
+        else
+            break
+        fi
+    done
+
     # ping check on the way up so we can add ssh content
     ping_check_public $ip 30
 
@@ -171,8 +193,38 @@ function create {
 }
 
 function verify {
-    # just call verify_noapi, as that's an actual resource survival test
+    local side="$1"
+    _cinder_set_user
+
+    # call verify_noapi for the resource survival test
     verify_noapi
+
+    # Ensure volume is attached, and verify detach functions as expected post-upgrade
+    if [[ "$side" = "post-upgrade" ]]; then
+        eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
+        if [[ "$status" != "in-use" ]]; then
+            die $LINENO "Unexpected status of volume $CINDER_VOL_2 (expected in-use, but was $status)"
+        fi
+
+        # Verify detach
+        openstack server remove volume $CINDER_SERVER $CINDER_VOL2
+
+        local timeleft=30
+        while [[ $timeleft -gt 0 ]]; do
+            eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
+            if [[ "$status" != "available" ]]; then
+                echo "Volume is not yet detached (status $status), waiting..."
+                sleep 1
+                timeleft=$((timeleft - 1))
+                if [[ $timeleft == 0 ]]; then
+                    die $LINENO "Volume failed to become available"
+                fi
+            else
+                break
+            fi
+        done
+        echo "Cinder verify post-upgrade successfully detached volume"
+    fi
 }
 
 function verify_noapi {
@@ -198,6 +250,7 @@ function destroy {
     openstack server delete --wait $CINDER_SERVER
 
     openstack volume delete $CINDER_VOL
+    openstack volume delete $CINDER_VOL2
 
     openstack security group delete $CINDER_USER
 
@@ -218,7 +271,7 @@ case $1 in
         verify_noapi
         ;;
     "verify")
-        verify
+        verify $2
         ;;
     "destroy")
         destroy
