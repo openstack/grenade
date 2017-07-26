@@ -119,7 +119,7 @@ if [ $(type -t start_nova_conductor) ]; then
     run_process n-cond "$NOVA_BIN_DIR/nova-conductor --config-file $NOVA_CONF"
 fi
 start_nova_rest
-start_nova_compute nomulticell
+start_nova_compute
 
 # Don't succeed unless the services come up
 expected_runnning_services="nova-api nova-conductor "
