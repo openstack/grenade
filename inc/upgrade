@@ -37,9 +37,11 @@ function save_mysql_dbs {
         set +o xtrace &&
             source $dir/stackrc &&
             echo ${DATABASE_USER:-root})
+    set +e
     for db in $DATABASES_TO_SAVE; do
         mysqldump -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
     done
+    set -e
 }
 
 # register a database we should save
