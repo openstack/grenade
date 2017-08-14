@@ -142,7 +142,6 @@ start_neutron_agents
 
 # Don't succeed unless the services come up
 # TODO: service names ensure_services_started
-ensure_logs_exist q-svc
 
 set +o xtrace
 echo "*********************************************************************"

@@ -63,7 +63,6 @@ start_glance
 
 # Don't succeed unless the services come up
 ensure_services_started glance-api
-ensure_logs_exist g-api g-reg
 
 set +o xtrace
 echo "*********************************************************************"

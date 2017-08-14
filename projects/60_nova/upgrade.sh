@@ -133,7 +133,6 @@ if ! is_service_enabled ironic; then
     expected_runnning_services+=' nova-compute'
 fi
 ensure_services_started $expected_runnning_services
-ensure_logs_exist n-api n-cond n-cpu
 
 if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
     # Run "online" migrations after we've got all the services running
