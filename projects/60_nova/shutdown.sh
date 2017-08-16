@@ -17,6 +17,9 @@ source $BASE_DEVSTACK_DIR/lib/nova
 set -o xtrace
 
 stop_nova
+# FIXME(dims): Once devstack gets fixed in both master and stable
+# branches, we can remove this extra stop_process
+stop_process n-cond
 
 # TODO(sdague): list all the services
 SERVICES_DOWN="nova-api nova-conductor nova-scheduler nova-compute"
