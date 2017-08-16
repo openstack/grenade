@@ -219,12 +219,21 @@ load_settings
 # isn't run there. This has to be run after load_settings because
 # plugins might change the service list during this phase.
 
-# Remove in Queens
-# Set WSGI_MODE to mod_wsgi
+# Make sure we use the same configurations across base and target
+# by being explicit. Nova, Cinder, Keystone should use Apache2/mod_wsgi
+# we should revisit these in Queens
+devstack_localrc base "WSGI_MODE=mod_wsgi"
 devstack_localrc target "WSGI_MODE=mod_wsgi"
-# Don't let Nova and Cinder use WSGI
+devstack_localrc base "NOVA_USE_MOD_WSGI=False"
 devstack_localrc target "NOVA_USE_MOD_WSGI=False"
+devstack_localrc base "CINDER_USE_MOD_WSGI=False"
 devstack_localrc target "CINDER_USE_MOD_WSGI=False"
+
+# Nova should use singleconductor as Grenade doesn't
+# setup multi-cell rabbit for now
+devstack_localrc base "CELLSV2_SETUP=singleconductor"
+devstack_localrc target "CELLSV2_SETUP=singleconductor"
+
 
 extract_localrc_section $TARGET_DEVSTACK_DIR/local.conf \
                         $TARGET_DEVSTACK_DIR/localrc \
@@ -244,6 +253,17 @@ if [[ "$RUN_BASE" == "True" ]]; then
     echo_summary "Running post-stack.sh"
     if [[ -e $GRENADE_DIR/post-stack.sh ]]; then
         cd $GRENADE_DIR
+
+        # By the time we get here the sub nodes are already setup with localrc files
+        # as those are transferred in devstack-gate even before grenade.sh is called
+        # We hack the ./post-stack.sh to inject what we need. if we don't set
+        # CELLSV2_SETUP, the default devstack assumes "superconductor" and fails. if
+        # we don't set WSGI_MODE, cinder fails to glance as the glance url is not
+        # set up correctly
+        export SUB_NODE_ENV_VARS="WSGI_MODE=mod_wsgi CELLSV2_SETUP=singleconductor"
+        sed -i 's/stdbuf/$SUB_NODE_ENV_VARS stdbuf/' ./post-stack.sh
+        cat ./post-stack.sh
+
         ./post-stack.sh
         stop $STOP post-stack.sh 15
         echo_summary "Completed post-stack.sh"
