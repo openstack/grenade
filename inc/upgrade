@@ -37,11 +37,16 @@ function save_mysql_dbs {
         set +o xtrace &&
             source $dir/stackrc &&
             echo ${DATABASE_USER:-root})
-    set +e
+    db_names=( $(mysql -u$database_user -p$mysql_pass -Bse "show databases;") )
     for db in $DATABASES_TO_SAVE; do
-        mysqldump -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
+        for db_found in "${db_names[@]}"; do
+            if [[ "$db" == "$db_found" ]]; then
+                echo "Saving database :" $db
+                mysqldump -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
+                break
+            fi
+        done
     done
-    set -e
 }
 
 # register a database we should save
