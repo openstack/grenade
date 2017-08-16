@@ -1,4 +1,4 @@
 if is_service_enabled nova; then
     register_project_for_upgrade nova
-    register_db_to_save nova
+    register_db_to_save nova nova-api nova_cell0 nova_cell1
 fi
