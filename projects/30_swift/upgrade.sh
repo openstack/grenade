@@ -76,7 +76,7 @@ fi
 start_swift
 
 # Don't succeed unless the services come up
-ensure_services_started swift-object-server swift-proxy-server
+ensure_services_started s-object s-proxy
 
 
 set +o xtrace

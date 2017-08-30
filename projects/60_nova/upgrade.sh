@@ -90,7 +90,7 @@ fi
 # upgrade check command is run since that validates that we can connect to
 # the placement endpoint.
 start_placement
-ensure_services_started placement
+ensure_services_started placement-api
 
 # Run the nova-status upgrade check, which was only available starting in Ocata
 # so check to make sure it exists before attempting to run it.
@@ -122,7 +122,7 @@ start_nova_rest
 start_nova_compute
 
 # Don't succeed unless the services come up
-expected_runnning_services="nova-api nova-conductor "
+expected_runnning_services="n-api n-cond "
 # NOTE(vsaienko) Ironic should be upgraded before nova according to requirements
 # http://docs.openstack.org/developer/ironic/deploy/upgrade-guide.html#general-upgrades-all-versions
 # using reverse order will lead to nova-compute start failure.
@@ -130,7 +130,7 @@ expected_runnning_services="nova-api nova-conductor "
 # TODO(vsaienko) remove this once grenade allows to setup dependency between grenade plugin and
 # core services: https://bugs.launchpad.net/grenade/+bug/1660646
 if ! is_service_enabled ironic; then
-    expected_runnning_services+=' nova-compute'
+    expected_runnning_services+=' n-cpu'
 fi
 ensure_services_started $expected_runnning_services
 

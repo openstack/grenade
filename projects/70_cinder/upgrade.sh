@@ -62,9 +62,9 @@ $CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
 start_cinder
 
 # Don't succeed unless the services come up
-ensure_services_started cinder-api
+ensure_services_started c-api
 if is_service_enabled c-vol; then
-    ensure_services_started cinder-volume
+    ensure_services_started c-vol
 fi
 
 set +o xtrace
