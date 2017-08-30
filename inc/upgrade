@@ -112,10 +112,16 @@ function register_project_for_upgrade {
 
 function is_service_running {
     local name="$1"
-    # the following is needed to filter out upgrade / shutdown scripts
-    ps auxw | grep -v grep | grep -v shutdown.sh | grep -v upgrade.sh | grep -e "${name}"
-    local exitcode=$?
-    # some times I really hate bash reverse binary logic
+    local exitcode=0
+    if $SYSTEMCTL is-enabled "devstack@$name" --no-pager; then
+        $SYSTEMCTL status "devstack@$name" --no-pager
+        exitcode=$?
+    # If the unit is not found, so fallback to the ps approach
+    else
+        deprecated "Using the process name with ps for service status is deprecated, please update to use the systemd unit name"
+        ps auxw | grep -v grep | grep -v shutdown.sh | grep -v upgrade.sh | grep -e "${name}"
+        exitcode=$?
+    fi
     return $exitcode
 }
 
