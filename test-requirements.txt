@@ -1,1 +1,6 @@
+pbr>=0.6,!=0.7,<1.0
+Pygments
+docutils
+sphinx>=1.1.2,<1.2
+oslosphinx
 bashate >= 0.2
