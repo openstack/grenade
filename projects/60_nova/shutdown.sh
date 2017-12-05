@@ -13,16 +13,18 @@ source $BASE_DEVSTACK_DIR/stackrc # needed for status directory
 source $BASE_DEVSTACK_DIR/lib/tls
 source $BASE_DEVSTACK_DIR/lib/apache
 source $BASE_DEVSTACK_DIR/lib/nova
+source $BASE_DEVSTACK_DIR/lib/placement
 
 set -o xtrace
 
+stop_placement
 stop_nova
 # FIXME(dims): Once devstack gets fixed in both master and stable
 # branches, we can remove this extra stop_process
 stop_process n-cond
 
 # TODO(sdague): list all the services
-SERVICES_DOWN="nova-api nova-conductor nova-scheduler nova-compute"
+SERVICES_DOWN="nova-api nova-conductor nova-scheduler nova-compute placement-api"
 
 # sanity check that services are actually down
 ensure_services_stopped $SERVICES_DOWN

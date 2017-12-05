@@ -60,8 +60,9 @@ set -o xtrace
 # calls pre-upgrade hooks for within-$base before we upgrade
 upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $BASE_DEVSTACK_BRANCH
 
-# install_nova()
+# install_nova() and placement
 stack_install_service nova
+stack_install_service placement
 
 # calls upgrade-nova for specific release
 upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
