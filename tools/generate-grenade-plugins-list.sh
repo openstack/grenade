@@ -48,10 +48,10 @@ fi
 sorted_plugins=$(python tools/generate-grenade-plugins-list.py)
 
 for k in ${sorted_plugins}; do
-    project=${k:0:28}
-    giturl="git://git.openstack.org/openstack/${k:0:26}"
-    printf "|%-28s|%-73s|\n" "${project}" "${giturl}"
-    printf "+----------------------------+-------------------------------------------------------------------------+\n"
+    project=${k:0:40}
+    giturl="git://git.openstack.org/openstack/${k:0:36}"
+    printf "|%-40s|%-73s|\n" "${project}" "${giturl}"
+    printf "+----------------------------------------+-------------------------------------------------------------------------+\n"
 done
 
 if [[ -r data/grenade-plugins-registry.footer ]]; then

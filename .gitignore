@@ -3,6 +3,7 @@ localrc
 *.swp
 doc/files
 doc/build
+doc/source/plugin-registry.rst
 shocco
 .tox
 AUTHORS
