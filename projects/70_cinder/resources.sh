@@ -244,7 +244,8 @@ function verify_noapi {
 
 function destroy {
     _cinder_set_user
-    openstack server remove floating ip $CINDER_SERVER $(resource_get cinder cinder_server_ip)
+    # Disassociate the floating IP from the server.
+    openstack floating ip unset --port $(resource_get cinder cinder_server_ip)
     openstack floating ip delete $(resource_get cinder cinder_server_float)
 
     openstack server delete --wait $CINDER_SERVER

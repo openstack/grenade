@@ -138,7 +138,8 @@ function verify_noapi {
 
 function destroy {
     _nova_set_user
-    openstack server remove floating ip $NOVA_SERVER $(resource_get nova nova_server_ip)
+    # Disassociate the floating IP from the server.
+    openstack floating ip unset --port $(resource_get nova nova_server_ip)
     openstack floating ip delete $(resource_get nova nova_server_float)
     openstack server delete --wait $NOVA_SERVER
 
