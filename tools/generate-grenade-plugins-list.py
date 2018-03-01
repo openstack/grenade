@@ -24,7 +24,14 @@
 #   * network access to https://git.openstack.org/cgit
 
 import json
-import requests
+try:
+    # For Python 3.0 and later
+    from urllib.error import HTTPError
+    import urllib.request as urllib
+except ImportError:
+    # Fall back to Python 2's urllib2
+    import urllib2 as urllib
+    from urllib2 import HTTPError
 
 url = 'https://review.openstack.org/projects/'
 
@@ -39,21 +46,20 @@ url = 'https://review.openstack.org/projects/'
 def is_in_openstack_namespace(proj):
     return proj.startswith('openstack/')
 
-# Rather than returning a 404 for a nonexistent file, cgit delivers a
-# 0-byte response to a GET request.  It also does not provide a
-# Content-Length in a HEAD response, so the way we tell if a file exists
-# is to check the length of the entire GET response body.
-def has_grenade_plugin(proj):
-    r = requests.get("https://git.openstack.org/cgit/%s/plain/devstack/upgrade/upgrade.sh" % proj)
-    if len(r.text) > 0:
-        return True
-    else:
-        False
 
-r = requests.get(url)
-projects = sorted(filter(is_in_openstack_namespace, json.loads(r.text[4:])))
+def has_grenade_plugin(proj):
+    try:
+        r = urllib.urlopen(
+            "https://git.openstack.org/cgit/%s/plain/devstack/upgrade/upgrade.sh" % proj)
+        return True
+    except HTTPError as err:
+        if err.code == 404:
+            return False
+
+r = urllib.urlopen(url)
+projects = sorted(filter(is_in_openstack_namespace, json.loads(r.read()[4:])))
 
 found_plugins = filter(has_grenade_plugin, projects)
 
 for project in found_plugins:
-    print project[10:]
+    print(project[10:])

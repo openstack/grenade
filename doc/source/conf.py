@@ -11,8 +11,18 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import subprocess
+
+# Build the plugin registry
+def build_plugin_registry(app):
+    root_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    subprocess.call(['tools/generate-grenade-plugins-list.sh'], cwd=root_dir)
+
+def setup(app):
+    if os.getenv('GENERATE_GRENADE_PLUGIN_LIST', 'true').lower() == 'true':
+        app.connect('builder-inited', build_plugin_registry)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
