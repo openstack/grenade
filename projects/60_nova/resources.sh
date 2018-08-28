@@ -29,12 +29,37 @@ NOVA_PASS=pass
 NOVA_SERVER=nova_server1
 DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
 DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
+NOVA_VERIFY_RESOURCE_CLASSES="VCPU MEMORY_MB DISK_GB"
 
 function _nova_set_user {
     OS_TENANT_NAME=$NOVA_PROJECT
     OS_PROJECT_NAME=$NOVA_PROJECT
     OS_USERNAME=$NOVA_USER
     OS_PASSWORD=$NOVA_PASS
+}
+
+function _get_inventory_value() {
+    local key
+    local provider
+
+    key="$1"
+
+    # Get the uuid of the first resource provider
+    provider=$(openstack resource provider list -f value | head -n1 | cut -d ' ' -f 1)
+
+    # Return the inventory total for $uuid and resource class $key
+    openstack resource provider inventory list -f value $provider | grep "^$key" | cut -d ' ' -f 3
+}
+
+function _get_allocation_value() {
+    local consumer
+    local key
+
+    consumer="$1"
+    key="$2"
+
+    # Return the allocated amount for $consumer and resource class $key
+    openstack resource provider allocation show -f value $consumer | grep -o ".${key}.: [0-9]*" | cut -d ' ' -f 2
 }
 
 function create {
@@ -109,6 +134,16 @@ function create {
     # ping check on the way up to ensure we're really running
     ping_check_public $ip 30
 
+    # Save some inventory and allocation values (requires admin)
+    source_quiet $TOP_DIR/openrc admin admin
+    local key
+    for key in $NOVA_VERIFY_RESOURCE_CLASSES; do
+        resource_save nova nova_inventory_$key $(_get_inventory_value $key)
+    done
+    for key in $NOVA_VERIFY_RESOURCE_CLASSES; do
+        resource_save nova nova_server_allocation_$key $(_get_allocation_value $uuid $key)
+    done
+
     # NOTE(sdague): for debugging when things go wrong, so we have a
     # before and an after
     worlddump nova_resources_created
@@ -121,14 +156,38 @@ function verify {
     # later.
     verify_noapi
 
+    local key
+    local uuid
+    local sval
+    local cval
+    uuid=$(resource_get nova nova_server_uuid)
+
     if [[ "$side" = "post-upgrade" ]]; then
         # We can only verify the cells v2 setup if we created the mappings by
         # calling simple_cell_setup.
         if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
-            uuid=$(resource_get nova nova_server_uuid)
             nova-manage cell_v2 verify_instance --uuid $uuid
         fi
     fi
+
+    # Verify inventory and allocation values (requires admin)
+    source_quiet $TOP_DIR/openrc admin admin
+
+    for key in $NOVA_VERIFY_RESOURCE_CLASSES; do
+        cval=$(_get_inventory_value $key)
+        sval=$(resource_get nova nova_inventory_$key)
+        if [ "$cval" != "$sval" ]; then
+            die $LINENO "Checking inventory value ${key}=${sval} does not match current value ${cval}"
+        fi
+    done
+
+    for key in $NOVA_VERIFY_RESOURCE_CLASSES; do
+        cval=$(_get_allocation_value $uuid $key)
+        sval=$(resource_get nova nova_server_allocation_$key)
+        if [ "$cval" != "$sval" ]; then
+            die $LINENO "Checking allocation value ${key}=${sval} does not match current value ${cval}"
+        fi
+    done
 }
 
 function verify_noapi {
