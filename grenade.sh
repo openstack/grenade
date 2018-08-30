@@ -247,9 +247,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
         # By the time we get here the sub nodes are already setup with localrc files
         # as those are transferred in devstack-gate even before grenade.sh is called
         # We hack the ./post-stack.sh to inject what we need. if we don't set
-        # CELLSV2_SETUP, the default devstack assumes "superconductor" and fails. if
-        # we don't set WSGI_MODE, cinder fails to glance as the glance url is not
-        # set up correctly
+        # CELLSV2_SETUP, the default devstack assumes "superconductor" and fails.
         export SUB_NODE_ENV_VARS="CELLSV2_SETUP=singleconductor"
         sed -i 's/stdbuf/$SUB_NODE_ENV_VARS stdbuf/' ./post-stack.sh
         cat ./post-stack.sh
