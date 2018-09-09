@@ -1,0 +1,47 @@
+- project:
+    check:
+      jobs:
+        - neutron-grenade:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - grenade-heat:
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - neutron-grenade-multinode:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - tox-docs
+        - ironic-grenade-dsvm:
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+    gate:
+      jobs:
+        - neutron-grenade:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - neutron-grenade-multinode:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - tox-docs
+    post:
+      jobs:
+        - publish-openstack-tox-docs
+    experimental:
+      jobs:
+        - legacy-grenade-dsvm-neutron-forward:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+        - trove-grenade:
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+
