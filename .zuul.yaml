@@ -7,7 +7,7 @@
     required-projects:
       - openstack-dev/grenade
       - openstack-infra/devstack-gate
-    irrelevant-files:
+    irrelevant-files: &grenade-irrelevant-files
       - ^.*\.rst$
       - ^doc/.*$
 
@@ -15,34 +15,22 @@
     check:
       jobs:
         - neutron-grenade:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - grenade-heat:
             voting: false
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - neutron-grenade-multinode:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - tox-docs
         - ironic-grenade-dsvm:
             voting: false
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
     gate:
       jobs:
         - neutron-grenade:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - neutron-grenade-multinode:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - tox-docs
     post:
       jobs:
@@ -51,11 +39,7 @@
       jobs:
         - grenade-postgresql
         - legacy-grenade-dsvm-neutron-forward:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
         - trove-grenade:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
+            irrelevant-files: *grenade-irrelevant-files
 
