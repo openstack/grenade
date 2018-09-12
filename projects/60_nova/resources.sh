@@ -163,11 +163,8 @@ function verify {
     uuid=$(resource_get nova nova_server_uuid)
 
     if [[ "$side" = "post-upgrade" ]]; then
-        # We can only verify the cells v2 setup if we created the mappings by
-        # calling simple_cell_setup.
-        if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
-            nova-manage cell_v2 verify_instance --uuid $uuid
-        fi
+        # Verify the cells v2 simple_cell_setup
+        nova-manage cell_v2 verify_instance --uuid $uuid
     fi
 
     # Verify inventory and allocation values (requires admin)

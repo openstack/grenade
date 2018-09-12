@@ -81,11 +81,9 @@ if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
     $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
 fi
 
-# Setup cellsv2 records, if necessary.
-if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
-    $NOVA_BIN_DIR/nova-manage cell_v2 map_cell0 --database_connection $(database_connection_url nova_cell0)
-    $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
-fi
+# Setup cellsv2 records
+$NOVA_BIN_DIR/nova-manage cell_v2 map_cell0 --database_connection $(database_connection_url nova_cell0)
+$NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
 
 # Start the Placement service - this needs to be running before the nova-status
 # upgrade check command is run since that validates that we can connect to
