@@ -74,10 +74,7 @@ function create {
     fi
     resource_save cinder user_id $id
 
-    # BUG(sdague): this really shouldn't be required, in Keystone v2 a
-    # user created in a project was assigned to that project, in v3 it
-    # is not - https://bugs.launchpad.net/keystone/+bug/1662911
-    openstack role add Member --user $id --project $project_id
+    openstack role add member --user $id --project $project_id
     # set ourselves to the created cinder user
     _cinder_set_user
 
