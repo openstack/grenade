@@ -72,10 +72,14 @@ ps auxw | grep ^rabbitmq | awk '{print $2}' | sudo xargs kill
 sudo service rabbitmq-server stop
 sudo apt-get purge -y rabbitmq-server .*erlang
 
-# Get ruthless with mysql
-service mysqld stop
-sudo apt-get  purge -y .*mysql-server
-sudo rm -rf /var/lib/mysql
+if [[ "${DATABASE_TYPE}" == "mysql" ]]; then
+    # Get ruthless with mysql
+    service mysqld stop
+    sudo apt-get  purge -y .*mysql-server
+    sudo rm -rf /var/lib/mysql
+else
+    echo "TODO: cleanup ${DATABASE_TYPE}"
+fi
 
 # kill off swift, which doesn't live in screen, so doesn't die in screen
 ps auxw | grep swift | awk '{print $2}' | xargs kill

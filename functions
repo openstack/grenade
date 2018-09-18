@@ -78,7 +78,15 @@ function save_data {
     local dir=$2
     echo_summary "Dumping $release databases"
     mkdir -p $SAVE_DIR
-    save_mysql_dbs $release $dir
+    local db_type=$(
+        set +o xtrace &&
+            source $dir/stackrc &&
+            echo $DATABASE_TYPE)
+    if [[ "${db_type}" == "mysql" ]]; then
+        save_mysql_dbs $release $dir
+    else
+        echo_summary "TODO: save state for $db_type databases"
+    fi
 }
 
 function worlddump {
