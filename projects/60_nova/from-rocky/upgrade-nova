@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+source ${TARGET_DEVSTACK_DIR}/lib/apache
+source ${TARGET_DEVSTACK_DIR}/lib/database
+source ${TARGET_DEVSTACK_DIR}/lib/keystone
+source ${TARGET_DEVSTACK_DIR}/lib/nova
+source ${TARGET_DEVSTACK_DIR}/lib/placement
+source ${TARGET_DEVSTACK_DIR}/inc/ini-config
+source ${TARGET_DEVSTACK_DIR}/inc/python
+
+function configure_nova_upgrade() {
+
+    # TODO(mriedem): Until https://review.openstack.org/#/c/600162/ merges
+    # in devstack, we want to continue using placement from nova. We can
+    # remove this once the devstack change lands.
+    if [ -z "${PLACEMENT_REPO}" ]; then
+        echo "devstack not new enough for extracted placement."
+        return 0
+    fi
+
+    # NOTE(mriedem): We don't need to do any of this placement DB stuff
+    # if PLACEMENT_DB_ENABLED=True from the old side.
+
+    # Devstack on the Rocky side won't install the placement repo because
+    # it didn't exist until Stein, so unless the CI infra (devstack-gate)
+    # already cloned the repo, we have to git clone the repo here
+    # to get the DB script.
+    if [[ ! -d ${TARGET_RELEASE_DIR}/placement ]]; then
+        git_clone ${PLACEMENT_REPO} \
+        ${TARGET_RELEASE_DIR}/placement ${TARGET_DEVSTACK_BRANCH}
+    fi
+    # Install placement so that placement-api script exists
+    setup_develop ${TARGET_RELEASE_DIR}/placement
+
+    # Get the location of the placement DB migration script and
+    # verify it exists.
+    local db_script=${TARGET_RELEASE_DIR}/placement/tools/${DATABASE_TYPE}-migrate-db.sh
+    if [[ ! -x ${db_script} ]]; then
+        die $LINENO "${db_script} does not exist or is not executable."
+    fi
+
+    # Get our database variables set.
+    initialize_database_backends
+
+    # Write out the migrate-db.rc file.
+    local rc_file=/tmp/migrate-db.rc
+    touch ${rc_file}
+    # $db_script is an absolute path so we can execute it directly.
+    ${db_script} --mkconfig ${rc_file}
+    sed -i s/NOVA_API_USER.*/NOVA_API_USER=\"${DATABASE_USER}\"/g ${rc_file}
+    sed -i s/NOVA_API_PASS.*/NOVA_API_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
+    sed -i s/PLACEMENT_USER.*/PLACEMENT_USER=\"${DATABASE_USER}\"/g ${rc_file}
+    sed -i s/PLACEMENT_PASS.*/PLACEMENT_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
+
+    # Create the placement database.
+    recreate_database placement
+
+    # Copy the placement-related table data from the nova_api database
+    # into the placement database.
+    ${db_script} --migrate ${rc_file}
+
+    # Write out the contents of placement.conf.
+    local placement_conf_dir=/etc/placement
+    sudo install -d -o ${STACK_USER} ${placement_conf_dir}
+    local placement_conf=${placement_conf_dir}/placement.conf
+
+    # NOTE(mriedem): iniset will create the config file if it does not exist
+    # NOTE(cdent): new placement uses _only_ the 'placement_database' group
+    # for explicitness.
+    iniset ${placement_conf} placement_database connection `database_connection_url placement`
+
+    # Configure logging options.
+    setup_logging ${placement_conf}
+
+    # Configure [keystone_authtoken] option and auth cache.
+    sudo install -d -o $STACK_USER /var/cache/placement
+    configure_auth_token_middleware ${placement_conf} placement /var/cache/placement
+
+    # Copy the remaining non-keystoneauth [placement] group options from
+    # nova.conf if set.
+    for option in randomize_allocation_candidates incomplete_consumer_project_id incomplete_consumer_user_id; do
+        local value=$(iniget ${NOVA_CONF} placement ${option})
+        if [ ${value} ]; then
+            iniset ${placement_conf} placement ${option} ${value}
+        fi
+    done
+
+    # Copy any policy overrides from nova. We assume yaml here since that is
+    # the default in code, but it could also be a json file.
+    local old_policy_file=${NOVA_CONF_DIR}/placement-policy.yaml
+    if [[ -f ${old_policy_file} ]]; then
+        local new_policy_file=${placement_conf_dir}/policy.yaml
+        cp ${old_policy_file} ${new_policy_file}
+        # Update the config to point at the renamed file.
+        iniset ${placement_conf} placement policy_file ${new_policy_file}
+    fi
+
+    # Make adjustments to uwsgi and apache configuration so that we are
+    # pointing to the right service and configuration.
+    # TODO(cdent): We set our own values for this instead of values from
+    # lib/placement because we're in a dependency catch-22 with devstack
+    # changes. When both sides have merged we can replace these with globals.
+    # PLACEMENT_BIN_DIR is okay because it is the same whether it comes from
+    # old or new devstack code, as long as we are not in a virtualenv.
+    # PLACEMENT_UWSGI_CONF is used as a global so that when start_placement
+    # is called later, it has the right value.
+    local placement_uwsgi=${PLACEMENT_BIN_DIR}/placement-api
+    PLACEMENT_UWSGI_CONF=${placement_conf_dir}/placement-uwsgi.ini
+
+    disable_apache_site nova-placement-api
+    # This will enable_apache_site placement-api. The entry in the service
+    # catalog remains the same.
+    write_uwsgi_config "${PLACEMENT_UWSGI_CONF}" "${placement_uwsgi}" "/placement"
+    # Grenade itself will ensure that placement is restarted, and when it does
+    # that, a new systemd unit file, pointing to the right wsgi app, is created.
+}
