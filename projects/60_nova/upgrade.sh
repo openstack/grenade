@@ -123,7 +123,7 @@ start_nova_compute
 # Don't succeed unless the services come up
 expected_runnning_services="n-api n-cond "
 # NOTE(vsaienko) Ironic should be upgraded before nova according to requirements
-# http://docs.openstack.org/developer/ironic/deploy/upgrade-guide.html#general-upgrades-all-versions
+# https://docs.openstack.org/ironic/latest/admin/upgrade-guide.html#general-upgrades-all-versions
 # using reverse order will lead to nova-compute start failure.
 # Ironic will restart n-cpu after its upgrade.
 # TODO(vsaienko) remove this once grenade allows to setup dependency between grenade plugin and
