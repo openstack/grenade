@@ -29,7 +29,16 @@ NOVA_PASS=pass
 NOVA_SERVER=nova_server1
 DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
 DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
-NOVA_VERIFY_RESOURCE_CLASSES="VCPU MEMORY_MB DISK_GB"
+VIRT_DRIVER=${VIRT_DRIVER:-$DEFAULT_VIRT_DRIVER}
+
+if [[ "$VIRT_DRIVER" == ironic ]]; then
+    NOVA_IRONIC_RESOURCE_CLASS=${IRONIC_DEFAULT_RESOURCE_CLASS:-baremetal}
+    # Ironic does not use standard resource classes starting with Stein,
+    # verify its custom resource class instead.
+    NOVA_VERIFY_RESOURCE_CLASSES=CUSTOM_${NOVA_IRONIC_RESOURCE_CLASS^^}
+else
+    NOVA_VERIFY_RESOURCE_CLASSES="VCPU MEMORY_MB DISK_GB"
+fi
 
 function _nova_set_user {
     OS_TENANT_NAME=$NOVA_PROJECT
