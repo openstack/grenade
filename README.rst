@@ -51,6 +51,8 @@ Grenade works under the following theory of upgrade.
   the entire upgrade (whether or not Nova services are up). Taking down
   the control plane should not take down your VMs.
 
+.. _upgrade-exceptions:
+
 - Any other required changes on upgrade are an **exception** and must be
   called out in the release notes.
 

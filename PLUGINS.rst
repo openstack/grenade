@@ -138,6 +138,24 @@ While create / destroy are only going to be called once in the current
 interface, bonus points for also making those idempotent for
 resiliancy in testing.
 
+**Per-release upgrade scripts**
+
+There are times when :ref:`exceptional <upgrade-exceptions>` manual upgrade
+steps must be performed to get from one release to the next, or even within
+the same release. Grenade supports this with per-release scripts found in
+each project, e.g.::
+
+    projects/
+        60_nova/
+            from-ocata/
+                upgrade-nova
+
+Regarding the sequence of when these per-release scripts are called, any
+``within-$base`` script should be run *before* installing new code, and any
+``from-$base`` script should be run *after* installing new code but before
+starting the services with the new code. This is because configuration or
+database changes may be needed before the upgraded code is started.
+
 Supporting Methods
 ------------------
 
