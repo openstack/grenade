@@ -11,6 +11,17 @@
       - ^.*\.rst$
       - ^doc/.*$
 
+- job:
+    name: grenade-py3
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/grenade-py3/run.yaml
+    post-run: playbooks/legacy/grenade-py3/post.yaml
+    timeout: 10800
+    required-projects:
+      - openstack-dev/grenade
+      - openstack-infra/devstack-gate
+    irrelevant-files: *grenade-irrelevant-files
+
 - project:
     check:
       jobs:
@@ -19,6 +30,7 @@
         - grenade-heat:
             voting: false
             irrelevant-files: *grenade-irrelevant-files
+        - grenade-py3
         - neutron-grenade-multinode:
             irrelevant-files: *grenade-irrelevant-files
         - tox-docs
@@ -27,6 +39,7 @@
             irrelevant-files: *grenade-irrelevant-files
     gate:
       jobs:
+        - grenade-py3
         - neutron-grenade:
             irrelevant-files: *grenade-irrelevant-files
         - neutron-grenade-multinode:
