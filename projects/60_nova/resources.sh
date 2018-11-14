@@ -57,7 +57,7 @@ function _get_inventory_value() {
     provider=$(openstack resource provider list -f value | head -n1 | cut -d ' ' -f 1)
 
     # Return the inventory total for $uuid and resource class $key
-    openstack resource provider inventory list -f value $provider | grep "^$key" | cut -d ' ' -f 3
+    openstack resource provider inventory show $provider $key -f value -c total
 }
 
 function _get_allocation_value() {
@@ -67,7 +67,9 @@ function _get_allocation_value() {
     consumer="$1"
     key="$2"
 
-    # Return the allocated amount for $consumer and resource class $key
+    # Return the allocated amount for $consumer and resource class $key;
+    # we can't use -c $key here because the resource class amounts are
+    # dumped in a json blob.
     openstack resource provider allocation show -f value $consumer | grep -o ".${key}.: [0-9]*" | cut -d ' ' -f 2
 }
 
