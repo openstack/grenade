@@ -78,6 +78,13 @@ start_swift
 # Don't succeed unless the services come up
 ensure_services_started s-object s-proxy
 
+# If we're in python3 for the overall grenade, swift itself is still
+# using python2 and installed the openstackclient, clobbering the
+# python3 version. We need to put it back before moving on. Because
+# openstackclient is explicitly listed as python3 supported, this
+# does "the right thing".
+# TODO(cdent): Remove this when swift is part of ENABLED_PYTHON3_PACKAGES.
+pip_install python-openstackclient
 
 set +o xtrace
 echo "*********************************************************************"
