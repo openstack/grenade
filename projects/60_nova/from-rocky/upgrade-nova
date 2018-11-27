@@ -41,24 +41,8 @@ function configure_nova_upgrade() {
     # Get our database variables set.
     initialize_database_backends
 
-    # Write out the migrate-db.rc file.
-    local rc_file=/tmp/migrate-db.rc
-    touch ${rc_file}
-    # $db_script is an absolute path so we can execute it directly.
-    ${db_script} --mkconfig ${rc_file}
-    sed -i s/NOVA_API_USER.*/NOVA_API_USER=\"${DATABASE_USER}\"/g ${rc_file}
-    sed -i s/NOVA_API_PASS.*/NOVA_API_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
-    sed -i s/PLACEMENT_USER.*/PLACEMENT_USER=\"${DATABASE_USER}\"/g ${rc_file}
-    sed -i s/PLACEMENT_PASS.*/PLACEMENT_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
-
-    # Create the placement database.
-    recreate_database placement
-
-    # Copy the placement-related table data from the nova_api database
-    # into the placement database.
-    ${db_script} --migrate ${rc_file}
-
     # Write out the contents of placement.conf.
+    # This should be done before executing the database migration script.
     local placement_conf_dir=/etc/placement
     sudo install -d -o ${STACK_USER} ${placement_conf_dir}
     local placement_conf=${placement_conf_dir}/placement.conf
@@ -83,6 +67,25 @@ function configure_nova_upgrade() {
             iniset ${placement_conf} placement ${option} ${value}
         fi
     done
+
+    # Write out the migrate-db.rc file.
+    local rc_file=/tmp/migrate-db.rc
+    touch ${rc_file}
+    # $db_script is an absolute path so we can execute it directly.
+    ${db_script} --mkconfig ${rc_file}
+    sed -i s/NOVA_API_USER.*/NOVA_API_USER=\"${DATABASE_USER}\"/g ${rc_file}
+    sed -i s/NOVA_API_PASS.*/NOVA_API_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
+    sed -i s/PLACEMENT_USER.*/PLACEMENT_USER=\"${DATABASE_USER}\"/g ${rc_file}
+    sed -i s/PLACEMENT_PASS.*/PLACEMENT_PASS=\"${DATABASE_PASSWORD}\"/g ${rc_file}
+
+    # Create the placement database.
+    recreate_database placement
+
+    # Copy the placement-related table data from the nova_api database into
+    # the placement database and "stamp" the database version to bring it
+    # under alembic control. Note that stamping relies on the
+    # `placement.conf` having `[placement_database]/connection` set first.
+    ${db_script} --migrate ${rc_file}
 
     # Copy any policy overrides from nova. We assume yaml here since that is
     # the default in code, but it could also be a json file.
