@@ -141,6 +141,24 @@ function create {
     eval $(openstack volume create --size 1 $CINDER_VOL2 -f shell)
     resource_save cinder cinder_volume2_id $id
 
+    # Wait for the volume to be available before attaching it to the server.
+    # TODO(mriedem): Replace this (and the wait loop above) with --wait once
+    # OSC story 2002158 is complete.
+    timeleft=30
+    while [[ $timeleft -gt 0 ]]; do
+        local status=$(openstack volume show $CINDER_VOL2 -f value -c status)
+        if [[ "$status" != "available" ]]; then
+            echo "Volume is not yet available, waiting..."
+            sleep 1
+            timeleft=$((timeleft - 1))
+            if [[ $timeleft == 0 ]]; then
+                die $LINENO "Timed out waiting for volume $CINDER_VOL2 to be available"
+            fi
+        else
+            break
+        fi
+    done
+
     # Attach second volume and ensure it becomes in-use
     openstack server add volume $CINDER_SERVER $CINDER_VOL2
     local timeleft=30
