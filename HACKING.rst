@@ -54,4 +54,4 @@ verbose in the comments _ABOVE_ the code they pertain to.  Shocco also supports
 Markdown formatting in the comments; use it sparingly.  Specifically, ``grenade.sh``
 uses Markdown headers to divide the script into logical sections.
 
-.. _shocco: http://rtomayko.github.com/shocco/
+.. _shocco: https://rtomayko.github.io/shocco/
