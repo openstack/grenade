@@ -276,6 +276,13 @@ function fetch_devstacks {
     # it needs to be to have gotten this far.
     source $TARGET_DEVSTACK_DIR/functions-common
     source $TARGET_DEVSTACK_DIR/inc/python
+
+    # When Python 3 is supported by an application, adding the specific
+    # version of Python 3 to this variable will install the app using that
+    # version of the interpreter instead of 2.7.
+    _DEFAULT_PYTHON3_VERSION="$(_get_python_version python3)"
+    export PYTHON3_VERSION=${PYTHON3_VERSION:-${_DEFAULT_PYTHON3_VERSION:-3.5}}
+
     install_devstack_tools
 
     # Load up a copy of the downloaded images if not present
