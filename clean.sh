@@ -30,6 +30,7 @@ if [[ -d $BASE_DEVSTACK_DIR ]]; then
     bash -c "
         cd $BASE_DEVSTACK_DIR; \
         source stackrc; \
+        source lib/apache; \
         source lib/tls; \
         source lib/cinder; \
         DATA_DIR=${STACK_ROOT}/data; \
@@ -47,6 +48,7 @@ if [[ -d $TARGET_DEVSTACK_DIR ]]; then
     bash -x -c "
         cd $TARGET_DEVSTACK_DIR; \
         source stackrc; \
+        source lib/apache; \
         source lib/tls; \
         source lib/cinder; \
         DATA_DIR=${STACK_ROOT}/data; \

@@ -39,6 +39,7 @@ set -o errexit
 source $TARGET_DEVSTACK_DIR/stackrc
 
 FILES=$TARGET_DEVSTACK_DIR/files
+source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/swift
