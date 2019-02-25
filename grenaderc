@@ -8,6 +8,13 @@ if [ -f $RC_DIR/localrc ]; then
     source $RC_DIR/localrc
 fi
 
+# If True, the setting of the devstack configuration for the base and
+# the target and the execution of devstack on the base target
+# (if requested) are not performed by grenade, but they must be done
+# separately.
+# This is the case for example for the native zuul v3 grenade job.
+GRENADE_USE_EXTERNAL_DEVSTACK=${GRENADE_USE_EXTERNAL_DEVSTACK:-False}
+
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com

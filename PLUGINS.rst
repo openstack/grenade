@@ -241,6 +241,12 @@ devstack localrc files with the ``devstack_localrc`` function.
 Which will take all the rest of the stuff on that line and add it to
 the localrc for either the base or target devstack.
 
+Please note that ``devstack_localrc`` only works when grenade
+performs the configuration of the devstack settings and runs devstack
+against the base target. When GRENADE_USE_EXTERNAL_DEVSTACK is set
+to True, as it happens on the Zuul grenade jobs where devstack is
+configured and executed before grenade, the function has no effect.
+
 Example settings
 ----------------
 
