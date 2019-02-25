@@ -261,6 +261,12 @@ function dump_local_files {
 }
 
 function fetch_devstacks {
+    devstacks_clone
+    devstacks_setup_environment
+    devstacks_setup_settings
+}
+
+function devstacks_clone {
     # Fetch Base Devstack
 
     # Get DevStack if it doesn't exist
@@ -271,7 +277,9 @@ function fetch_devstacks {
     if [[ ! -d $TARGET_DEVSTACK_DIR ]]; then
         git_clone $TARGET_DEVSTACK_REPO $TARGET_DEVSTACK_DIR $TARGET_DEVSTACK_BRANCH
     fi
+}
 
+function devstacks_setup_environment {
     # This depends on REQUIREMENTS_DIR being set in grenaderc, which
     # it needs to be to have gotten this far.
     source $TARGET_DEVSTACK_DIR/functions-common
@@ -283,12 +291,21 @@ function fetch_devstacks {
     _DEFAULT_PYTHON3_VERSION="$(_get_python_version python3)"
     export PYTHON3_VERSION=${PYTHON3_VERSION:-${_DEFAULT_PYTHON3_VERSION:-3.5}}
 
-    install_devstack_tools
-
     # Load up a copy of the downloaded images if not present
     if [[ -d ${STACK_ROOT}/images ]]; then
         rsync -a ${STACK_ROOT}/images/* $BASE_DEVSTACK_DIR/files
     fi
+}
+
+function devstacks_setup_settings {
+    # dsconf is required only by this function and devstack_localrc
+    # but only when the base is installed by grenade.
+    # Moreover, when the deployment of base is not performed by grenade,
+    # installing devstack-tools just before creating the resources also
+    # updates pbr (at least from rocky->master) leading to an exception
+    # in running services using pbr methods (for example nova-conductor)
+    # probably because they are still looking for the old version.
+    install_devstack_tools
 
     # Set up base localrc
 

@@ -108,6 +108,10 @@ high level version of what that does.
 - perform some sanity checking (currently tempest smoke) to ensure
   everything seems good.
 
+The script skips the first two steps (which take care of setting up the 2
+devstack environments and installing the base one) when the value
+of GRENADE_USE_EXTERNAL_DEVSTACK is set to True.
+
 
 Terminology
 -----------

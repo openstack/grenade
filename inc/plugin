@@ -165,6 +165,10 @@ function enable_grenade_plugin {
 }
 
 function devstack_localrc {
+    if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" == "True" ]; then
+        echo "DevStack is configured externally, ignoring \$(devstack_localrc $@)"
+        return
+    fi
     local settings_file=$(caller | awk '{print $2}')
     local where=$1
     local path=$(localrc_path $where)

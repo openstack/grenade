@@ -166,9 +166,13 @@ set -o xtrace
 # the TARGET devstack functions file, then source the rest of the
 # grenade settings. This should let us run the bulk of grenade.
 
-# Get both devstack trees, so that BASE_DEVSTACK_DIR, and
-# TARGET_DEVSTACK_DIR are now fully populated.
-fetch_devstacks
+if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
+    # Get both devstack trees, so that BASE_DEVSTACK_DIR, and
+    # TARGET_DEVSTACK_DIR are now fully populated.
+    fetch_devstacks
+else
+    devstacks_setup_environment
+fi
 
 # Source the rest of the Grenade functions. For convenience
 # ``$GRENADE_DIR/functions`` implicitly sources
@@ -215,15 +219,16 @@ fetch_grenade_plugins
 # when the time is right.
 load_settings
 
+if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
+    # Nova should use singleconductor as Grenade doesn't
+    # setup multi-cell rabbit for now
+    devstack_localrc base "CELLSV2_SETUP=singleconductor"
+    devstack_localrc target "CELLSV2_SETUP=singleconductor"
+fi
+
 # And ensure that we setup the target localrc.auto, because stack.sh
 # isn't run there. This has to be run after load_settings because
 # plugins might change the service list during this phase.
-
-# Nova should use singleconductor as Grenade doesn't
-# setup multi-cell rabbit for now
-devstack_localrc base "CELLSV2_SETUP=singleconductor"
-devstack_localrc target "CELLSV2_SETUP=singleconductor"
-
 
 extract_localrc_section $TARGET_DEVSTACK_DIR/local.conf \
                         $TARGET_DEVSTACK_DIR/localrc \
@@ -235,26 +240,28 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # Initialize grenade_db local storage, used for resource tracking
     init_grenade_db
 
-    echo_summary "Running base stack.sh"
-    cd $BASE_DEVSTACK_DIR
-    GIT_BASE=$GIT_BASE ./stack.sh
-    stop $STOP stack.sh 10
+    if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
+        echo_summary "Running base stack.sh"
+        cd $BASE_DEVSTACK_DIR
+        GIT_BASE=$GIT_BASE ./stack.sh
+        stop $STOP stack.sh 10
 
-    echo_summary "Running post-stack.sh"
-    if [[ -e $GRENADE_DIR/post-stack.sh ]]; then
-        cd $GRENADE_DIR
+        echo_summary "Running post-stack.sh"
+        if [[ -e $GRENADE_DIR/post-stack.sh ]]; then
+            cd $GRENADE_DIR
 
-        # By the time we get here the sub nodes are already setup with localrc files
-        # as those are transferred in devstack-gate even before grenade.sh is called
-        # We hack the ./post-stack.sh to inject what we need. if we don't set
-        # CELLSV2_SETUP, the default devstack assumes "superconductor" and fails.
-        export SUB_NODE_ENV_VARS="CELLSV2_SETUP=singleconductor"
-        sed -i 's/stdbuf/$SUB_NODE_ENV_VARS stdbuf/' ./post-stack.sh
-        cat ./post-stack.sh
+            # By the time we get here the sub nodes are already setup with localrc files
+            # as those are transferred in devstack-gate even before grenade.sh is called
+            # We hack the ./post-stack.sh to inject what we need. if we don't set
+            # CELLSV2_SETUP, the default devstack assumes "superconductor" and fails.
+            export SUB_NODE_ENV_VARS="CELLSV2_SETUP=singleconductor"
+            sed -i 's/stdbuf/$SUB_NODE_ENV_VARS stdbuf/' ./post-stack.sh
+            cat ./post-stack.sh
 
-        ./post-stack.sh
-        stop $STOP post-stack.sh 15
-        echo_summary "Completed post-stack.sh"
+            ./post-stack.sh
+            stop $STOP post-stack.sh 15
+            echo_summary "Completed post-stack.sh"
+        fi
     fi
 
     # Cache downloaded instances
