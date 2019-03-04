@@ -91,10 +91,6 @@ source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/nova
 
-#TODO(jlibosva): Remove once neutron starts using oslo.messaging.
-#python-qpid was removed as a part of unfubar_setuptools() function
-sudo apt-get -y install python-qpid
-
 # Install latest bits
 install_neutron
 install_neutronclient
