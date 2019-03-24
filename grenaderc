@@ -16,7 +16,7 @@ export PYTHON3_VERSION=${PYTHON3_VERSION:-3.5}
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com
-GIT_BASE=${GIT_BASE:-git://git.openstack.org}
+GIT_BASE=${GIT_BASE:-https://git.openstack.org}
 #GIT_BASE=/opt/git
 
 # Destination path for installation ``STACK_ROOT``
