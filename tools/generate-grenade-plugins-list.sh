@@ -49,7 +49,7 @@ sorted_plugins=$(python tools/generate-grenade-plugins-list.py)
 
 for k in ${sorted_plugins}; do
     project=${k:0:28}
-    giturl="git://git.openstack.org/openstack/${k:0:26}"
+    giturl="https://git.openstack.org/openstack/${k:0:26}"
     printf "|%-28s|%-73s|\n" "${project}" "${giturl}"
     printf "+----------------------------+-------------------------------------------------------------------------+\n"
 done
