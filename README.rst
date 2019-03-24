@@ -158,7 +158,7 @@ Install Grenade
 
 Get Grenade from GitHub in the usual way::
 
-    git clone git://git.openstack.org/openstack-dev/grenade
+    git clone https://git.openstack.org/openstack-dev/grenade
 
 Optional: running grenade against a remote target
 -------------------------------------------------
