@@ -5,8 +5,8 @@
     post-run: playbooks/legacy/grenade-postgresql/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
     irrelevant-files: &grenade-irrelevant-files
       - ^.*\.rst$
       - ^doc/.*$
@@ -18,8 +18,8 @@
     post-run: playbooks/legacy/grenade-py3/post.yaml
     timeout: 10800
     required-projects:
-      - openstack-dev/grenade
-      - openstack-infra/devstack-gate
+      - openstack/grenade
+      - openstack/devstack-gate
     irrelevant-files: *grenade-irrelevant-files
 
 - project:
