@@ -81,11 +81,10 @@ Status
 
 Grenade is now running on every patch for projects that support
 upgrade. Gating Grenade configurations exist for the following in
-OpenStack's CI system.
+OpenStack's CI system (this is not an exhaustive list):
 
-- A cloud with nova-network upgraded between releases
 - A cloud with neutron upgraded between releases
-- A cloud with nova-network that upgrades all services except
+- A cloud with neutron that upgrades all services except
   nova-compute, thus testing RPC backwards compatibility for rolling
   upgrades.
 
