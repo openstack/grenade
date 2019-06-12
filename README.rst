@@ -72,9 +72,9 @@ Grenade works under the following theory of upgrade.
             OpenStack ecosystem, for example TripleO, Kolla, etc, to read the
             release notes of each project, it is good practice to communicate
             any exceptional upgrade changes made to Grenade to those teams
-            directly or at least via the `openstack-dev mailing list`_.
+            directly or at least via the `openstack-discuss mailing list`_.
 
-.. _openstack-dev mailing list: http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-dev
+.. _openstack-discuss mailing list: http://lists.openstack.org/cgi-bin/mailman/listinfo/openstack-discuss
 
 Status
 ======
