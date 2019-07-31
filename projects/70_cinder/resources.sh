@@ -195,6 +195,8 @@ function create {
             local took=$((end - start))
             timeleft=$((timeleft - took))
             if [[ $timeleft -le 0 ]]; then
+                # Collect debugging information then die
+                openstack console log show $CINDER_SERVER
                 die $LINENO "SSH to the client did not work, something very wrong"
             fi
         else
