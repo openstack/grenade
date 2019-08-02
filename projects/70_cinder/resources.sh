@@ -31,6 +31,8 @@ CINDER_KEY=cinder_key
 CINDER_KEY_FILE=$SAVE_DIR/cinder_key.pem
 CINDER_VOL=cinder_grenade_vol
 CINDER_VOL2=cinder_grenade_vol2
+CINDER_VOL3=cinder_grenade_vol3
+CINDER_VOL_ENCRYPTED_TYPE=cinder_grenade_encrypted_type
 # don't put ' or " in this, it complicates things
 CINDER_STATE="I am a teapot"
 CINDER_STATE_FILE=verify.txt
@@ -47,6 +49,29 @@ if ! is_service_enabled c-api; then
     echo "Cinder is not enabled. Skipping resource phase $1 for cinder."
     exit 0
 fi
+
+function _wait_for_volume_update {
+    # TODO(mriedem): Replace with --wait once OSC story 2002158 is complete.
+    # https://storyboard.openstack.org/#!/story/2002158
+    local volume=$1
+    local field=$2
+    local desired_status=$3
+    local timeleft=30
+    local status=""
+    while [[ $timeleft -gt 0 ]]; do
+        status=$(openstack volume show $volume -f value -c $field)
+        if [[ "$status" != "$desired_status" ]]; then
+            echo "Volume ${volume} ${field} is ${status} and not yet ${desired_status}, waiting..."
+            sleep 1
+            timeleft=$((timeleft - 1))
+            if [[ $timeleft == 0 ]]; then
+                die $LINENO "Timed out waiting for volume ${volume} ${field} to be ${desired_status}"
+            fi
+        else
+            break
+        fi
+    done
+}
 
 function _cinder_set_user {
     OS_TENANT_NAME=$CINDER_PROJECT
@@ -75,6 +100,11 @@ function create {
     resource_save cinder user_id $id
 
     openstack role add member --user $id --project $project_id
+
+    # Create an encrypted volume type as admin
+    eval $(openstack volume type create --encryption-provider luks $CINDER_VOL_ENCRYPTED_TYPE -f shell)
+    resource_save cinder cinder_encrypted_volume_type_id $id
+
     # set ourselves to the created cinder user
     _cinder_set_user
 
@@ -92,23 +122,8 @@ function create {
     eval $(openstack volume create --image $DEFAULT_IMAGE_NAME --size 1 $CINDER_VOL -f shell)
     resource_save cinder cinder_volume_id $id
 
-    # BUG: openstack client doesn't support --wait on volumes, so loop
-    # and wait until it's bootable. This typically only takes a second
-    # or two.
-    local timeleft=30
-    while [[ $timeleft -gt 0 ]]; do
-        eval $(openstack volume show cinder_grenade_vol -f shell -c bootable)
-        if [[ "$bootable" != "true" ]]; then
-            echo "Volume is not yet bootable, waiting..."
-            sleep 1
-            timeleft=$((timeleft - 1))
-            if [[ $timeleft == 0 ]]; then
-                die $LINENO "Volume failed to become bootable"
-            fi
-        else
-            break
-        fi
-    done
+    # Wait for the volume to be marked as bootable
+    _wait_for_volume_update $CINDER_VOL "bootable" "true"
 
     # work around for neutron because there is no such thing as a default
     local net_id=$(resource_get network net_id)
@@ -142,39 +157,20 @@ function create {
     resource_save cinder cinder_volume2_id $id
 
     # Wait for the volume to be available before attaching it to the server.
-    # TODO(mriedem): Replace this (and the wait loop above) with --wait once
-    # OSC story 2002158 is complete.
-    timeleft=30
-    while [[ $timeleft -gt 0 ]]; do
-        local status=$(openstack volume show $CINDER_VOL2 -f value -c status)
-        if [[ "$status" != "available" ]]; then
-            echo "Volume is not yet available, waiting..."
-            sleep 1
-            timeleft=$((timeleft - 1))
-            if [[ $timeleft == 0 ]]; then
-                die $LINENO "Timed out waiting for volume $CINDER_VOL2 to be available"
-            fi
-        else
-            break
-        fi
-    done
+    _wait_for_volume_update $CINDER_VOL2 "status" "available"
 
     # Attach second volume and ensure it becomes in-use
     openstack server add volume $CINDER_SERVER $CINDER_VOL2
-    local timeleft=30
-    while [[ $timeleft -gt 0 ]]; do
-        eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
-        if [[ "$status" != "in-use" ]]; then
-            echo "Volume is not yet attached (status $status), waiting..."
-            sleep 1
-            timeleft=$((timeleft - 1))
-            if [[ $timeleft == 0 ]]; then
-                die $LINENO "Volume failed to become in-use"
-            fi
-        else
-            break
-        fi
-    done
+    _wait_for_volume_update $CINDER_VOL2 "status" "in-use"
+
+    # Create an encrypted (non-bootable) volume to attach and detach
+    eval $(openstack volume create --size 1 $CINDER_VOL3 --type $CINDER_VOL_ENCRYPTED_TYPE -f shell)
+    resource_save cinder cinder_volume3_id $id
+    _wait_for_volume_update $CINDER_VOL3 "status" "available"
+
+    # Attach the encrypted volume and ensure it becomes in-use
+    openstack server add volume $CINDER_SERVER $CINDER_VOL3
+    _wait_for_volume_update $CINDER_VOL3 "status" "in-use"
 
     # ping check on the way up so we can add ssh content
     ping_check_public $ip 30
@@ -220,26 +216,20 @@ function verify {
     if [[ "$side" = "post-upgrade" ]]; then
         eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
         if [[ "$status" != "in-use" ]]; then
-            die $LINENO "Unexpected status of volume $CINDER_VOL_2 (expected in-use, but was $status)"
+            die $LINENO "Unexpected status of volume $CINDER_VOL2 (expected in-use, but was $status)"
+        fi
+        eval $(openstack volume show $CINDER_VOL3 -f shell -c status)
+        if [[ "$status" != "in-use" ]]; then
+            die $LINENO "Unexpected status of volume $CINDER_VOL3 (expected in-use, but was $status)"
         fi
 
         # Verify detach
         openstack server remove volume $CINDER_SERVER $CINDER_VOL2
+        _wait_for_volume_update $CINDER_VOL2 "status" "available"
 
-        local timeleft=30
-        while [[ $timeleft -gt 0 ]]; do
-            eval $(openstack volume show $CINDER_VOL2 -f shell -c status)
-            if [[ "$status" != "available" ]]; then
-                echo "Volume is not yet detached (status $status), waiting..."
-                sleep 1
-                timeleft=$((timeleft - 1))
-                if [[ $timeleft == 0 ]]; then
-                    die $LINENO "Volume failed to become available"
-                fi
-            else
-                break
-            fi
-        done
+        openstack server remove volume $CINDER_SERVER $CINDER_VOL3
+        _wait_for_volume_update $CINDER_VOL3 "status" "available"
+
         echo "Cinder verify post-upgrade successfully detached volume"
     fi
 }
@@ -269,11 +259,13 @@ function destroy {
 
     openstack volume delete $CINDER_VOL
     openstack volume delete $CINDER_VOL2
+    openstack volume delete $CINDER_VOL3
 
     openstack security group delete $CINDER_USER
 
-    # lastly, get rid of our user - done as admin
+    # lastly, get rid of our volume type and user - done as admin
     source_quiet $TOP_DIR/openrc admin admin
+    openstack volume type delete $CINDER_VOL_ENCRYPTED_TYPE
     local user_id=$(resource_get cinder user_id)
     local project_id=$(resource_get cinder project_id)
     openstack user delete $user_id
