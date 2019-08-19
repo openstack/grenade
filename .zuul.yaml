@@ -23,6 +23,8 @@
     irrelevant-files: *grenade-irrelevant-files
 
 - project:
+    templates:
+      - publish-openstack-docs-pti
     check:
       jobs:
         - neutron-grenade:
@@ -33,7 +35,6 @@
         - grenade-py3
         - neutron-grenade-multinode:
             irrelevant-files: *grenade-irrelevant-files
-        - tox-docs
         - ironic-grenade-dsvm:
             voting: false
             irrelevant-files: *grenade-irrelevant-files
@@ -44,10 +45,6 @@
             irrelevant-files: *grenade-irrelevant-files
         - neutron-grenade-multinode:
             irrelevant-files: *grenade-irrelevant-files
-        - tox-docs
-    post:
-      jobs:
-        - publish-openstack-tox-docs
     experimental:
       jobs:
         - grenade-postgresql
