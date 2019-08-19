@@ -1,4 +1,6 @@
 - project:
+    templates:
+      - publish-openstack-docs-pti
     check:
       jobs:
         - neutron-grenade:
@@ -14,7 +16,6 @@
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
-        - tox-docs
         - ironic-grenade-dsvm:
             voting: false
             irrelevant-files:
@@ -30,10 +31,6 @@
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
-        - tox-docs
-    post:
-      jobs:
-        - publish-openstack-tox-docs
     experimental:
       jobs:
         - legacy-grenade-dsvm-neutron-forward:
