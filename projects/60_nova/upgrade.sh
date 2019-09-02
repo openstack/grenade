@@ -48,7 +48,6 @@ source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/rpc_backend
-source $TARGET_DEVSTACK_DIR/lib/placement
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
@@ -60,9 +59,8 @@ set -o xtrace
 # calls pre-upgrade hooks for within-$base before we upgrade
 upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $BASE_DEVSTACK_BRANCH
 
-# install_nova() and placement
+# install_nova()
 stack_install_service nova
-stack_install_service placement
 
 # calls upgrade-nova for specific release
 upgrade_project nova $RUN_DIR $BASE_DEVSTACK_BRANCH $TARGET_DEVSTACK_BRANCH
@@ -85,10 +83,9 @@ fi
 $NOVA_BIN_DIR/nova-manage cell_v2 map_cell0 --database_connection $(database_connection_url nova_cell0)
 $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transport_url)
 
-# Start the Placement service - this needs to be running before the nova-status
+# Ensure the Placement service - this needs to be running before the nova-status
 # upgrade check command is run since that validates that we can connect to
 # the placement endpoint.
-start_placement
 ensure_services_started placement-api
 
 # Run the nova-status upgrade check, which was only available starting in Ocata

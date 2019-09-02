@@ -1,0 +1,4 @@
+if is_service_enabled placement-api; then
+    register_project_for_upgrade placement
+    register_db_to_save placement
+fi
