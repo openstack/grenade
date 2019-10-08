@@ -103,12 +103,6 @@ function create {
     openstack security group rule create --proto icmp --dst-port 0 $NOVA_USER
     openstack security group rule create --proto tcp --dst-port 22 $NOVA_USER
 
-    # BUG(sdague): openstack client server create fails on volume
-    # error by default.
-    #
-    # ERROR: openstack Invalid volume client version '2'. must be one of: 1
-    export OS_VOLUME_API_VERSION=1
-
     # work around for neutron because there is no such thing as a default
     local net_id=$(resource_get network net_id)
     if [[ -n "$net_id" ]]; then
