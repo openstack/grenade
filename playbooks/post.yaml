@@ -1,0 +1,35 @@
+- hosts: all
+  become: True
+  vars:
+    grenade_conf_dir: "{{ devstack_bases.new }}/grenade"
+    grenade_save_dir: "{{ devstack_bases.shared }}/grenade_save"
+    grenade_log_dir: "{{ devstack_bases.shared }}/logs"
+  roles:
+    - role: prepare-grenade-logs
+      grenade_config_dir: "{{ grenade_conf_dir }}"
+      grenade_devstack_shared_dir: "{{ devstack_bases.shared }}"
+      grenade_devstack_data_log_dirs:
+        'old': "{{ devstack_bases.logs_old }}"
+        'new': "{{ devstack_bases.logs_new }}"
+      grenade_save_data_dir: "{{ grenade_save_dir }}"
+    - role: export-devstack-journal
+      devstack_base_dir: "{{ devstack_bases.old }}"
+    - apache-logs-conf
+    - devstack-project-conf
+    # capture-system-logs should be the last role before stage-output
+    - capture-system-logs
+    - role: stage-output
+    # NOTE(andreaf) We need fetch-devstack-log-dir only as long as the base job
+    # starts pulling logs for us from {{ ansible_user_dir }}/logs.
+    # Meanwhile we already store things in ansible_user_dir and use
+    # fetch-devstack-log-dir setting devstack_base_dir
+    - role: fetch-devstack-log-dir
+      devstack_base_dir: "{{ ansible_user_dir }}"
+
+# Copied from tempest.git:playbooks/post-tempest.yaml
+- hosts: tempest
+  become: true
+  roles:
+    - role: fetch-subunit-output
+      zuul_work_dir: '{{ devstack_bases.new }}/tempest'
+    - role: process-stackviz

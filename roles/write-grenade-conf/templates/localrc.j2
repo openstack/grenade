@@ -1,0 +1,18 @@
+BASE_RELEASE=old
+BASE_RELEASE_DIR={{ base_dir }}/$BASE_RELEASE
+BASE_DEVSTACK_DIR=$BASE_RELEASE_DIR/devstack
+BASE_DEVSTACK_BRANCH={{ grenade_from_branch }}
+TARGET_RELEASE=new
+TARGET_RELEASE_DIR={{ base_dir }}/$TARGET_RELEASE
+TARGET_DEVSTACK_DIR=$TARGET_RELEASE_DIR/devstack
+TARGET_DEVSTACK_BRANCH={{ grenade_to_branch }}
+TARGET_RUN_SMOKE=False
+SAVE_DIR=$BASE_RELEASE_DIR/save
+TEMPEST_CONCURRENCY={{ grenade_tempest_concurrency }}
+export OS_TEST_TIMEOUT={{ grenade_test_timeout }}
+VERBOSE=False
+PLUGIN_DIR=$TARGET_RELEASE_DIR
+# Additional variables
+{% for key, value in grenade_localrc.items() %}
+{{ key }}={{ value }}
+{% endfor %}

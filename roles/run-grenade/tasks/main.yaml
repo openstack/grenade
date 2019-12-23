@@ -1,0 +1,19 @@
+- name: Run grenade
+  shell:
+    cmd: |
+      ./grenade.sh 2>&1
+      rc=$?
+      echo "*** FINISHED ***"
+      exit $rc
+  environment:
+    # While originally grenade.sh used to take care of driving
+    # the entire upgrade progress, including calling stack.sh,
+    # after the Zuul v3 switch we have a proven method for
+    # calling DevStack: the roles defined inside its repository.
+    # Avoid the duplication and let grenade only execute
+    # the upgrade part.
+    GRENADE_USE_EXTERNAL_DEVSTACK: True
+  args:
+    chdir: "{{grenade_base_dir}}/grenade"
+  become: true
+  become_user: stack
