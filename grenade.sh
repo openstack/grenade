@@ -290,13 +290,15 @@ if [[ "$RUN_BASE" == "True" ]]; then
         echo_summary "Running base smoke test"
         cd $BASE_RELEASE_DIR/tempest
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
-        # once we are done, copy our created artifacts to the target
-        if [[ -e $TARGET_RELEASE_DIR/tempest ]]; then
-            rsync -a $BASE_RELEASE_DIR/tempest/.tox/ $TARGET_RELEASE_DIR/tempest/.tox/
-            if [[ -d $BASE_RELEASE_DIR/tempest/.testrepository ]]; then
-                rsync -a $BASE_RELEASE_DIR/tempest/.testrepository/ $TARGET_RELEASE_DIR/tempest/.testrepository/
-            elif [[ -d $BASE_RELEASE_DIR/tempest/.stestr ]]; then
-                rsync -a $BASE_RELEASE_DIR/tempest/.stestr/ $TARGET_RELEASE_DIR/tempest/.stestr/
+        if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
+            # once we are done, copy our created artifacts to the target
+            if [[ -e $TARGET_RELEASE_DIR/tempest ]]; then
+                rsync -a $BASE_RELEASE_DIR/tempest/.tox/ $TARGET_RELEASE_DIR/tempest/.tox/
+                if [[ -d $BASE_RELEASE_DIR/tempest/.testrepository ]]; then
+                    rsync -a $BASE_RELEASE_DIR/tempest/.testrepository/ $TARGET_RELEASE_DIR/tempest/.testrepository/
+                elif [[ -d $BASE_RELEASE_DIR/tempest/.stestr ]]; then
+                    rsync -a $BASE_RELEASE_DIR/tempest/.stestr/ $TARGET_RELEASE_DIR/tempest/.stestr/
+                fi
             fi
         fi
     fi

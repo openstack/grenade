@@ -1,56 +1,356 @@
-- job:
-    name: grenade-postgresql
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/grenade-postgresql/run.yaml
-    post-run: playbooks/legacy/grenade-postgresql/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-    irrelevant-files: &grenade-irrelevant-files
-      - ^.*\.rst$
-      - ^doc/.*$
-
-- job:
-    name: grenade-py3
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/grenade-py3/run.yaml
-    post-run: playbooks/legacy/grenade-py3/post.yaml
-    timeout: 10800
-    required-projects:
-      - openstack/grenade
-      - openstack/devstack-gate
-    irrelevant-files: *grenade-irrelevant-files
-
 - project:
     templates:
       - publish-openstack-docs-pti
     check:
       jobs:
-        - neutron-grenade:
-            irrelevant-files: *grenade-irrelevant-files
+        - grenade
         - grenade-heat:
             voting: false
-            irrelevant-files: *grenade-irrelevant-files
         - grenade-py3
-        - neutron-grenade-multinode:
-            voting: false
-            irrelevant-files: *grenade-irrelevant-files
+        - grenade-multinode
         - ironic-grenade-dsvm:
             voting: false
-            irrelevant-files: *grenade-irrelevant-files
+            irrelevant-files: &legacy-irrelevant-files
+              - ^.*\.rst$
+              - ^doc/.*$
     gate:
       jobs:
+        - grenade
         - grenade-py3
-        - neutron-grenade:
-            irrelevant-files: *grenade-irrelevant-files
-        #- neutron-grenade-multinode:
-        #    irrelevant-files: *grenade-irrelevant-files
+        - grenade-multinode
     experimental:
       jobs:
+        - grenade-forward
         - grenade-postgresql
-        - legacy-grenade-dsvm-neutron-forward:
-            irrelevant-files: *grenade-irrelevant-files
         - trove-grenade:
-            irrelevant-files: *grenade-irrelevant-files
+            irrelevant-files: *legacy-irrelevant-files
 
+- job:
+    name: grenade-base
+    parent: multinode
+    abstract: true
+    description: |
+      Base grenade job
+
+      This is the base grenade job for both single and multi node grenade
+      tests. It does not define any service to be used, so that this can
+      be used to build an upgrade test with a minimal number of services.
+    required-projects:
+      - opendev.org/openstack/devstack
+      - opendev.org/openstack/grenade
+      - opendev.org/openstack/requirements
+      - opendev.org/openstack/tempest
+    roles:
+      - zuul: opendev.org/openstack/openstack-zuul-jobs
+      - zuul: opendev.org/openstack/devstack
+      - zuul: opendev.org/openstack/tempest
+    vars:
+      devstack_bases:
+        shared: /opt/stack
+        old: /opt/stack/old
+        new: /opt/stack/new
+        logs_old: /opt/stack/logs/old
+        logs_new: /opt/stack/logs/new
+      grenade_devstack_localrc: &grenade_base_devstack_localrc
+        old:
+          DEST: "{{ devstack_bases.old }}"
+          LOGFILE: "{{ devstack_bases.old }}/logs/devstacklog.txt"
+        new:
+          DEST: "{{ devstack_bases.new }}"
+          LOGFILE: "{{ devstack_bases.new }}/logs/devstacklog.txt"
+        shared:
+          # Common settings for OpenStack CI
+          DATABASE_PASSWORD: secretdatabase
+          # FIXME: temporarily define MYSQL_PASSWORD too,
+          # because some code in devstack and in grenade
+          # still requires it to be defined.
+          MYSQL_PASSWORD: secretdatabase
+          RABBIT_PASSWORD: secretrabbit
+          ADMIN_PASSWORD: secretadmin
+          SERVICE_PASSWORD: secretservice
+          NETWORK_GATEWAY: 10.1.0.1
+          FIXED_RANGE: 10.1.0.0/20
+          IPV4_ADDRS_SAFE_TO_USE: 10.1.0.0/20
+          FLOATING_RANGE: 172.24.5.0/24
+          PUBLIC_NETWORK_GATEWAY: 172.24.5.1
+          FIXED_NETWORK_SIZE: 4096
+          LOG_COLOR: false
+          VERBOSE: true
+          VERBOSE_NO_TIMESTAMP: true
+          NOVNC_FROM_PACKAGE: true
+          ERROR_ON_CLONE: true
+          # Gate jobs can't deal with nested virt. Disable it.
+          LIBVIRT_TYPE: qemu
+      grenade_localrc:
+        SAVE_DIR: "{{ devstack_bases.shared }}/save"
+      # from tempest playbooks
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            compute:
+              min_compute_nodes: "{{ groups['compute'] | default(['controller']) | length }}"
+      test_results_stage_name: test_results
+      zuul_copy_output:
+        '{{ devstack_bases.logs_old }}': logs
+        '{{ devstack_bases.logs_new }}': logs
+        '{{ grenade_save_dir }}': logs
+        '{{ grenade_log_dir }}/grenade.sh.log': logs
+        '{{ grenade_log_dir }}/grenade.sh.log.summary': logs
+        '{{ grenade_conf_dir }}/grenade_localrc': logs_txt
+        '{{ grenade_conf_dir }}/grenade_pluginrc': logs_txt
+        '{{ stage_dir }}/{{ test_results_stage_name }}.subunit': logs
+        '{{ stage_dir }}/{{ test_results_stage_name }}.html': logs
+        '{{ stage_dir }}/stackviz': logs
+        '{{ stage_dir }}/apache': logs
+        '{{ stage_dir }}/apache_config': logs
+        '{{ stage_dir }}/etc': logs
+        '/var/log/rabbitmq': logs
+        '/var/log/postgresql': logs
+        '/var/log/mysql': logs
+        '/var/log/libvirt': logs
+        '/etc/sudoers': logs
+        '/etc/sudoers.d': logs
+        '{{ stage_dir }}/iptables.txt': logs
+        '{{ stage_dir }}/df.txt': logs
+        '{{ stage_dir }}/pip2-freeze.txt': logs
+        '{{ stage_dir }}/pip3-freeze.txt': logs
+        '{{ stage_dir }}/dpkg-l.txt': logs
+        '{{ stage_dir }}/rpm-qa.txt': logs
+        '{{ stage_dir }}/core': logs
+        '{{ stage_dir }}/listen53.txt': logs
+        '{{ stage_dir }}/deprecations.log': logs
+        '/var/log/ceph': logs
+        '/var/log/openvswitch': logs
+        '/var/log/glusterfs': logs
+        '/etc/glusterfs/glusterd.vol': logs
+        '/etc/resolv.conf': logs
+        '/var/log/unbound.log': logs
+      extensions_to_txt:
+        auto: True
+        conf: True
+        log: True
+        localrc: True
+        stackenv: True
+        summary: True
+    group-vars:
+      subnode:
+        grenade_devstack_localrc:
+          <<: *grenade_base_devstack_localrc
+    pre-run: playbooks/pre.yaml
+    run: playbooks/grenade.yaml
+    post-run: playbooks/post.yaml
+    irrelevant-files: &grenade-irrelevant-files
+      # Documentation related
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      # Translations
+      - ^.*/locale/.*po$
+
+- job:
+    name: grenade
+    parent: grenade-base
+    description: |
+      Default grenade job
+
+      Usually grenade jobs should inherit from this job.
+    nodeset: openstack-single-node-bionic
+    required-projects:
+      # NOTE(andreaf) The devstack and grenade roles take care of setting up
+      # repos on the right branch for this job.
+      - opendev.org/openstack/cinder
+      - opendev.org/openstack/glance
+      - opendev.org/openstack/keystone
+      - opendev.org/openstack/neutron
+      - opendev.org/openstack/nova
+      - opendev.org/openstack/placement
+      - opendev.org/openstack/swift
+    timeout: 10800
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          # Common OpenStack services settings
+          SWIFT_REPLICAS: 1
+          SWIFT_START_ALL_SERVICES: false
+          SWIFT_HASH: 1234123412341234
+          CINDER_PERIODIC_INTERVAL: 10
+          DEBUG_LIBVIRT_COREDUMPS: True
+          # Multinode specific settings
+          SERVICE_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+          HOST_IP: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+          PUBLIC_BRIDGE_MTU: "{{ external_bridge_mtu }}"
+          CELLSV2_SETUP: "singleconductor"
+          # Node specific settings
+          DATABASE_TYPE: mysql
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              global_physnet_mtu: "{{ external_bridge_mtu }}"
+      grenade_localrc:
+        # enable the execution of the base smoke tests by default
+        BASE_RUN_SMOKE: True
+      devstack_services:
+        # Core services enabled for this branch.
+        # This list replaces the test-matrix.
+        # Shared services
+        dstat: true
+        etcd3: true
+        mysql: true
+        peakmem_tracker: true
+        rabbit: true
+        # TODO: tls-proxy is not tested by legacy jobs;
+        # enable this after testing.
+        tls-proxy: false
+        # Keystone services
+        key: true
+        # Glance services
+        g-api: true
+        g-reg: true
+        # Nova services
+        n-api: true
+        n-api-meta: true
+        n-cauth: true
+        n-cond: true
+        n-cpu: true
+        n-novnc: true
+        n-obj: true
+        n-sch: true
+        placement-api: true
+        # Neutron services
+        # We need to keep using the neutron-legacy based services for
+        # now until all issues with the new lib/neutron code are solved
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
+        q-svc: true
+        # neutron-api: true
+        # neutron-agent: true
+        # neutron-dhcp: true
+        # neutron-l3: true
+        # neutron-metadata-agent: true
+        # neutron-metering: true
+        # Swift services
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+        # Cinder services
+        c-api: true
+        c-bak: true
+        c-sch: true
+        c-vol: true
+        cinder: true
+        # Tempest was enabled by default even before the native Zuul v3 job
+        tempest: true
+        # Services we don't need.
+        # This section is not really needed, it's for readability.
+        horizon: false
+        # Test matrix emits ceilometer but ceilometer is not installed in the
+        # integrated gate, so specifying the services has not effect.
+        # ceilometer-*: false
+    group-vars:
+      subnode:
+        devstack_services:
+          # Core services enabled for this branch.
+          # This list replaces the test-matrix.
+          # Shared services
+          dstat: true
+          peakmem_tracker: true
+          # TODO: tls-proxy is not tested by legacy jobs;
+          # enable this after testing.
+          tls-proxy: false
+          # Nova services
+          n-cpu: true
+          placement-client: true
+          # Neutron services
+          neutron-agent: true
+          # Cinder services
+          c-bak: true
+          c-vol: true
+          # Services we don't run at all on subnode.
+          # This section is not really needed, it's for readability.
+          # keystone: false
+          # s-*: false
+          horizon: false
+          tempest: false
+          # Test matrix emits ceilometer but ceilomenter is not installed in the
+          # integrated gate, so specifying the services has not effect.
+          # ceilometer-*: false
+        grenade_devstack_localrc:
+          shared:
+            # Multinode specific settings
+            HOST_IP: "{{ hostvars[inventory_hostname]['nodepool']['private_ipv4'] }}"
+            SERVICE_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+            PUBLIC_BRIDGE_MTU: "{{ external_bridge_mtu }}"
+            CELLSV2_SETUP: "singleconductor"
+            # Subnode specific settings
+            DATABASE_TYPE: mysql
+            GLANCE_HOSTPORT: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}:9292"
+            Q_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+            RABBIT_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+            DATABASE_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+
+- job:
+    name: grenade-py3
+    parent: grenade
+    description: |
+      Grenade job based on Python 3
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          USE_PYTHON3: true
+
+- job:
+    name: grenade-forward
+    parent: grenade
+    description: |
+      Forward test. This is mostly relevant for stable branches,
+      because running it in master will execute an upgrade
+      to the same commit.
+      Former names for this job were:
+        * grenade-dsvm-neutron-forward
+        * legacy-grenade-dsvm-neutron-forward
+    vars:
+      # When a stable branch stable/X is created from master,
+      # this value should be updated to stable/X.
+      grenade_from_branch: stable/train
+      grenade_to_branch: stable/ussuri
+
+- job:
+    name: grenade-dsvm-neutron-forward
+    branches: ^(?!(stable/(ocata|pike|queens|rocky|stein|train))).*$
+    parent: grenade-forward
+
+- job:
+    name: grenade-postgresql
+    description: |
+      Default grenade job which uses PostgreSQL
+    parent: grenade
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          DATABASE_TYPE: postgresql
+      devstack_services:
+        mysql: false
+        postgresql: true
+    group-vars:
+      subnode:
+        devstack_services:
+        grenade_devstack_localrc:
+          shared:
+            DATABASE_TYPE: postgresql
+
+- job:
+    name: grenade-multinode
+    description: |
+      Basic multinode grenade job
+    parent: grenade
+    nodeset: openstack-two-node-bionic
+    vars:
+      grenade_devstack_localrc:
+        shared:
+          USE_PYTHON3: true

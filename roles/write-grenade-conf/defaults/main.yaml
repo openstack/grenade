@@ -1,0 +1,6 @@
+grenade_base_dir: /opt/stack
+grenade_localrc_path: "{{ grenade_base_dir }}/grenade/localrc"
+grenade_pluginrc_path: "{{ grenade_base_dir }}/grenade/pluginrc"
+grenade_plugins: {}
+grenade_tempest_concurrency: 2
+grenade_test_timeout: 1200

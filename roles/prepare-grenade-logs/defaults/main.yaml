@@ -1,0 +1,13 @@
+---
+grenade_devstack_saved_files: []
+grenade_devstack_saved_files_default:
+  - devstack/local.conf
+  - devstack/localrc
+  - devstack/.localrc.auto
+  - devstack/.stackenv
+  - logs/devstacklog.txt
+  - logs/devstacklog.txt.summary
+  - logs/dstat-csv.log
+  - tempest/etc/tempest.conf
+  - tempest/etc/accounts.yaml
+  - tempest/tempest.log

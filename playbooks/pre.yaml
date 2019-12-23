@@ -1,0 +1,52 @@
+- hosts: all
+  pre_tasks:
+    - name: Gather minimum local MTU
+      set_fact:
+        local_mtu: >
+          {% set mtus = [] -%}
+          {% for interface in ansible_interfaces -%}
+            {% set _ = mtus.append(hostvars[inventory_hostname]['ansible_' + interface]['mtu']|int) -%}
+          {% endfor -%}
+          {{- mtus|min -}}
+    - name: Calculate external_bridge_mtu
+      # 50 bytes is overhead for vxlan (which is greater than GRE
+      # allowing us to use either overlay option with this MTU.
+      # TODO(andreaf) This should work, but it may have to be reconcilied with
+      # the MTU setting used by the multinode setup roles in multinode pre.yaml
+      set_fact:
+        external_bridge_mtu: "{{ local_mtu | int - 50 }}"
+  roles:
+    - ensure-virtualenv
+    - configure-swap
+    - setup-stack-user
+    - setup-tempest-user
+    - configure-grenade-branches
+    - role: setup-devstack-source-dirs
+      devstack_base_dir: "{{ devstack_bases.old }}"
+      devstack_sources_branch: "{{ grenade_from_branch }}"
+    # NOTE(andreaf) Grenade pullup jobs migrate from a stable branch to
+    # the current patch(es). Zuul prepares all repos checked out to the right
+    # refspec to include all the right patches, so we should re-use that,
+    # and not specify any "devstack_sources_branch", unless a grenade_to_branch
+    # is set.
+    - role: setup-devstack-source-dirs
+      devstack_base_dir: "{{ devstack_bases.new }}"
+      devstack_sources_branch: "{{ grenade_to_branch | default(omit)}}"
+    # Create two separate log dirs
+    - role: setup-devstack-log-dir
+      devstack_base_dir: "{{ devstack_bases.old }}"
+    - role: setup-devstack-log-dir
+      devstack_base_dir: "{{ devstack_bases.new }}"
+    # Setup the logging (only once, as it does not depend on the branch)
+    - role: start-fresh-logging
+      devstack_base_dir: "{{ devstack_bases.old }}"
+    # Write devstack configuration for old and new (almost the same)
+    - role: write-devstack-local-conf
+      devstack_base_dir: "{{ devstack_bases.old }}"
+      devstack_localrc: "{{ grenade_devstack_localrc.shared|combine(grenade_devstack_localrc.old) }}"
+    - role: write-devstack-local-conf
+      devstack_base_dir: "{{ devstack_bases.new }}"
+      devstack_localrc: "{{ grenade_devstack_localrc.shared|combine(grenade_devstack_localrc.new) }}"
+    # Setup the cache location (used by the initial installation)
+    - role: setup-devstack-cache
+      devstack_base_dir: "{{ devstack_bases.old }}"
