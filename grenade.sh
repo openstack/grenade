@@ -283,6 +283,13 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # Validate the install
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running base smoke test"
+
+        # NOTE(gmann): Use branch constraint because Tempest is pinned to the branch release
+        # instead of using master. We need to export it via env var UPPER_CONSTRAINTS_FILE
+        # so that initial creation of tempest tox use stable branch constraint
+        # instead of master constraint which is hard coded in tempest/tox.ini
+        export UPPER_CONSTRAINTS_FILE=$BASE_RELEASE_DIR/requirements/upper-constraints.txt
+
         cd $BASE_RELEASE_DIR/tempest
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         # once we are done, copy our created artifacts to the target
