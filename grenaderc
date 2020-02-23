@@ -11,7 +11,7 @@ fi
 # Base GIT Repo URL
 # Another option is http://review.openstack.org/p
 # Another option is https://github.com
-GIT_BASE=${GIT_BASE:-https://git.openstack.org}
+GIT_BASE=${GIT_BASE:-https://opendev.org}
 #GIT_BASE=/opt/git
 
 # Destination path for installation ``STACK_ROOT``
@@ -26,7 +26,7 @@ TARGET_RELEASE=${TARGET_RELEASE:-new}
 TARGET_RELEASE_DIR=${STACK_ROOT}/$TARGET_RELEASE
 
 # DevStack sources
-BASE_DEVSTACK_REPO=$GIT_BASE/openstack-dev/devstack.git
+BASE_DEVSTACK_REPO=$GIT_BASE/openstack/devstack
 BASE_DEVSTACK_BRANCH=${BASE_DEVSTACK_BRANCH:-stable/train}
 BASE_DEVSTACK_DIR=${BASE_DEVSTACK_DIR:-$BASE_RELEASE_DIR/devstack}
 

@@ -28,9 +28,8 @@
 #   * the environment variable git_dir pointing to the location
 #   * of said git repositories
 #   ) OR (
-#   * network access to the review.openstack.org Gerrit API
-#     working directory
-#   * network access to https://git.openstack.org/cgit
+#   * network access to the review.opendev.org Gerrit API
+#   * network access to https://opendev.org/
 #   ))
 #
 # If a file named data/grenade-plugins-registry.header or
@@ -49,7 +48,7 @@ sorted_plugins=$(python tools/generate-grenade-plugins-list.py)
 
 for k in ${sorted_plugins}; do
     project=${k:0:40}
-    giturl="https://git.openstack.org/openstack/${k:0:36}"
+    giturl="https://opendev.org/openstack/${k:0:36}"
     printf "|%-40s|%-73s|\n" "${project}" "${giturl}"
     printf "+----------------------------------------+-------------------------------------------------------------------------+\n"
 done

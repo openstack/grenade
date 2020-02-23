@@ -9,7 +9,7 @@ Grenade is written in POSIX shell script. It specifies BASH and is
 compatible with Bash 3.
 
 Grenade's official repository is located at
-https://git.openstack.org/cgit/openstack-dev/grenade.
+https://opendev.org/openstack/grenade.
 
 
 Scripts

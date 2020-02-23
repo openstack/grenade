@@ -28,7 +28,7 @@ PROJECTS+="openstack/tempest "
 PROJECTS+="openstack/neutron "
 PROJECTS+="openstack/ceilometer "
 PROJECTS+="openstack/horizon "
-PROJECTS+="openstack-dev/devstack "
+PROJECTS+="openstack/devstack "
 PROJECTS+="kanaka/noVNC "
 
 function usage {

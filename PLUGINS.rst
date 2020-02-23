@@ -226,7 +226,7 @@ Note: For using this with ``openstack-infra/devstack-gate`` you would set this
 by setting the GRENADE_PLUGINRC environment variable. For example to set it for
 Ironic::
 
-   export GRENADE_PLUGINRC="enable_grenade_plugin ironic https://git.openstack.org/openstack/ironic"
+   export GRENADE_PLUGINRC="enable_grenade_plugin ironic https://opendev.org/openstack/ironic"
 
 
 Changing Devstack Localrc
