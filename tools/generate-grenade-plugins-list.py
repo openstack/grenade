@@ -19,9 +19,9 @@
 #
 # In order to function correctly, the environment in which the
 # script runs must have
-#   * network access to the review.openstack.org Gerrit API
+#   * network access to the review.opendev.org Gerrit API
 #     working directory
-#   * network access to https://git.openstack.org/cgit
+#   * network access to https://opendev.org/
 
 import json
 try:
@@ -33,7 +33,7 @@ except ImportError:
     import urllib2 as urllib
     from urllib2 import HTTPError
 
-url = 'https://review.openstack.org/projects/'
+url = 'https://review.opendev.org/projects/'
 
 # This is what a project looks like
 '''
@@ -50,7 +50,7 @@ def is_in_openstack_namespace(proj):
 def has_grenade_plugin(proj):
     try:
         r = urllib.urlopen(
-            "https://git.openstack.org/cgit/%s/plain/devstack/upgrade/upgrade.sh" % proj)
+            "https://opendev.org/%s/src/branch/master/devstack/upgrade/upgrade.sh" % proj)
         return True
     except HTTPError as err:
         if err.code == 404:
