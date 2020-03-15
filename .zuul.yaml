@@ -12,6 +12,23 @@
       - ^doc/.*$
 
 - job:
+    name: grenade-dsvm-neutron-forward
+    # Old name: grenade-dsvm-neutron-forward
+    parent: legacy-dsvm-base
+    # This is py3 version for ussuri onwards rest all branch needs to be py2
+    # version which is present in openstack-zuul-jobs.
+    # We need to take care of this branch variant and python version while
+    # migrating these jobs to zuulv3.
+    branches: ^(?!(stable/(ocata|pike|queens|rocky|stein|train))).*$
+    run: playbooks/legacy/grenade-dsvm-neutron-forward/run.yaml
+    post-run: playbooks/legacy/grenade-dsvm-neutron-forward/post.yaml
+    timeout: 10800
+    required-projects:
+      - openstack/grenade
+      - openstack/devstack-gate
+      - openstack/neutron
+
+- job:
     name: grenade-py3
     parent: legacy-dsvm-base
     run: playbooks/legacy/grenade-py3/run.yaml
@@ -44,7 +61,7 @@
     experimental:
       jobs:
         - grenade-postgresql
-        - legacy-grenade-dsvm-neutron-forward:
+        - grenade-dsvm-neutron-forward:
             irrelevant-files: *grenade-irrelevant-files
         - trove-grenade:
             irrelevant-files: *grenade-irrelevant-files
