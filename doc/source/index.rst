@@ -16,6 +16,16 @@ Code
 
 *A look at the bits that make it all go*
 
+For Contributors
+================
+
+* If you are a new contributor to Grenade please refer: :doc:`contributor/contributing`
+
+.. toctree::
+   :hidden:
+
+   contributor/contributing
+
 Scripts
 -------
 

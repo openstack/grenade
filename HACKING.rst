@@ -1,6 +1,5 @@
-Contributing to Grenade
-=======================
-
+Grenade Coding Guide
+====================
 
 General
 -------
