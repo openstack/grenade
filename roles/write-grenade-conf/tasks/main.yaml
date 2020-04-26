@@ -1,0 +1,13 @@
+- name: Write the localrc file used by grenade
+  become: true
+  become_user: stack
+  template:
+    src: localrc.j2
+    dest: "{{ grenade_localrc_path }}"
+
+- name: Write the pluginrc file used by grenade
+  become: true
+  become_user: stack
+  template:
+    src: pluginrc.j2
+    dest: "{{ grenade_pluginrc_path }}"

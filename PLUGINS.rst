@@ -222,11 +222,9 @@ The plugin is enabled by adding::
 To ``pluginrc`` in the ``GRENADE_DIR``. An additional rc file was
 required due to sequencing of when plugin functions become available.
 
-Note: For using this with ``openstack-infra/devstack-gate`` you would set this
-by setting the GRENADE_PLUGINRC environment variable. For example to set it for
-Ironic::
-
-   export GRENADE_PLUGINRC="enable_grenade_plugin ironic https://opendev.org/openstack/ironic"
+Note: when running a job based on the ``grenade-base`` job,
+for each devstack plugin defined using the ``devstack_plugins``,
+the corresponding grenade plugin is enabled automatically.
 
 
 Changing Devstack Localrc

@@ -1,0 +1,36 @@
+- hosts: all
+  strategy: linear
+  roles:
+    - role: orchestrate-devstack
+      devstack_base_dir: "{{ devstack_bases.old }}"
+      devstack_data_base_dir: "{{ devstack_bases.shared }}"
+
+- hosts: controller
+  roles:
+    - configure-grenade-branches
+    - role: write-grenade-conf
+      base_dir: "{{ devstack_bases.shared }}"
+      grenade_base_dir: "{{ devstack_bases.new }}"
+      grenade_plugins: "{{ devstack_plugins|default({}) }}"
+    # run-grenade is configured to run also tempest smoke tests
+    # on the old node by default.
+    - role: run-grenade
+      base_dir: "{{ devstack_bases.shared }}"
+      grenade_base_dir: "{{ devstack_bases.new }}"
+
+# Copied (with minimal changes) from tempest.git:playbooks/devstack-tempest.yaml
+# We run tests only on one node, regardless how many nodes are in the system,
+# after grenade completes.
+- hosts: tempest
+  environment:
+    # This enviroment variable is used by the optional tempest-gabbi
+    # job provided by the gabbi-tempest plugin. It can be safely ignored
+    # if that plugin is not being used.
+    GABBI_TEMPEST_PATH: "{{ gabbi_tempest_path | default('') }}"
+  vars:
+    devstack_base_dir: "{{ devstack_bases.new }}"
+  roles:
+    - setup-tempest-run-dir
+    - setup-tempest-data-dir
+    - acl-devstack-files
+    - run-tempest

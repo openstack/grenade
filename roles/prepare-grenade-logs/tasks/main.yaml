@@ -1,0 +1,31 @@
+- name: Rename the grenade custom config files
+  copy:
+    remote_src: yes
+    src: "{{ grenade_config_dir }}/{{ item }}"
+    dest: "{{ grenade_config_dir }}/grenade_{{ item }}"
+  loop:
+    - localrc
+    - pluginrc
+  ignore_errors: True
+
+- name: Create a link with a better name to the grenade save directory
+  file:
+    src: "{{ grenade_devstack_shared_dir }}/save"
+    dest: "{{ grenade_save_data_dir }}"
+    state: link
+  ignore_errors: True
+
+- name: Create the save directories
+  file:
+    path: "{{ grenade_devstack_data_log_dirs[item] }}"
+    state: directory
+  loop: "{{ ['old', 'new'] }}"
+
+- name: Copy the files to the expected save location
+  copy:
+    remote_src: yes
+    src: "{{ grenade_devstack_shared_dir }}/{{ item.0 }}/{{ item.1 }}"
+    dest: "{{ grenade_devstack_data_log_dirs[item.0] }}/{{ item.1|basename }}"
+  loop: "{{ ['old', 'new']|product(grenade_devstack_saved_files_default + grenade_devstack_saved_files)|list }}"
+  ignore_errors: True
+  no_log: True

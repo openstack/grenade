@@ -1,0 +1,4 @@
+- name: Set the grenade start and destination branches
+  set_fact:
+    grenade_from_branch: "{{ grenade_from_branch }}"
+    grenade_to_branch: "{{ grenade_to_branch }}"
