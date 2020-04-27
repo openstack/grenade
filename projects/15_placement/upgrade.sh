@@ -59,6 +59,9 @@ upgrade_project placement $RUN_DIR $BASE_DEVSTACK_BRANCH
 # Simulate init_placement()
 # Migrate the database
 $PLACEMENT_BIN_DIR/placement-manage db sync || die $LINENO "DB sync error"
+# Run the online data migrations.
+$PLACEMENT_BIN_DIR/placement-manage db online_data_migrations \
+|| die $LINENO "Failed to run online_data_migrations"
 
 # Start Placement:
 start_placement
