@@ -90,6 +90,11 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ['Grenade-doc.']
 
+# -- openstackdocstheme settings
+openstackdocs_repo_name = 'openstack/grenade'
+openstackdocs_bug_project = 'grenade'
+openstackdocs_bug_tag = 'docs'
+
 # -- Options for man page output ----------------------------------------------
 man_pages = []
 
