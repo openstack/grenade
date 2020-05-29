@@ -7,11 +7,8 @@
         - grenade-heat:
             voting: false
         - grenade-multinode
-        - ironic-grenade-dsvm:
+        - ironic-grenade:
             voting: false
-            irrelevant-files: &legacy-irrelevant-files
-              - ^.*\.rst$
-              - ^doc/.*$
     gate:
       jobs:
         - grenade
@@ -21,7 +18,9 @@
         - grenade-forward
         - grenade-postgresql
         - trove-grenade:
-            irrelevant-files: *legacy-irrelevant-files
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
 
 - job:
     name: grenade-base
