@@ -9,6 +9,8 @@
         - grenade-multinode
         - ironic-grenade:
             voting: false
+        - octavia-grenade:
+            voting: false
     gate:
       jobs:
         - grenade
