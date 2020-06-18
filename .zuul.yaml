@@ -34,6 +34,7 @@
             irrelevant-files: *grenade-irrelevant-files
         - grenade-py3
         - neutron-grenade-multinode:
+            voting: false
             irrelevant-files: *grenade-irrelevant-files
         - ironic-grenade-dsvm:
             voting: false
@@ -43,8 +44,8 @@
         - grenade-py3
         - neutron-grenade:
             irrelevant-files: *grenade-irrelevant-files
-        - neutron-grenade-multinode:
-            irrelevant-files: *grenade-irrelevant-files
+        #- neutron-grenade-multinode:
+        #    irrelevant-files: *grenade-irrelevant-files
     experimental:
       jobs:
         - grenade-postgresql
