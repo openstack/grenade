@@ -10,6 +10,7 @@ Grenade - an OpenStack Community Upgrade Production
    plugins
    plugin-registry
    hacking
+   stable_branch_testing_policy
 
 Code
 ====
