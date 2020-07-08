@@ -195,7 +195,7 @@
         dstat: true
         etcd3: true
         mysql: true
-        peakmem_tracker: true
+        memory_tracker: true
         rabbit: true
         # TODO: tls-proxy is not tested by legacy jobs;
         # enable this after testing.
@@ -256,7 +256,7 @@
           # This list replaces the test-matrix.
           # Shared services
           dstat: true
-          peakmem_tracker: true
+          memory_tracker: true
           # TODO: tls-proxy is not tested by legacy jobs;
           # enable this after testing.
           tls-proxy: false
@@ -274,7 +274,7 @@
           # s-*: false
           horizon: false
           tempest: false
-          # Test matrix emits ceilometer but ceilomenter is not installed in the
+          # Test matrix emits ceilometer but ceilometer is not installed in the
           # integrated gate, so specifying the services has not effect.
           # ceilometer-*: false
         grenade_devstack_localrc:
