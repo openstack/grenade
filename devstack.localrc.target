@@ -27,3 +27,8 @@ VOLUME_BACKING_FILE_SIZE=10000M
 enable_service s-account s-container s-object s-proxy
 SWIFT_HASH=8213897fads879789asdf789
 SWIFT_REPLICAS=1
+
+# NOTE(danms): Until all recent versions of devstack support
+# standalone glance mode, just assume we are upgrading from/to
+# Glance as deployed with uwsgi.
+GLANCE_STANDALONE=False

@@ -180,6 +180,8 @@
           CELLSV2_SETUP: "singleconductor"
           # Node specific settings
           DATABASE_TYPE: mysql
+          # Glance should always be non-standalone
+          GLANCE_STANDALONE: False
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
