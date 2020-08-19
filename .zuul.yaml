@@ -78,6 +78,13 @@
           ERROR_ON_CLONE: true
           # Gate jobs can't deal with nested virt. Disable it.
           LIBVIRT_TYPE: qemu
+          # TODO(jlibosva): Devstack defaults to OVN but OVN Grenade
+          #                 as of early Victoria does not work. We can
+          #                 remove setting explicitly ML2/OVS mech
+          #                 driver for Grenade once OVN works with Grenade.
+          Q_AGENT: openvswitch
+          Q_ML2_TENANT_NETWORK_TYPE: vxlan
+          Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       grenade_localrc:
         SAVE_DIR: "{{ devstack_bases.shared }}/save"
       # from tempest playbooks
@@ -220,12 +227,19 @@
         # Neutron services
         # We need to keep using the neutron-legacy based services for
         # now until all issues with the new lib/neutron code are solved
+        # TODO(jlibosva): Devstack defaults to OVN but OVN Grenade
+        #                 as of early Victoria does not work. We can
+        #                 remove setting explicitly ML2/OVS mech
+        #                 driver for Grenade once OVN works with Grenade.
         q-agt: true
         q-dhcp: true
         q-l3: true
         q-meta: true
         q-metering: true
         q-svc: true
+        ovn-controller: false
+        ovn-northd: false
+        q-ovn-metadata-agent: false
         # neutron-api: true
         # neutron-agent: true
         # neutron-dhcp: true
