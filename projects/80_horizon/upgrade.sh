@@ -48,8 +48,6 @@ set -o xtrace
 
 # stop horizon apache server
 stop_horizon
-# Kill horizon screen session if there one
-screen_stop horizon
 
 # Save current config files for posterity
 #TODO
