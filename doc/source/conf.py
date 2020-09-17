@@ -94,6 +94,7 @@ modindex_common_prefix = ['Grenade-doc.']
 openstackdocs_repo_name = 'openstack/grenade'
 openstackdocs_bug_project = 'grenade'
 openstackdocs_bug_tag = 'docs'
+openstackdocs_pdf_link = True
 
 # -- Options for man page output ----------------------------------------------
 man_pages = []
@@ -174,9 +175,14 @@ htmlhelp_basename = 'Grenade-doc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Grenade-doc.tex', u'Grenade Docs',
+  ('index', 'doc-grenade.tex', u'Grenade Docs',
    u'OpenStack Grenade Team', 'manual'),
 ]
+
+latex_use_xindy = False
+latex_elements = {
+    'extraclassoptions': 'openany,oneside',
+}
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
