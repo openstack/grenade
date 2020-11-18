@@ -17,10 +17,6 @@
       jobs:
         - grenade-forward
         - grenade-postgresql
-        - trove-grenade:
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
 
 - job:
     name: grenade-base
