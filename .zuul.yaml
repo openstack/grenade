@@ -22,8 +22,6 @@
       jobs:
         - grenade-forward
         - grenade-postgresql
-        - trove-grenade:
-            irrelevant-files: *legacy-irrelevant-files
 
 - job:
     name: grenade-base
