@@ -249,6 +249,23 @@ function verify_noapi {
     echo "Cinder verify found the expected state file: SUCCESS!"
 }
 
+function _wait_for_volume_delete() {
+    local DELETE_TIMEOUT=30
+    local volume="$1"
+    local count=0
+    local status=$(openstack volume list --name ${volume} -f value -c ID | wc -l)
+    echo "Waiting for volume ${volume} to be deleted."
+    while [ $status -ne 0 ]
+    do
+        sleep 1
+        count=$((count+1))
+        if [ ${count} -eq ${DELETE_TIMEOUT} ]; then
+            die $LINENO "Timed out waiting for volume ${volume} to be deleted."
+        fi
+        status=$(openstack volume list --name ${volume} -f value -c ID | wc -l)
+    done
+}
+
 function destroy {
     _cinder_set_user
     # Disassociate the floating IP from the server.
@@ -260,6 +277,10 @@ function destroy {
     openstack volume delete $CINDER_VOL
     openstack volume delete $CINDER_VOL2
     openstack volume delete $CINDER_VOL3
+
+    # Volume delete is async so wait for the encrypted volume to be removed
+    # before proceeding and trying to delete the volume type below.
+    _wait_for_volume_delete $CINDER_VOL3
 
     openstack security group delete $CINDER_USER
 
