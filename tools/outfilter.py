@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2014 Hewlett-Packard Development Company, L.P.
 #
@@ -50,7 +50,7 @@ def main():
     opts = get_options()
     outfile = None
     if opts.outfile:
-        outfile = open(opts.outfile, 'a', 0)
+        outfile = open(opts.outfile, 'a', buffering=1)
 
     # otherwise fileinput reprocess args as files
     sys.argv = []
