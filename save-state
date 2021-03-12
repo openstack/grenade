@@ -52,7 +52,9 @@ if [[ $(type -P iptables-save) != "" ]]; then
     sudo iptables-save >$SAVE_DIR/iptables.$BASE_RELEASE
 fi
 if [[ $(type -P ebtables) != "" ]]; then
-    sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE
+    # FIXME: ebtables may be available, but based on nft, and broute
+    # is not available -> do not end the script because of this
+    sudo ebtables -t broute -L >$SAVE_DIR/ebtables-broute.$BASE_RELEASE || true
     sudo ebtables -t filter -L >$SAVE_DIR/ebtables-filter.$BASE_RELEASE
     sudo ebtables -t nat -L >$SAVE_DIR/ebtables-nat.$BASE_RELEASE
 fi

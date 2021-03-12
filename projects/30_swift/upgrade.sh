@@ -69,7 +69,7 @@ sudo chown -R $USER:${USER_GROUP} ${SWIFT_DATA_DIR}
 
 # Mount backing disk
 if ! egrep -q ${SWIFT_DATA_DIR}/drives/sdb1 /proc/mounts; then
-    sudo mount -t xfs -o nouuid,loop,noatime,nodiratime,nobarrier,logbufs=8  \
+    sudo mount -t xfs -o nouuid,loop,noatime,nodiratime,logbufs=8  \
         ${SWIFT_DATA_DIR}/drives/images/swift.img ${SWIFT_DATA_DIR}/drives/sdb1
 fi
 

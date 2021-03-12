@@ -157,7 +157,7 @@
       Default grenade job
 
       Usually grenade jobs should inherit from this job.
-    nodeset: openstack-single-node-bionic
+    nodeset: openstack-single-node-focal
     required-projects:
       # NOTE(andreaf) The devstack and grenade roles take care of setting up
       # repos on the right branch for this job.
@@ -362,4 +362,4 @@
     description: |
       Basic multinode grenade job
     parent: grenade
-    nodeset: openstack-two-node-bionic
+    nodeset: openstack-two-node-focal
