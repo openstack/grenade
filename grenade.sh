@@ -39,6 +39,8 @@ export DSTOOLS_VERSION=${DSTOOLS_VERSION:-0.4.0}
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
 
+source $BASE_DEVSTACK_DIR/stackrc
+
 while getopts bqs:t c; do
     case $c in
         b)
@@ -289,6 +291,20 @@ if [[ "$RUN_BASE" == "True" ]]; then
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running base smoke test"
         cd $BASE_RELEASE_DIR/tempest
+
+        # NOTE(gmann): If gate explicitly set the non master
+        # constraints to use for Tempest venv then use the same
+        # while running the tests too otherwise, it will recreate
+        # the Tempest venv due to constraints mismatch.
+        # recreation of Tempest venv can flush the initially installed
+        # tempest plugins and their deps.
+        if [[ "$TEMPEST_VENV_UPPER_CONSTRAINTS" != "master" ]]; then
+            echo "Using $TEMPEST_VENV_UPPER_CONSTRAINTS constraints in Tempest virtual env."
+            # NOTE: setting both tox env var and once Tempest start using new var
+            # TOX_CONSTRAINTS_FILE then we can remove the old one.
+            export UPPER_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
+            export TOX_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
+        fi
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
             # once we are done, copy our created artifacts to the target
