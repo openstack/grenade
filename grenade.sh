@@ -39,8 +39,6 @@ export DSTOOLS_VERSION=${DSTOOLS_VERSION:-0.4.0}
 source $GRENADE_DIR/grenaderc
 source $GRENADE_DIR/inc/bootstrap
 
-source $BASE_DEVSTACK_DIR/stackrc
-
 while getopts bqs:t c; do
     case $c in
         b)
@@ -292,6 +290,12 @@ if [[ "$RUN_BASE" == "True" ]]; then
         echo_summary "Running base smoke test"
         cd $BASE_RELEASE_DIR/tempest
 
+        # NOTE(yoctozepto): Grenade does not know about
+        # TEMPEST_VENV_UPPER_CONSTRAINTS, only DevStack does.
+        # This sources that one variable from it.
+        TEMPEST_VENV_UPPER_CONSTRAINTS=$(set +o xtrace &&
+            source $BASE_DEVSTACK_DIR/stackrc &&
+            echo $TEMPEST_VENV_UPPER_CONSTRAINTS)
         # NOTE(gmann): If gate explicitly set the non master
         # constraints to use for Tempest venv then use the same
         # while running the tests too otherwise, it will recreate
