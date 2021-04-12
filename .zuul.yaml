@@ -4,17 +4,17 @@
     check:
       jobs:
         - grenade
-        - grenade-heat:
-            voting: false
         - grenade-multinode
+        - grenade-heat-multinode
+        - octavia-grenade
         - ironic-grenade:
-            voting: false
-        - octavia-grenade:
             voting: false
     gate:
       jobs:
         - grenade
         - grenade-multinode
+        - grenade-heat-multinode
+        - octavia-grenade
     experimental:
       jobs:
         - grenade-forward
