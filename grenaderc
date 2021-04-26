@@ -16,7 +16,7 @@ fi
 GRENADE_USE_EXTERNAL_DEVSTACK=${GRENADE_USE_EXTERNAL_DEVSTACK:-False}
 
 # Base GIT Repo URL
-# Another option is http://review.openstack.org/p
+# Another option is https://review.opendev.org/
 # Another option is https://github.com
 GIT_BASE=${GIT_BASE:-https://opendev.org}
 #GIT_BASE=/opt/git

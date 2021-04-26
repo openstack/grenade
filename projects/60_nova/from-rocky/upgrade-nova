@@ -9,7 +9,7 @@ source ${TARGET_DEVSTACK_DIR}/inc/python
 
 function configure_nova_upgrade() {
 
-    # TODO(mriedem): Until https://review.openstack.org/#/c/600162/ merges
+    # TODO(mriedem): Until https://review.opendev.org/c/600162/ merges
     # in devstack, we want to continue using placement from nova. We can
     # remove this once the devstack change lands.
     if [ -z "${PLACEMENT_REPO}" ]; then

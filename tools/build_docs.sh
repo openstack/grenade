@@ -66,7 +66,7 @@ FQ_HTML_BUILD=$(cd $HTML_BUILD && pwd)
 GLOG=$(mktemp gitlogXXXX)
 echo "<ul>" >$GLOG
 git log \
-    --pretty=format:'            <li>%s - <em>Commit <a href="https://review.openstack.org/#q,%h,n,z">%h</a> %cd</em></li>' \
+    --pretty=format:'            <li>%s - <em>Commit <a href="https://review.opendev.org/">%h</a> %cd</em></li>' \
     --date=short \
     --since '6 months ago' | grep -v Merge >>$GLOG
 echo "</ul>" >>$GLOG
