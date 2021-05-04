@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# Kilo -> Lemming flavor migration
-# This is run on kilo code before upgrading
-function configure_nova_upgrade {
-    $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db migrate_flavor_data || die $LINENO "Flavor migrate error"
-}
