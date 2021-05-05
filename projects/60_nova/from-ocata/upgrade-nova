@@ -1,5 +1,0 @@
-function configure_nova_upgrade() {
-    # Going from ocata -> pike isn't going to have the configs setup for the super conductor
-    # topology
-    export CELLSV2_SETUP="singleconductor"
-}

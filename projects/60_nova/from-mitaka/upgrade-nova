@@ -1,9 +1,0 @@
-function configure_nova_upgrade() {
-    # Grenade jobs to upgrade from mitaka to newton set NOVA_CONFIGURE_CELLSV2.
-    if [ "$NOVA_CONFIGURE_CELLSV2" == "True" ]; then
-        source $TARGET_DEVSTACK_DIR/lib/database
-        # We need to create the cell0 database before we can sync it
-        initialize_database_backends
-        recreate_database nova_cell0
-    fi
-}
