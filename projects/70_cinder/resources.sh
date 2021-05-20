@@ -42,8 +42,8 @@ DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
 
 export OS_IMAGE_API_VERSION=2
 
-# BUG openstack client doesn't work with cinder v3
-export OS_VOLUME_API_VERSION=2
+# Block Storage API v2 was deprecated in Pike and removed in Xena
+export OS_VOLUME_API_VERSION=3
 
 if ! is_service_enabled c-api; then
     echo "Cinder is not enabled. Skipping resource phase $1 for cinder."
