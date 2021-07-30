@@ -102,7 +102,10 @@ function create {
     openstack role add member --user $id --project $project_id
 
     # Create an encrypted volume type as admin
-    eval $(openstack volume type create --encryption-provider luks $CINDER_VOL_ENCRYPTED_TYPE -f shell)
+    eval $(openstack volume type create \
+        --encryption-provider nova.volume.encryptors.luks.LuksEncryptor \
+        --encryption-cipher aes-xts-plain64 --encryption-key-size 256 \
+        $CINDER_VOL_ENCRYPTED_TYPE -f shell)
     resource_save cinder cinder_encrypted_volume_type_id $id
 
     # set ourselves to the created cinder user
