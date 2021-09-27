@@ -195,6 +195,8 @@
       grenade_localrc:
         # enable the execution of the base smoke tests by default
         BASE_RUN_SMOKE: True
+      devstack_plugins:
+        neutron: https://opendev.org/openstack/neutron
       devstack_services:
         # Core services enabled for this branch.
         # This list replaces the test-matrix.
@@ -244,6 +246,7 @@
         # neutron-l3: true
         # neutron-metadata-agent: true
         # neutron-metering: true
+        neutron-trunk: true
         # Swift services
         s-account: true
         s-container: true
