@@ -106,6 +106,9 @@ SERVICE_TIMEOUT=${SERVICE_TIMEOUT:-30}
 # process?
 FORCE_ONLINE_MIGRATIONS=${FORCE_ONLINE_MIGRATIONS:-True}
 
+# Should we enable Nova's mitigation for bug #1958883?
+NOVA_ENABLE_UPGRADE_WORKAROUND=${NOVA_ENABLE_UPGRADE_WORKAROUND:-False}
+
 # Local variables:
 # mode: shell-script
 # End:

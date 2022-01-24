@@ -74,6 +74,12 @@ $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db sync || die $LINENO "DB sy
 
 iniset $NOVA_CONF upgrade_levels compute auto
 
+if [[ "$NOVA_ENABLE_UPGRADE_WORKAROUND" == "True" ]]; then
+    iniset $NOVA_CONF workarounds disable_compute_service_check_for_ffu True
+    iniset $NOVA_COND_CONF workarounds disable_compute_service_check_for_ffu True
+    iniset $NOVA_CPU_CONF workarounds disable_compute_service_check_for_ffu True
+fi
+
 if [[ "$FORCE_ONLINE_MIGRATIONS" == "True" ]]; then
     # Run "online" migrations that can complete before we start
     $NOVA_BIN_DIR/nova-manage --config-file $NOVA_CONF db online_data_migrations || die $LINENO "Failed to run online_data_migrations"
