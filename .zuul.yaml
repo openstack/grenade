@@ -9,6 +9,8 @@
         - octavia-grenade
         - ironic-grenade:
             voting: false
+        - grenade-skip-level:
+            voting: false
     gate:
       jobs:
         - grenade
@@ -366,3 +368,17 @@
       Basic multinode grenade job
     parent: grenade
     nodeset: openstack-two-node-focal
+
+- job:
+    name: grenade-skip-level
+    description: |
+      Grenade job that skips a release, validating that deployers can skip
+      specific releases as prescribed by our process.
+    parent: grenade
+    vars:
+      # Move this forward when master changes to a new skip-level-allowed
+      # target release. Right now, this is wallaby because master is yoga.
+      # When master is A, this should become yoga, and so forth.
+      grenade_from_branch: stable/wallaby
+      grenade_localrc:
+        NOVA_ENABLE_UPGRADE_WORKAROUND: True
