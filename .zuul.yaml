@@ -149,6 +149,7 @@
       - ^api-ref/.*$
       - ^doc/.*$
       - ^releasenotes/.*$
+      - ^.git.*$
       # Translations
       - ^.*/locale/.*po$
 
