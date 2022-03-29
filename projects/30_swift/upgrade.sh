@@ -43,8 +43,6 @@ source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/keystone
 source $TARGET_DEVSTACK_DIR/lib/swift
-#Set OS_AUTH_URL as it is needed during start_swift when tempurls are enabled
-source $BASE_DEVSTACK_DIR/userrc_early
 
 # Print the commands being run so that we can see the command that triggers
 # an error.  It is also useful for following allowing as the install occurs.
