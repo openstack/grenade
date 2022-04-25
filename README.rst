@@ -178,7 +178,7 @@ system:
 
     ./setup-grenade [testbox [testuser]]
 
-If you are running Grenade on the same maching you cloned to, you **do
+If you are running Grenade on the same machine you cloned to, you **do
 not** need to do this.
 
 Configuration
