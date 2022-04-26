@@ -17,4 +17,7 @@ source $BASE_DEVSTACK_DIR/lib/neutron-legacy
 
 set -o xtrace
 
+# Skip OVN stop like other non openstack services
+# as stopping it causes issues in validation
+export SKIP_STOP_OVN=True
 stop_neutron
