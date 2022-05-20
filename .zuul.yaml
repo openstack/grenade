@@ -376,17 +376,18 @@
       Grenade job that skips a release, validating that deployers can skip
       specific releases as prescribed by our process.
     parent: grenade
-    # NOTE(gmann): This job is meant to validate the tick to tick release
-    # upgrade so supposed to run on tick release gate only. To make sure
-    # that, when the current master is tock release, below branch variant will
-    # stop running it on tock release master. And once new tick release start
-    # (means the current master is tick release), we need to remove the below
-    # branch variant condition so that it again start running on tick release
-    # master gate.
+    # NOTE(gmann): This job is started and meant to be run from Yoga release.
+    # This job is meant to validate the SLURP to SLURP release
+    # upgrade so supposed to run on SLURP release gate only. To make sure
+    # that, when the current master is not SLURP release, below branch variant will
+    # stop running it on not SLURP release master. And once new SLURP release start
+    # (means the current master is SLURP release), we need to remove the 'master'
+    # from the below branch variant condition so that it again start running on
+    # SLURP release master gate.
     # Along with grenade gate, this job runs on many other projects gate
-    # also and in this job definition, we control for everyone to run on tick
+    # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!master).*$
+    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena)).*$
     vars:
       # Move this forward when master changes to a new skip-level-allowed
       # target release. Right now, this is wallaby because master is yoga.
