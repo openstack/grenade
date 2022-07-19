@@ -85,6 +85,10 @@
           Q_AGENT: openvswitch
           Q_ML2_TENANT_NETWORK_TYPE: vxlan
           Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+          # TODO(slaweq): It can be removed when devstack patch
+          # https://review.opendev.org/c/openstack/devstack/+/849145 will be
+          # merged in master and last stable branch
+          NEUTRON_ENDPOINT_SERVICE_NAME: ""
       grenade_localrc:
         SAVE_DIR: "{{ devstack_bases.shared }}/save"
       # from tempest playbooks
