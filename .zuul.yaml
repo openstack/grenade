@@ -391,11 +391,13 @@
     # Along with grenade gate, this job runs on many other projects gate
     # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena)).*$
+    branches: ^(?!stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
     vars:
       # Move this forward when master changes to a new skip-level-allowed
-      # target release. Right now, this is wallaby because master is yoga.
-      # When master is A, this should become yoga, and so forth.
-      grenade_from_branch: stable/wallaby
+      # target release. Right now, this is stable/yoga because current master is 2023.1
+      # (which is N+2 release from yoga so skipping zed release and testing the upgrade
+      # from stable/yoga -> 2023.1). When master is 2023.3, this should become 2023.1,
+      # and so forth.
+      grenade_from_branch: stable/yoga
       grenade_localrc:
         NOVA_ENABLE_UPGRADE_WORKAROUND: True
