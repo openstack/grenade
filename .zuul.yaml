@@ -19,6 +19,7 @@
         - octavia-grenade
     experimental:
       jobs:
+        - grenade-forward
         - grenade-postgresql
 
 - job:
@@ -341,7 +342,8 @@
     vars:
       # When a stable branch stable/X is created from master,
       # this value should be updated to stable/X.
-      grenade_from_branch: master
+      grenade_from_branch: stable/zed
+      grenade_to_branch: master
 
 - job:
     name: grenade-dsvm-neutron-forward
@@ -391,7 +393,7 @@
     # Along with grenade gate, this job runs on many other projects gate
     # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena)).*$
+    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
     vars:
       # Move this forward when master changes to a new skip-level-allowed
       # target release. Right now, this is wallaby because master is yoga.
