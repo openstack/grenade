@@ -132,6 +132,10 @@ METERING_AGENT_CONF_FILENAME=${METERING_AGENT_CONF_FILENAME:-"/etc/neutron/servi
 AGENT_L3_BINARY=${AGENT_L3_BINARY:-"$NEUTRON_BIN_DIR/neutron-l3-agent"}
 AGENT_VPN_BINARY=${AGENT_VPN_BINARY:-"$NEUTRON_BIN_DIR/neutron-vpn-agent"}
 
+# Update the rootwrap configuration
+# TODO(ralonsoh): make this method public in "devstack".
+_neutron_setup_rootwrap
+
 # Start neutron and agents
 start_neutron_service_and_check
 start_neutron_agents
