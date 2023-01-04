@@ -86,8 +86,7 @@ TOP_DIR=$TARGET_DEVSTACK_DIR
 source $TARGET_DEVSTACK_DIR/lib/apache
 source $TARGET_DEVSTACK_DIR/lib/tls
 source $TARGET_DEVSTACK_DIR/lib/keystone
-[[ -r $TARGET_DEVSTACK_DIR/lib/neutron ]] && source $TARGET_DEVSTACK_DIR/lib/neutron
-source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
+source $TARGET_DEVSTACK_DIR/lib/neutron
 source $TARGET_DEVSTACK_DIR/lib/database
 source $TARGET_DEVSTACK_DIR/lib/nova
 

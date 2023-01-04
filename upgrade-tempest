@@ -52,7 +52,7 @@ source $TARGET_DEVSTACK_DIR/lib/cinder
 source $TARGET_DEVSTACK_DIR/lib/glance
 source $TARGET_DEVSTACK_DIR/lib/horizon
 source $TARGET_DEVSTACK_DIR/lib/keystone
-source $TARGET_DEVSTACK_DIR/lib/neutron-legacy
+source $TARGET_DEVSTACK_DIR/lib/neutron
 source $TARGET_DEVSTACK_DIR/lib/nova
 source $TARGET_DEVSTACK_DIR/lib/swift
 

@@ -45,7 +45,7 @@ function source_quiet {
 }
 
 # TODO: we'd really like to use the ping_check_functions that exist in
-# devstack, however they are all wrapped up in lib/neutron-legacy
+# devstack, however they are all wrapped up in lib/neutron
 # gorp. Until that can be cleanly separated we need to keep our own
 # copy here.
 #
