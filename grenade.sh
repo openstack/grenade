@@ -308,6 +308,15 @@ if [[ "$RUN_BASE" == "True" ]]; then
             # TOX_CONSTRAINTS_FILE then we can remove the old one.
             export UPPER_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
             export TOX_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
+        else
+            # NOTE(gmann): we need to set the below env var pointing to master
+            # constraints even that is what default in tox.ini. Otherwise it
+            # can create the issue for grenade run where old and new devstack
+            # can have different tempest (old and master) to install. For
+            # detail problem, refer to the
+            # https://bugs.launchpad.net/devstack/+bug/2003993
+            export UPPER_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
+            export TOX_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
         fi
         tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
         if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
