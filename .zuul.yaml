@@ -149,6 +149,7 @@
 - job:
     name: grenade
     parent: grenade-base
+    pre-run: playbooks/multinode-pre.yaml
     description: |
       Default grenade job
 
