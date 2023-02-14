@@ -204,7 +204,7 @@
         # Core services enabled for this branch.
         # This list replaces the test-matrix.
         # Shared services
-        dstat: true
+        dstat: false
         etcd3: true
         mysql: true
         memory_tracker: true
@@ -275,7 +275,7 @@
           # Core services enabled for this branch.
           # This list replaces the test-matrix.
           # Shared services
-          dstat: true
+          dstat: false
           memory_tracker: true
           # TODO: tls-proxy is not tested by legacy jobs;
           # enable this after testing.
