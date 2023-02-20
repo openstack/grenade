@@ -64,6 +64,10 @@ function ping_check_public {
     fi
     if ! timeout $boot_timeout sh -c "$check_command"; then
         if [[ "$expected" = "True" ]]; then
+            # Dump Console log if ping fails
+            local fip=$(openstack floating ip list --floating-ip-address $ip -f value -c Port)
+            local server=$(openstack port show $fip -f value -c device_id)
+            openstack console log show $server
             die $LINENO "[Fail] Couldn't ping server"
         else
             die $LINENO "[Fail] Could ping server"
