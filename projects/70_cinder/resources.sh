@@ -176,7 +176,7 @@ function create {
     _wait_for_volume_update $CINDER_VOL3 "status" "in-use"
 
     # ping check on the way up so we can add ssh content
-    ping_check_public $ip 30
+    ping_check_public $ip 60
 
     # turn of errexit for this portion of the retry
     set +o errexit
@@ -239,7 +239,7 @@ function verify {
 
 function verify_noapi {
     local server_ip=$(resource_get cinder cinder_server_ip)
-    ping_check_public $server_ip 30
+    ping_check_public $server_ip 60
     # this sync is here to ensure that we don't accidentally pass when
     # the volume is actually down.
     timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$server_ip \

@@ -134,7 +134,7 @@ function create {
     resource_save nova nova_server_uuid $uuid
 
     # ping check on the way up to ensure we're really running
-    ping_check_public $ip 30
+    ping_check_public $ip 60
 
     # Save some inventory and allocation values (requires admin)
     source_quiet $TOP_DIR/openrc admin admin
@@ -191,7 +191,7 @@ function verify {
 
 function verify_noapi {
     local server_ip=$(resource_get nova nova_server_ip)
-    ping_check_public $server_ip 30
+    ping_check_public $server_ip 60
 }
 
 function destroy {
