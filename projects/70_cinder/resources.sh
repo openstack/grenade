@@ -118,8 +118,8 @@ function create {
     openstack security group rule create --proto tcp --dst-port 22 $CINDER_USER
 
     # create key pairs for access
-    openstack keypair create $CINDER_KEY > $CINDER_KEY_FILE
-    chmod 600 $CINDER_KEY_FILE
+    ssh-keygen -f $CINDER_KEY_FILE -N '' -t ecdsa
+    openstack keypair create $CINDER_KEY --public-key ${CINDER_KEY_FILE}.pub
 
     # Create a bootable volume
     eval $(openstack volume create --image $DEFAULT_IMAGE_NAME --size 1 $CINDER_VOL -f shell)
