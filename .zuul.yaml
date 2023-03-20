@@ -6,7 +6,9 @@
         - grenade
         - grenade-multinode
         - grenade-heat-multinode
-        - octavia-grenade
+        # TODO (gmann): Run octavia-grenade job once DIB fix is merged and released
+        # https://review.opendev.org/c/openstack/diskimage-builder/+/878089
+        # - octavia-grenade
         - ironic-grenade:
             voting: false
         - grenade-skip-level:
@@ -16,7 +18,7 @@
         - grenade
         - grenade-multinode
         - grenade-heat-multinode
-        - octavia-grenade
+        # - octavia-grenade
     experimental:
       jobs:
         - grenade-postgresql
@@ -158,7 +160,7 @@
       Default grenade job
 
       Usually grenade jobs should inherit from this job.
-    nodeset: openstack-single-node-focal
+    nodeset: openstack-single-node-jammy
     required-projects:
       # NOTE(andreaf) The devstack and grenade roles take care of setting up
       # repos on the right branch for this job.
@@ -369,7 +371,7 @@
     description: |
       Basic multinode grenade job
     parent: grenade
-    nodeset: openstack-two-node-focal
+    nodeset: openstack-two-node-jammy
     pre-run: playbooks/multinode-pre.yaml
 
 - job:
@@ -399,6 +401,9 @@
       # (which is N+2 release from yoga so skipping zed release and testing the upgrade
       # from stable/yoga -> 2023.1). When master is 2023.3, this should become 2023.1,
       # and so forth.
+      # Current master 2023.2 is non SLURP release to this job will be skiped to run
+      # on current master. If you would like to run N-2 -> N upgrade testing on current
+      # non SLURP master then use grenade-skip-level-always job.
     vars:
       grenade_from_branch: stable/yoga
     # NOTE(gmann): This job is started and meant to be run from Yoga release.
@@ -412,4 +417,4 @@
     # Along with grenade gate, this job runs on many other projects gate
     # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
+    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
