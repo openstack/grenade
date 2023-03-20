@@ -19,6 +19,7 @@
         - octavia-grenade
     experimental:
       jobs:
+        - grenade-forward
         - grenade-postgresql
 
 - job:
@@ -338,7 +339,8 @@
     vars:
       # When a stable branch stable/X is created from master,
       # this value should be updated to stable/X.
-      grenade_from_branch: master
+      grenade_from_branch: stable/2023.1
+      grenade_to_branch: master
 
 - job:
     name: grenade-dsvm-neutron-forward
@@ -394,11 +396,8 @@
       specific releases as prescribed by our process.
     nodeset: openstack-single-node-focal
     parent: grenade-skip-level-always
-      # Move this forward when master changes to a new skip-level-allowed
-      # target release. Right now, this is stable/yoga because current master is 2023.1
-      # (which is N+2 release from yoga so skipping zed release and testing the upgrade
-      # from stable/yoga -> 2023.1). When master is 2023.3, this should become 2023.1,
-      # and so forth.
+      # On stable/2023.1 gate, this job will test upgrade from stable/yoga
+      # to stable/2023.1 (which is N-2 -> N onstable/2023.1 upgrade testing).
     vars:
       grenade_from_branch: stable/yoga
     # NOTE(gmann): This job is started and meant to be run from Yoga release.
@@ -412,4 +411,4 @@
     # Along with grenade gate, this job runs on many other projects gate
     # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
+    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
