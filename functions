@@ -131,6 +131,45 @@ function exit_trap {
 }
 
 
+function run_tempest {
+    local release_dir
+    release_dir=$1
+    cd $release_dir/tempest
+    # unset the constraints as it might have been set earlier
+    # by base or target test run
+    unset TEMPEST_VENV_UPPER_CONSTRAINTS
+    # NOTE(yoctozepto): Grenade does not know about
+    # TEMPEST_VENV_UPPER_CONSTRAINTS, only DevStack does.
+    # This sources that one variable from it.
+    TEMPEST_VENV_UPPER_CONSTRAINTS=$(set +o xtrace &&
+        source $release_dir/devstack/stackrc &&
+        echo $TEMPEST_VENV_UPPER_CONSTRAINTS)
+    # NOTE(gmann): If gate explicitly set the non master
+    # constraints to use for Tempest venv then use the same
+    # while running the tests too otherwise, it will recreate
+    # the Tempest venv due to constraints mismatch.
+    # recreation of Tempest venv can flush the initially installed
+    # tempest plugins and their deps.
+    if [[ "$TEMPEST_VENV_UPPER_CONSTRAINTS" != "master" ]]; then
+        echo "Using $TEMPEST_VENV_UPPER_CONSTRAINTS constraints in Tempest virtual env."
+        # NOTE: setting both tox env var and once Tempest start using new var
+        # TOX_CONSTRAINTS_FILE then we can remove the old one.
+        export UPPER_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
+        export TOX_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
+    else
+        # NOTE(gmann): we need to set the below env var pointing to master
+        # constraints even that is what default in tox.ini. Otherwise it
+        # can create the issue for grenade run where old and new devstack
+        # can have different tempest (old and master) to install. For
+        # detail problem, refer to the
+        # https://bugs.launchpad.net/devstack/+bug/2003993
+        export UPPER_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
+        export TOX_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
+    fi
+    tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
+}
+
+
 # Force a shorter connect timeout, if networking has gone off the
 # rails we could potentially be hanging around for minutes on every
 # ssh attempt due to TCP timeouts/retries.
