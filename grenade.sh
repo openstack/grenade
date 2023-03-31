@@ -288,37 +288,7 @@ if [[ "$RUN_BASE" == "True" ]]; then
     # Validate the install
     if [[ "$BASE_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running base smoke test"
-        cd $BASE_RELEASE_DIR/tempest
-
-        # NOTE(yoctozepto): Grenade does not know about
-        # TEMPEST_VENV_UPPER_CONSTRAINTS, only DevStack does.
-        # This sources that one variable from it.
-        TEMPEST_VENV_UPPER_CONSTRAINTS=$(set +o xtrace &&
-            source $BASE_DEVSTACK_DIR/stackrc &&
-            echo $TEMPEST_VENV_UPPER_CONSTRAINTS)
-        # NOTE(gmann): If gate explicitly set the non master
-        # constraints to use for Tempest venv then use the same
-        # while running the tests too otherwise, it will recreate
-        # the Tempest venv due to constraints mismatch.
-        # recreation of Tempest venv can flush the initially installed
-        # tempest plugins and their deps.
-        if [[ "$TEMPEST_VENV_UPPER_CONSTRAINTS" != "master" ]]; then
-            echo "Using $TEMPEST_VENV_UPPER_CONSTRAINTS constraints in Tempest virtual env."
-            # NOTE: setting both tox env var and once Tempest start using new var
-            # TOX_CONSTRAINTS_FILE then we can remove the old one.
-            export UPPER_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
-            export TOX_CONSTRAINTS_FILE=$TEMPEST_VENV_UPPER_CONSTRAINTS
-        else
-            # NOTE(gmann): we need to set the below env var pointing to master
-            # constraints even that is what default in tox.ini. Otherwise it
-            # can create the issue for grenade run where old and new devstack
-            # can have different tempest (old and master) to install. For
-            # detail problem, refer to the
-            # https://bugs.launchpad.net/devstack/+bug/2003993
-            export UPPER_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
-            export TOX_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/master
-        fi
-        tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
+        run_tempest $BASE_RELEASE_DIR
         if [ "${GRENADE_USE_EXTERNAL_DEVSTACK}" != "True" ]; then
             # once we are done, copy our created artifacts to the target
             if [[ -e $TARGET_RELEASE_DIR/tempest ]]; then
@@ -398,8 +368,7 @@ if [[ "$RUN_TARGET" == "True" ]]; then
     # will be run twice against the new cloud.
     if [[ "$TARGET_RUN_SMOKE" == "True" ]]; then
         echo_summary "Running tempest smoke tests"
-        cd $TARGET_RELEASE_DIR/tempest
-        tox -esmoke -- --concurrency=$TEMPEST_CONCURRENCY
+        run_tempest $TARGET_RELEASE_DIR
         stop $STOP run-smoke 330
     fi
 
