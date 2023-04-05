@@ -30,6 +30,7 @@ NOVA_SERVER=nova_server1
 DEFAULT_INSTANCE_TYPE=${DEFAULT_INSTANCE_TYPE:-m1.tiny}
 DEFAULT_IMAGE_NAME=${DEFAULT_IMAGE_NAME:-cirros-0.3.2-x86_64-uec}
 VIRT_DRIVER=${VIRT_DRIVER:-$DEFAULT_VIRT_DRIVER}
+INSTANCE_WAIT=${INSTANCE_WAIT:-60}
 
 if [[ "$VIRT_DRIVER" == ironic ]]; then
     NOVA_IRONIC_RESOURCE_CLASS=${IRONIC_DEFAULT_RESOURCE_CLASS:-baremetal}
@@ -134,7 +135,7 @@ function create {
     resource_save nova nova_server_uuid $uuid
 
     # ping check on the way up to ensure we're really running
-    ping_check_public $ip 60
+    ping_check_public $ip $INSTANCE_WAIT
 
     # Save some inventory and allocation values (requires admin)
     source_quiet $TOP_DIR/openrc admin admin
@@ -191,7 +192,7 @@ function verify {
 
 function verify_noapi {
     local server_ip=$(resource_get nova nova_server_ip)
-    ping_check_public $server_ip 60
+    ping_check_public $server_ip $INSTANCE_WAIT
 }
 
 function destroy {
