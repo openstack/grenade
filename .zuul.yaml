@@ -7,11 +7,6 @@
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
-        - grenade-heat:
-            voting: false
-            irrelevant-files:
-              - ^.*\.rst$
-              - ^doc/.*$
         - neutron-grenade-multinode:
             irrelevant-files:
               - ^.*\.rst$
