@@ -29,9 +29,6 @@
       jobs:
         - neutron-grenade:
             irrelevant-files: *grenade-irrelevant-files
-        - grenade-heat:
-            voting: false
-            irrelevant-files: *grenade-irrelevant-files
         - grenade-py3
         - neutron-grenade-multinode:
             irrelevant-files: *grenade-irrelevant-files
