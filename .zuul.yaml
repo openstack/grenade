@@ -4,8 +4,6 @@
     check:
       jobs:
         - grenade
-        - grenade-heat:
-            voting: false
         - grenade-py3
         - grenade-multinode
         - ironic-grenade-dsvm:
