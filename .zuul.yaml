@@ -85,6 +85,8 @@
           # https://review.opendev.org/c/openstack/devstack/+/849145 will be
           # merged in master and last stable branch
           NEUTRON_ENDPOINT_SERVICE_NAME: ""
+          # TODO(frickler): Can be removed in 2024.1 cycle
+          GLOBAL_VENV: false
       grenade_localrc:
         SAVE_DIR: "{{ devstack_bases.shared }}/save"
       # from tempest playbooks
