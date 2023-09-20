@@ -347,7 +347,9 @@
 
 - job:
     name: grenade-dsvm-neutron-forward
-    branches: ^(?!(stable/(ocata|pike|queens|rocky|stein|train))).*$
+    branches:
+      regex: ^stable/(stein|train)$
+      negate: true
     parent: grenade-forward
 
 - job:
@@ -393,7 +395,9 @@
     # Along with grenade gate, this job runs on many other projects gate
     # also and in this job definition, we control for everyone to run on SLURP
     # release only.
-    branches: ^(?!master|stable/(pike|queens|rocky|stein|train|ussuri|victoria|wallaby|xena|zed)).*$
+    branches:
+      regex: ^master|stable/(stein|train|ussuri|victoria|wallaby|xena|zed)$
+      negate: true
     vars:
       # Move this forward when master changes to a new skip-level-allowed
       # target release. Right now, this is wallaby because master is yoga.
