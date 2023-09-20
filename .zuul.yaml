@@ -342,7 +342,9 @@
 
 - job:
     name: grenade-dsvm-neutron-forward
-    branches: ^(?!(stable/(ocata|pike|queens|rocky|stein|train))).*$
+    branches:
+      regex: ^stable/(stein|train)$
+      negate: true
     parent: grenade-forward
 
 - job:
