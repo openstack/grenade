@@ -242,8 +242,8 @@ function verify_noapi {
     ping_check_public $server_ip 60
     # this sync is here to ensure that we don't accidentally pass when
     # the volume is actually down.
-    timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$server_ip \
-        "sync"
+    timeout 180 $FSSH -i $CINDER_KEY_FILE cirros@$server_ip \
+        "echo Starting sync; sync; echo Done with sync"
     local state=$($FSSH -i $CINDER_KEY_FILE cirros@$server_ip \
         "cat $CINDER_STATE_FILE")
     if [[ "$state" != "$CINDER_STATE" ]]; then
