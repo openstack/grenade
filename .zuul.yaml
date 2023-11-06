@@ -319,6 +319,11 @@
             Q_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
             RABBIT_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
             DATABASE_HOST: "{{ hostvars['controller']['nodepool']['private_ipv4'] }}"
+            # We need to set this for the subnode to tell devstack to enable
+            # VNC for guests that are hosted on the subnode. Otherwise,
+            # devstack won't know to enable it given that we don't enable the
+            # n-novnc (console proxy) service on the subnode.
+            NOVA_VNC_ENABLED: true
 
 - job:
     name: grenade-py3
