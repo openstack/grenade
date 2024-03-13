@@ -42,6 +42,7 @@
       - zuul: opendev.org/openstack/tempest
       - zuul: opendev.org/openstack/neutron-tempest-plugin
     vars:
+      configure_swap_size: 8192
       devstack_bases:
         shared: /opt/stack
         old: /opt/stack/old
