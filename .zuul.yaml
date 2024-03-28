@@ -9,14 +9,14 @@
         - octavia-grenade
         - ironic-grenade:
             voting: false
-        - grenade-skip-level
+        - grenade-skip-level-always
     gate:
       jobs:
         - grenade
         - grenade-multinode
         - grenade-heat-multinode
         - octavia-grenade
-        - grenade-skip-level
+        - grenade-skip-level-always
     experimental:
       jobs:
         - grenade-postgresql
@@ -396,24 +396,3 @@
       grenade_from_branch: stable/2023.1
       grenade_localrc:
         NOVA_ENABLE_UPGRADE_WORKAROUND: True
-
-- job:
-    name: grenade-skip-level
-    description: |
-      Grenade job that skips a release, validating that deployers can skip
-      specific releases as prescribed by our process.
-    nodeset: openstack-single-node-jammy
-    parent: grenade-skip-level-always
-      # NOTE(gmann): This job is meant to validate the SLURP to SLURP release
-      # upgrade so it supposed to run on SLURP release gate only. If current master
-      # is not SLURP release,we can remove the job definition from master branch.
-      # SLURP release upgrade jobs are defined in their respective stable branch.
-      # If you would like to run N-2 -> N upgrade testing on non SLURP releases
-      # then use grenade-skip-level-always job.
-      # Along with grenade gate, this job runs on many other projects gate
-      # also and in this job definition, we control for everyone to run on SLURP
-      # release only.
-    vars:
-      grenade_from_branch: stable/2023.1
-    branches:
-      - master
