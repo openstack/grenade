@@ -393,6 +393,6 @@
       # For the base "always" job, this should always be the N-2 release from
       # current master for projects that want to assert N-2 upgradability
       # on all releases.
-      grenade_from_branch: stable/2023.1
+      grenade_from_branch: stable/2023.2
       grenade_localrc:
         NOVA_ENABLE_UPGRADE_WORKAROUND: True
