@@ -395,24 +395,11 @@
     name: grenade-skip-level
     description: |
       Grenade job that skips a release, validating that deployers can skip
-      specific releases as prescribed by our process.
+      specific releases as prescribed by our process. This job version is
+      to test the upgrade from stable/yoga to stable/2023.1.
     nodeset: openstack-single-node-focal
     parent: grenade-skip-level-always
       # On stable/2023.1 gate, this job will test upgrade from stable/yoga
       # to stable/2023.1 (which is N-2 -> N onstable/2023.1 upgrade testing).
     vars:
       grenade_from_branch: stable/yoga
-    # NOTE(gmann): This job is started and meant to be run from Yoga release.
-    # This job is meant to validate the SLURP to SLURP release
-    # upgrade so supposed to run on SLURP release gate only. To make sure
-    # that, when the current master is not SLURP release, below branch variant will
-    # stop running it on not SLURP release master. And once new SLURP release start
-    # (means the current master is SLURP release), we need to remove the 'master'
-    # from the below branch variant condition so that it again start running on
-    # SLURP release master gate.
-    # Along with grenade gate, this job runs on many other projects gate
-    # also and in this job definition, we control for everyone to run on SLURP
-    # release only.
-    branches:
-      regex: ^master|stable/(stein|train|ussuri|victoria|wallaby|xena|zed)$
-      negate: true
