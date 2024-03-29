@@ -19,6 +19,7 @@
         - grenade-skip-level
     experimental:
       jobs:
+        - grenade-forward
         - grenade-postgresql
 
 - job:
@@ -346,7 +347,8 @@
     vars:
       # When a stable branch stable/X is created from master,
       # this value should be updated to stable/X.
-      grenade_from_branch: master
+      grenade_from_branch: stable/2024.1
+      grenade_to_branch: master
 
 - job:
     name: grenade-dsvm-neutron-forward
@@ -415,5 +417,3 @@
       # release only.
     vars:
       grenade_from_branch: stable/2023.1
-    branches:
-      - master
