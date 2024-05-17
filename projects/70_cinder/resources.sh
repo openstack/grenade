@@ -180,7 +180,7 @@ function create {
 
     # turn of errexit for this portion of the retry
     set +o errexit
-    local timeleft=30
+    local timeleft=60
     while [[ $timeleft -gt 0 ]]; do
         local start=$(date +%s)
         timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$ip \
