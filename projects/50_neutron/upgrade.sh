@@ -105,7 +105,7 @@ neutron_plugin_configure_common
 Q_PLUGIN_CONF_FILE=$Q_PLUGIN_CONF_PATH/$Q_PLUGIN_CONF_FILENAME
 
 # Migrate DB
-neutron-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
+$NEUTRON_BIN_DIR/neutron-db-manage --config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE upgrade head
 
 # Set binaries and config file paths for neutron services
 # FIXME(jlibosva): Separate variables setting from config files configuration in devstack
