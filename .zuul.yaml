@@ -36,6 +36,7 @@
       - opendev.org/openstack/grenade
       - opendev.org/openstack/requirements
       - opendev.org/openstack/tempest
+      - opendev.org/openstack/os-test-images
     roles:
       - zuul: opendev.org/openstack/openstack-zuul-jobs
       - zuul: opendev.org/openstack/devstack
