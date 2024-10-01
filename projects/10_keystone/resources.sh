@@ -35,6 +35,7 @@ function create {
     # creates the user, and sets $id locally
     eval $(openstack user create $KEYSTONE_TEST_USER \
         --project $id \
+        --domain default \
         --password $KEYSTONE_TEST_PASS \
         -f shell -c id)
     resource_save keystone user_id $id

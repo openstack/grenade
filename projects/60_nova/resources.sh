@@ -86,6 +86,7 @@ function create {
     # creates the user, and sets $id locally
     eval $(openstack user create $NOVA_USER \
         --project $project_id \
+        --domain default \
         --password $NOVA_PASS \
         -f shell -c id)
     if [[ -z "$id" ]]; then

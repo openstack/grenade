@@ -92,6 +92,7 @@ function create {
     # creates the user, and sets $id locally
     eval $(openstack user create $CINDER_USER \
         --project $project_id \
+        --domain default \
         --password $CINDER_PASS \
         -f shell -c id)
     if [[ -z "$id" ]]; then
