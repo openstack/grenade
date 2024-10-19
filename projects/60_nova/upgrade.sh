@@ -94,23 +94,19 @@ $NOVA_BIN_DIR/nova-manage cell_v2 simple_cell_setup --transport-url $(get_transp
 # the placement endpoint.
 ensure_services_started placement-api
 
-# Run the nova-status upgrade check, which was only available starting in Ocata
-# so check to make sure it exists before attempting to run it.
-if [[ -x $(which nova-status) ]]; then
-    # The nova-status upgrade check has the following return codes:
-    # 0: Success - everything is good to go.
-    # 1: Warning - there is nothing blocking, but some issues were identified
-    # 2: Failure - something is definitely wrong and the upgrade will fail
-    # 255: Some kind of unexpected error occurred.
-    # The funky || here is to allow us to trap the exit code and not fail the
-    # entire run if the return code is non-zero.
-    nova-status upgrade check || {
-        rc=$?
-        if [[ $rc -ge 2 ]]; then
-            echo "nova-status upgrade check has failed."
-        fi
-    }
-fi
+# The nova-status upgrade check has the following return codes:
+# 0: Success - everything is good to go.
+# 1: Warning - there is nothing blocking, but some issues were identified
+# 2: Failure - something is definitely wrong and the upgrade will fail
+# 255: Some kind of unexpected error occurred.
+# The funky || here is to allow us to trap the exit code and not fail the
+# entire run if the return code is non-zero.
+$NOVA_BIN_DIR/nova-status upgrade check || {
+    rc=$?
+    if [[ $rc -ge 2 ]]; then
+        echo "nova-status upgrade check has failed."
+    fi
+}
 
 # Start Nova
 start_nova_api
