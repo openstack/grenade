@@ -152,6 +152,8 @@
       - ^.git.*$
       # Translations
       - ^.*/locale/.*po$
+      # pre-commit config
+      - ^\.pre-commit-config\.yaml$
 
 - job:
     name: grenade
