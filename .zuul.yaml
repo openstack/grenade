@@ -5,16 +5,36 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        - grenade-heat-multinode:
+            required-projects:
+              - name: opendev.org/openstack/heat-tempest-plugin
+                override-checkout: wallaby-last
+            # NOTE(elod.illes): heat uses too old Fedora image. As soon
+            # as that is fixed this job can be set as voting
+            voting: false
+        - octavia-grenade:
+            required-projects:
+              - name: opendev.org/openstack/octavia-tempest-plugin
+                override-checkout: wallaby-last
         - ironic-grenade:
+            required-projects:
+              - name: opendev.org/openstack/ironic-tempest-plugin
+                override-checkout: wallaby-last
             voting: false
     gate:
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        # NOTE(elod.illes): heat uses too old Fedora image. As soon
+        # as that is fixed this job can be added back
+        # - grenade-heat-multinode:
+        #     required-projects:
+        #       - name: opendev.org/openstack/heat-tempest-plugin
+        #         override-checkout: wallaby-last
+        - octavia-grenade:
+            required-projects:
+              - name: opendev.org/openstack/octavia-tempest-plugin
+                override-checkout: wallaby-last
     experimental:
       jobs:
         - grenade-forward
