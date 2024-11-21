@@ -5,8 +5,16 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        - grenade-heat-multinode:
+            required-projects:
+              - name: opendev.org/openstack/heat-tempest-plugin
+                override-checkout: 2023.1-last
+            voting: false
+        - octavia-grenade:
+            required-projects:
+              - name: opendev.org/openstack/octavia-tempest-plugin
+                override-checkout: 2023.1-last
+            voting: false
         - ironic-grenade:
             voting: false
         - grenade-skip-level:
@@ -15,8 +23,14 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        # - grenade-heat-multinode:
+        #     required-projects:
+        #       - name: opendev.org/openstack/heat-tempest-plugin
+        #         override-checkout: 2023.1-last
+        # - octavia-grenade:
+        #     required-projects:
+        #       - name: opendev.org/openstack/octavia-tempest-plugin
+        #         override-checkout: 2023.1-last
     experimental:
       jobs:
         - grenade-forward
