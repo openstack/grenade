@@ -143,18 +143,11 @@ function create {
         $net \
         $CINDER_SERVER --wait
 
-    # Add a floating IP because this is something which will work in
-    # either n-net or neutron.
-    eval $(openstack floating ip create public -f shell -c id -c ip -c floating_ip_address)
-    # NOTE(dhellmann): Around version 3.0.0 of python-openstackclient
-    # the column name changed from "ip" to "floating_ip_address". We
-    # look for both here to support upgrades.
-    if [[ -z "$ip" ]]; then
-        ip="$floating_ip_address"
-    fi
-    resource_save cinder cinder_server_ip $ip
+    # Add a floating IP.
+    eval $(openstack floating ip create public -f shell -c id -c floating_ip_address)
+    resource_save cinder cinder_server_ip $floating_ip_address
     resource_save cinder cinder_server_float $id
-    openstack server add floating ip $CINDER_SERVER $ip
+    openstack server add floating ip $CINDER_SERVER $floating_ip_address
 
     # Create a second (not bootable) volume to test attach/detach
     eval $(openstack volume create --size 1 $CINDER_VOL2 -f shell)
@@ -177,14 +170,14 @@ function create {
     _wait_for_volume_update $CINDER_VOL3 "status" "in-use"
 
     # ping check on the way up so we can add ssh content
-    ping_check_public $ip 60
+    ping_check_public $floating_ip_address 60
 
     # turn of errexit for this portion of the retry
     set +o errexit
     local timeleft=60
     while [[ $timeleft -gt 0 ]]; do
         local start=$(date +%s)
-        timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$ip \
+        timeout 30 $FSSH -i $CINDER_KEY_FILE cirros@$floating_ip_address \
                 "echo '$CINDER_STATE' > $CINDER_STATE_FILE"
         local rc=$?
 
