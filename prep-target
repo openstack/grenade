@@ -118,7 +118,7 @@ git_clone $REQUIREMENTS_REPO $REQUIREMENTS_DIR $REQUIREMENTS_BRANCH
 install_infra
 
 # force any oslo upgrades that might be required
-source $TARGET_DEVSTACK_DIR/lib/oslo
+source $TARGET_DEVSTACK_DIR/lib/libraries
 install_oslo
 
 # Start helper services
