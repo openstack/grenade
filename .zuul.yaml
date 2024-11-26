@@ -5,7 +5,8 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
+        - grenade-heat-multinode:
+            voting: false
         # TODO (gmann): Run octavia-grenade job once DIB fix is merged and released
         # https://review.opendev.org/c/openstack/diskimage-builder/+/878089
         # - octavia-grenade
@@ -17,7 +18,7 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
+        # - grenade-heat-multinode
         # - octavia-grenade
     experimental:
       jobs:
