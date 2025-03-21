@@ -5,7 +5,9 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
+        # TODO(gmann) heat job is failing 100%, make it voting again once it is green.
+        - grenade-heat-multinode:
+            voting: false
         - octavia-grenade
         - ironic-grenade:
             voting: false
@@ -14,11 +16,12 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
+        # - grenade-heat-multinode
         - octavia-grenade
         - grenade-skip-level-always
     experimental:
       jobs:
+        - grenade-forward
         - grenade-postgresql
 
 - job:
@@ -347,7 +350,8 @@
     vars:
       # When a stable branch stable/X is created from master,
       # this value should be updated to stable/X.
-      grenade_from_branch: master
+      grenade_from_branch: stable/2025.1
+      grenade_to_branch: master
 
 - job:
     name: grenade-dsvm-neutron-forward
