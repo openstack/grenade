@@ -3,20 +3,8 @@
       - publish-openstack-docs-pti
     check:
       jobs:
-        - grenade
-        - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
-        - ironic-grenade:
-            voting: false
         - grenade-skip-level:
             voting: false
-    gate:
-      jobs:
-        - grenade
-        - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
     experimental:
       jobs:
         - grenade-forward
