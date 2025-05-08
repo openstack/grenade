@@ -8,7 +8,10 @@
         # TODO(gmann) heat job is failing 100%, make it voting again once it is green.
         - grenade-heat-multinode:
             voting: false
-        - octavia-grenade
+        # TODO(stephenfin): make this voting once we fix octavia
+        # https://review.opendev.org/c/openstack/octavia/+/949601
+        - octavia-grenade:
+            voting: false
         - ironic-grenade:
             voting: false
         - grenade-skip-level-always
@@ -17,7 +20,7 @@
         - grenade
         - grenade-multinode
         # - grenade-heat-multinode
-        - octavia-grenade
+        # - octavia-grenade
         - grenade-skip-level-always
     experimental:
       jobs:
@@ -194,6 +197,8 @@
           DATABASE_TYPE: mysql
           # Glance should always be non-standalone
           GLANCE_STANDALONE: False
+          # Neutron should always deploy using uWSGI by default now
+          NEUTRON_DEPLOY_MOD_WSGI: True
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
