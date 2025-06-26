@@ -63,7 +63,6 @@
           DEST: "{{ devstack_bases.new }}"
           LOGFILE: "{{ devstack_bases.new }}/logs/devstacklog.txt"
         shared:
-          USE_PYTHON3: true
           # Common settings for OpenStack CI
           DATABASE_PASSWORD: secretdatabase
           # FIXME: temporarily define MYSQL_PASSWORD too,
@@ -336,10 +335,6 @@
     parent: grenade
     description: |
       Grenade job based on Python 3
-    vars:
-      grenade_devstack_localrc:
-        shared:
-          USE_PYTHON3: true
 
 - job:
     name: grenade-forward
