@@ -198,6 +198,7 @@
           GLANCE_STANDALONE: False
           # Neutron should always deploy using uWSGI by default now
           NEUTRON_DEPLOY_MOD_WSGI: True
+          OVN_AGENT_EXTENSIONS: 'metadata'
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -245,7 +246,8 @@
         q-meta: false
         q-metering: false
         q-dns: true
-        q-ovn-metadata-agent: true
+        q-ovn-metadata-agent: false
+        q-ovn-agent: true
         ovn-controller: true
         ovn-northd: true
         ovs-vswitchd: true
@@ -298,7 +300,8 @@
           q-l3: false
           q-meta: false
           q-metering: false
-          q-ovn-metadata-agent: true
+          q-ovn-metadata-agent: false
+          q-ovn-agent: true
           # Cinder services
           c-bak: true
           c-vol: true
@@ -329,6 +332,7 @@
             # devstack won't know to enable it given that we don't enable the
             # n-novnc (console proxy) service on the subnode.
             NOVA_VNC_ENABLED: true
+            OVN_AGENT_EXTENSIONS: 'metadata'
 
 - job:
     name: grenade-py3
