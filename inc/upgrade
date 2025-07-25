@@ -42,7 +42,7 @@ function save_mysql_dbs {
         for db_found in "${db_names[@]}"; do
             if [[ "$db" == "$db_found" ]]; then
                 echo "Saving database :" $db
-                timeout 120 mysqldump -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
+                timeout 120 mysqldump --skip-lock-tables -u$database_user -p$mysql_pass $db >$SAVE_DIR/$db.sql.$release
                 break
             fi
         done
