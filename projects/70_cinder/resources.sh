@@ -101,6 +101,9 @@ function create {
     resource_save cinder user_id $id
 
     openstack role add member --user $id --project $project_id
+    if is_service_enabled barbican; then
+        openstack role add creator --user $id --project $project_id
+    fi
 
     # Create an encrypted volume type as admin
     eval $(openstack volume type create \
