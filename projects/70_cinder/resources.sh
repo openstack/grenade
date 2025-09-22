@@ -55,9 +55,9 @@ function _wait_for_volume_update {
     # https://storyboard.openstack.org/#!/story/2002158
     local volume=$1
     local field=$2
-    local desired_status=$3
+    declare -l desired_status=$3
     local timeleft=30
-    local status=""
+    declare -l status=""
     while [[ $timeleft -gt 0 ]]; do
         status=$(openstack volume show $volume -f value -c $field)
         if [[ "$status" != "$desired_status" ]]; then
