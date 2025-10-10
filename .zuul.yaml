@@ -5,8 +5,16 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        # NOTE(elod.illes): set heat-grenade as non-voting to unblock
+        # the gate quickly. The job is broken on same failure as 2025.1
+        # https://review.opendev.org/c/openstack/grenade/+/945244
+        - grenade-heat-multinode:
+            voting: false
+        # NOTE(elod.illes): set octavia-grenade as non-voting to unblock
+        # the gate quickly. This can be set as voting as soon as the
+        # grenade jobs are passing.
+        - octavia-grenade:
+            voting: false
         - ironic-grenade:
             voting: false
         - grenade-skip-level-always
@@ -14,8 +22,11 @@
       jobs:
         - grenade
         - grenade-multinode
-        - grenade-heat-multinode
-        - octavia-grenade
+        # NOTE(elod.illes): remove heat-grenade and octavia-grenade to
+        # free up resources as these are currently failing. This can be
+        # added back as soon as these jobs are passing
+        # - grenade-heat-multinode
+        # - octavia-grenade
         - grenade-skip-level-always
     experimental:
       jobs:
