@@ -117,26 +117,18 @@ function create {
         $net \
         $NOVA_SERVER --wait
 
-    # Add a floating IP because this is something which will work in
-    # either n-net or neutron. More advanced server creates with
-    # neutron should be done in neutron test.
-    eval $(openstack floating ip create public -f shell -c id -c ip -c floating_ip_address)
-    # NOTE(dhellmann): Around version 3.0.0 of python-openstackclient
-    # the column name changed from "ip" to "floating_ip_address". We
-    # look for both here to support upgrades.
-    if [[ -z "$ip" ]]; then
-        ip="$floating_ip_address"
-    fi
-    resource_save nova nova_server_ip $ip
+    # Add a floating IP as a basic scenario. More advanced server creates
+    # should be done in neutron test.
+    eval $(openstack floating ip create public -f shell -c id -c floating_ip_address)
+    resource_save nova nova_server_ip $floating_ip_address
     resource_save nova nova_server_float $id
-    openstack server add floating ip $NOVA_SERVER $ip
-
+    openstack server add floating ip $NOVA_SERVER $floating_ip_address
 
     uuid=$(openstack server show $NOVA_SERVER -f value -c id)
     resource_save nova nova_server_uuid $uuid
 
     # ping check on the way up to ensure we're really running
-    ping_check_public $ip $INSTANCE_WAIT
+    ping_check_public $floating_ip_address $INSTANCE_WAIT
 
     # Save some inventory and allocation values (requires admin)
     source_quiet $TOP_DIR/openrc admin admin
