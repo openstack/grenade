@@ -60,6 +60,9 @@ create_cinder_volume_group
 # Migrate the database
 $CINDER_BIN_DIR/cinder-manage db sync || die $LINENO "DB migration error"
 
+# Sync the quotas
+$CINDER_BIN_DIR/cinder-manage quota sync || die $LINENO "Quota sync failed"
+
 start_cinder
 
 # Don't succeed unless the services come up
