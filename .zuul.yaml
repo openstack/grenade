@@ -167,7 +167,7 @@
       Default grenade job
 
       Usually grenade jobs should inherit from this job.
-    nodeset: openstack-single-node-jammy
+    nodeset: openstack-single-node-noble
     required-projects:
       # NOTE(andreaf) The devstack and grenade roles take care of setting up
       # repos on the right branch for this job.
@@ -388,7 +388,7 @@
     description: |
       Basic multinode grenade job
     parent: grenade
-    nodeset: openstack-two-node-jammy
+    nodeset: openstack-two-node-noble
     pre-run: playbooks/multinode-pre.yaml
 
 - job:
