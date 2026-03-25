@@ -5,22 +5,17 @@
       jobs:
         - grenade
         - grenade-multinode
-        # TODO(gmann) heat job is failing 100%, make it voting again once it is green.
-        - grenade-heat-multinode:
-            voting: false
-        # TODO(stephenfin): make this voting once we fix octavia
-        # https://review.opendev.org/c/openstack/octavia/+/949601
-        - octavia-grenade:
-            voting: false
-        - ironic-grenade:
-            voting: false
+        - grenade-heat-multinode
+        - octavia-grenade
+        - ironic-grenade
         - grenade-skip-level-always
     gate:
       jobs:
         - grenade
         - grenade-multinode
-        # - grenade-heat-multinode
-        # - octavia-grenade
+        - grenade-heat-multinode
+        - octavia-grenade
+        - ironic-grenade
         - grenade-skip-level-always
     experimental:
       jobs:
